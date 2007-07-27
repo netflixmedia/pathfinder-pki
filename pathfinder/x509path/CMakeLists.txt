@@ -1,0 +1,3 @@
+ADD_LIBRARY(x509path wvx509path.cc wvx509store.cc wvx509policytree.cc)
+SET_TARGET_PROPERTIES(x509path
+		      PROPERTIES COMPILE_FLAGS ${EXTRA_CFLAGS})
