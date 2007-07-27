@@ -1,0 +1,24 @@
+printcert dying on signal 6 (Aborted)
+
+Process ID: 16187
+Parent's process ID: 5470
+
+Last real stack frame: 0xBF9A7CBC
+Top of stack: 0xBF9A8290
+Stack size: 1492
+Stack size rlimit: 8388608
+
+Assert:
+printcert: crypto/wvx509.cc:1722: time_t WvX509Mgr::get_notvalid_before(): Assertion `cert' failed.
+
+Backtrace:
+/home/wlach/svn/branches/crypto_refactoring1/wvstreams/libwvutils.so.4.4[0xb7cf03b7]
+/home/wlach/svn/branches/crypto_refactoring1/wvstreams/libwvutils.so.4.4(_Z7wvcrashi+0x17f)[0xb7cf05f5]
+[0xb7ef9420]
+/lib/tls/i686/cmov/libc.so.6(abort+0x109)[0xb7b32fb9]
+/home/wlach/svn/branches/crypto_refactoring1/wvstreams/libwvbase.so.4.4(__assert+0x0)[0xb7cb95ec]
+/home/wlach/svn/branches/crypto_refactoring1/wvstreams/libwvstreams.so.4.4(_ZN9WvX509Mgr19get_notvalid_beforeEv+0x34)[0xb7e62ab6]
+/home/wlach/svn/branches/crypto_refactoring1/wvstreams/crypto/tests/printcert[0x8049c96]
+/home/wlach/svn/branches/crypto_refactoring1/wvstreams/crypto/tests/printcert[0x804a73c]
+/lib/tls/i686/cmov/libc.so.6(__libc_start_main+0xc8)[0xb7b1dea8]
+/home/wlach/svn/branches/crypto_refactoring1/wvstreams/crypto/tests/printcert[0x80498a1]
