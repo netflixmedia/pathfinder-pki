@@ -1,0 +1,5 @@
+#summary Pathviewer Graphical Path Validator
+
+Pathviewer provides a graphical view of the path validation process. It depends only on GTK+, D-Bus, and the Pathfinder client libraries.
+
+
