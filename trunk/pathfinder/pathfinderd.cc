@@ -125,7 +125,7 @@ public:
         WvDBusReplyMsg *delayed_reply = new WvDBusReplyMsg(reply);
 
         uint32_t flags;
-        if (cfg["verification options"].xget("skip crl check"))
+        if (cfg["verification options"].xgetint("skip crl check", 0))
         {
             log("Skipping CRL checking as specified in configuration.\n");
             flags |= WVX509_SKIP_CRL_CHECK;
@@ -151,7 +151,7 @@ public:
 
         WvX509Path::WvX509List extra_certs;
         uint32_t flags = 0;
-        log("Path validated for certificate %s validated. Result: %svalid\n", 
+        log("Path validated for certificate %s. Result: %svalid\n", 
             cert->get_subject(), valid ? "" : "NOT ");
         validatormap.erase(reply);
 

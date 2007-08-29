@@ -82,9 +82,9 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
         added_certs[cert->get_subject().cstr()] = true;
 
     // check if we need to get more signers
-    if (!!cert->get_aki())
+    if (!!cert->get_aki() && cert->get_aki() != cert->get_ski())
     {
-        log("Certificate (%s) we just got has an issuer. We continue "
+        log("Certificate (%s) we just got has an issuer (%s). We continue "
             "building the path.\n", cert->get_subject(), cert->get_issuer());
         path->prepend_cert(cert);
         if (!get_crl(cert))
@@ -104,8 +104,8 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
     }
     else
     {
-        log("Certificate has no signers (and may be a trust anchor). Stop, "
-            "perform path validation.\n");
+        log("Certificate has no non-self signers (and may be a trust anchor). "
+            "Stop, perform path validation.\n");
     }
 
     // otherwise, we've hit a self-signed certificate and are done fetching
@@ -233,7 +233,10 @@ void PathFinder::signer_download_finished_cb(WvStringParm urlstr,
     }
 
     shared_ptr<WvX509> cert(new WvX509);
-    cert->decode(WvX509::CertDER, buf);
+    if (!strncmp("-----BEGIN", (const char *) buf.peek(0, 10), 10))
+        cert->decode(WvX509::CertPEM, buf);
+    else
+        cert->decode(WvX509::CertDER, buf); 
 
     check_cert(cert);
 }
@@ -311,9 +314,11 @@ void PathFinder::crl_download_finished_cb(WvStringParm urlstr,
 
     log("Got CRL with mimetype %s.\n", mimetype);
     
-    // FIXME: this is dumb. we can't assume a CRL is der encoded.
     shared_ptr<WvCRL> crl(new WvCRL);
-    crl->decode(WvCRL::CRLDER, buf); 
+    if (!strncmp("-----BEGIN", (const char *) buf.peek(0, 10), 10))
+        crl->decode(WvCRL::CRLPEM, buf);
+    else
+        crl->decode(WvCRL::CRLDER, buf); 
     path->add_crl(cert->get_ski(), crl);
 
     check_done();
