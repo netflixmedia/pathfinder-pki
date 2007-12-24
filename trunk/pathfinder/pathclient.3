@@ -1,0 +1,41 @@
+.TH "PATHCLIENT" "3" "December 23, 2007" "" ""
+.SH "NAME"
+pathclient \- pathfinder command line Certificate Validation tool.
+.SH "SYNOPSIS"
+.B pathclient
+.RI [ options ] " files" ...
+.br 
+.SH "DESCRIPTION"
+\fBpathclient\fP provides a command line interface to connect to a pathfinder daemon, and validate an X.509 Certificate.  
+.SH "OPTIONS"
+\fBpathclient\fR understands the following options:
+.TP 
+.B \-e, \-\-initial\-explicit\-policy
+Set initial explicit policy when validating
+.TP 
+.B \-p, \-\-initial\-policy\-mapping\-inhibit
+Inhibit policy mapping when validating
+.TP 
+.B \-\-session
+Listen on the session bus (instead of the system bus)
+.TP 
+.B \-t, \-\-type=type
+Certificate type: der or pem (default: pem)
+.TP 
+.B \-\-usage
+Give a short usage message
+.TP 
+.B \-?, \-\-help
+Show summary of options.
+.TP 
+.B \-v, \-\-version
+Show version of program.
+.SH "SEE ALSO"
+.BR pathfinderd (8),
+.BR pathfinderd.conf (3).
+.br 
+.SH "AUTHOR"
+pathfinder was written by Carillon Information Security Inc.
+.PP 
+This manual page was written by Patrick Patterson <ppatters@debian.org>,
+for the Debian project (but may be used by others).

@@ -1,0 +1,51 @@
+.TH "PATHFINDERD" "8" "December 23, 2007" "Patrick Patterson" ""
+.SH "NAME"
+pathfinderd \- RFC3280 Path Discover and Validation Daemon
+.SH "SYNOPSIS"
+.B pathfinderd
+.RI [ options ]
+.br 
+.SH "DESCRIPTION"
+.PP 
+
+\fBpathfinderd\fP is a fully RFC 3280 compliant path discovery and validation daemon, designed to be a centrally manageable point for PKI trust anchors and configuration.
+.SH "OPTIONS"
+\fBpathfinderd\fR support the following options:
+.TP 
+.B \-c, \-\-config=ini:filename.ini   
+UniConf config moniker (default: ini:/etc/pathfinderd.ini)
+.TP 
+.B \-d, \-\-daemonize
+Fork into background and return (implies \-\-syslog)
+.TP 
+.B \-\-no\-syslog
+Do not write log entries to syslog
+.TP 
+.B \-q, \-\-quiet
+Decrease log level (can be used multiple times)
+.TP 
+.B \-s, \-\-syslog
+Write log entries to syslog
+.TP 
+.B \-\-session
+Listen on the session bus (instead of the system bus)
+.TP 
+.B \-v, \-\-verbose
+Increase log level (can be used multiple times)
+.TP 
+.B \-?, \-\-help
+Show summary of options.
+.TP 
+.B \-\-usage
+Show a short usage message.
+.TP 
+.B \-v, \-\-version
+Show version of program.
+.SH "SEE ALSO"
+.BR pathfinderd.conf (3), uniconf.conf (3)
+.br 
+.SH "AUTHOR"
+pathfinder was written by Carillon Information Security Inc.
+.PP 
+This manual page was written by Patrick Patterson <ppatters@debian.org>,
+for the Debian project (but may be used by others).

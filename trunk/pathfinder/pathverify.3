@@ -1,0 +1,44 @@
+.TH "PATHVERIFY" "3" "December 23, 2007" "" ""
+.SH "NAME"
+pathverify \- stand alone RFC3280 path validation and discovery tool.
+.SH "SYNOPSIS"
+.B pathverify
+.RI [ options ] " files" ...
+.br 
+.SH "DESCRIPTION"
+\fBpathverify\fP is for validating the configuration of pathfinderd, as well as providing a simple, command line program to verify X.509 certificates.
+.SH "OPTIONS"
+\fBpathverify\fR supports the following options:
+.TP 
+.B \-c, \-\-config=ini:filename.ini
+Config moniker (default: ini:/etc/pathfinderd.ini)
+.TP 
+.B \-p, \-\-policy=POLICY
+Initial policy set to use for validation, in tcl\-encoded form (default: 2.5.29.32.0)
+.TP 
+.B \-q, \-\-quiet
+Decrease log level (can be used multiple times)
+.TP 
+.B \-\-skip\-crl\-check
+Skips any CRL checking.
+.TP 
+.B \-t, \-\-type=TYPE
+Certificate type: der or pem (default: pem)
+.TP 
+.B \-v, \-\-verbose
+Increase log level (can be used multiple times)
+.TP 
+.B \-\-usage
+Give a short usage message
+.TP 
+.B \-?, \-\-help
+Show summary of options.
+.SH "SEE ALSO"
+.BR pathclient (3),
+.BR pathfinderd (8).
+.br 
+.SH "AUTHOR"
+pathfinder was written by Carillon Information Security Inc.
+.PP 
+This manual page was written by Patrick Patterson <ppatters@debian.org>,
+for the Debian project (but may be used by others).
