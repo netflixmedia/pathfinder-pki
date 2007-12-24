@@ -6,6 +6,6 @@ includedir=${prefix}/include
 Name: NSS Pathfinder Plugin Library
 Description: Library that allows NSS to use PathFinder for certificate validation
 Version: @PACKAGE_VERSION@
-Requires: mozilla-nss >= 2.0.0, dbus-1 >= 1.0
+Requires: nss >= 2.0.0, dbus-1 >= 1.0
 Libs: -L${libdir} -lpathfinder-nss-1
 Cflags: -I${includedir}/pathfinder-1
