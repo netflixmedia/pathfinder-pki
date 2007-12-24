@@ -1,5 +1,6 @@
 #include "testmethods.t.h"
 #include "wvx509policytree.h"
+#include <openssl/err.h>
 
 using namespace boost;
 
@@ -10,6 +11,7 @@ Tester::Tester() :
     log("Pathfinder Test Harness", WvLog::Debug5)
 {
     validated = false;
+    ERR_load_ERR_strings();
 }
 
 
