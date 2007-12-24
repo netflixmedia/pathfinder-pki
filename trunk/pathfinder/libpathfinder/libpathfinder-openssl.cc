@@ -5,7 +5,7 @@
  *
  * This library is covered by the LGPL v2.1 or later, please read LICENSE for details.
  */
-#include "libpathfinder-nss.h"
+#include "libpathfinder-openssl.h"
 #include "libpathfinder.h"
 
 #include <openssl/ssl.h>
@@ -14,7 +14,7 @@
 
 extern "C" {
 
-static char *hex = "0123456789ABCDEF";
+static const char* hex = "0123456789ABCDEF";
 
 int openssl_verify_cb(X509_STORE_CTX *ctx, void *arg)
 {
