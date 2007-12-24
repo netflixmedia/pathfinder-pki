@@ -91,7 +91,7 @@ SECStatus get_client_authdata_cb(void *arg, PRFileDesc *socket,
 **
 **************************************************************************/
 
-void err_warn(char *function)
+void err_warn(const char *function)
 {
     PRErrorCode  errorNumber = PR_GetError();
     
@@ -99,7 +99,7 @@ void err_warn(char *function)
 }
 
 
-void err_exit(char *function)
+void err_exit(const char *function)
 {
     err_warn(function);
     /* Exit gracefully. */
@@ -355,7 +355,7 @@ void client_main(unsigned short port, const char * hostname)
 
 int main(int argc, char *argv[])
 {
-    char * certdir = ".";
+    const char * certdir = ".";
     SECStatus secstatus;
     PLOptState * optstate;
     PLOptStatus optstatus;
