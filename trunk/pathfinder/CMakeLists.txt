@@ -70,6 +70,10 @@ CONFIGURE_FILE(pathfinder-openssl.pc.in pathfinder-openssl.pc
 	       @ONLY)
 INSTALL(FILES pathfinder-nss.pc pathfinder-openssl.pc
 	      DESTINATION lib/pkgconfig)
+INSTALL (FILES pathclient.3 pathverify.3
+	      DESTINATION share/man/man3)
+INSTALL (FILES pathfinderd.8
+	      DESTINATION share/man/man8)
 
 ENABLE_TESTING()
 ADD_TEST(all valgrind --tool=memcheck t/all.t)
