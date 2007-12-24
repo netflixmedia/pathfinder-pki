@@ -34,7 +34,29 @@ make install
 Pathfinder only has three dependancies: D-Bus (to provide interprocess 
 communication), WvStreams (to provide for downloading of certificates over
 HTTP), and OpenSSL (to provide the relevant X509 and cryptographic functions
-for path validation).
+for path validation). However, in order to run the self tests (see below),
+you will also need to have valgrind.
+
+In order to build the pathfinder client libraries, you will need the OpenSSL
+and LibNSS devel files.
+
+=== Testing Pathfinder after building ===
+
+To run the self tests on Pathfinder after building, you can run:
+
+make test
+
+which will run all of the various tests in the /t directory. These tests are
+designed to ensure that Pathfinder can pass the NIST PKITS tests for PDVal.
+
+If it fails, the failure can be viewed by running:
+
+cat Testing/Temporary/LastTest.log
+
+Please report any failures to:
+
+http://code.google.com/p/pathfinder-pki/issues/list
+
 
 === Using Pathfinder ===
 
