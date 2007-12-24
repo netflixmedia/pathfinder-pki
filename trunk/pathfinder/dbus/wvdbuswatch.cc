@@ -15,7 +15,7 @@
 WvDBusWatch::WvDBusWatch(DBusWatch *_watch, unsigned int _flags) :
     watch(_watch)
 {
-    int fd = dbus_watch_get_fd(watch);
+    int fd = dbus_watch_get_unix_fd(watch);
     rfd = wfd = fd;
 
     if (!(_flags & DBUS_WATCH_READABLE))

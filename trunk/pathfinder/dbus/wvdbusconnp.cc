@@ -286,7 +286,7 @@ dbus_bool_t WvDBusConnPrivate::add_watch(DBusWatch *watch)
     bool iswritable = (flags & DBUS_WATCH_WRITABLE);
 
     log(WvLog::Debug5, "Watch updated successfully (fd: %s, readable: %s, "
-        "writable: %s)\n", dbus_watch_get_fd(watch),
+        "writable: %s)\n", dbus_watch_get_unix_fd(watch),
         isreadable, iswritable);
 
     return TRUE;
