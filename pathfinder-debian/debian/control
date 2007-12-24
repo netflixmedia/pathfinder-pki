@@ -1,0 +1,81 @@
+Source: pathfinder
+Section: utils
+Priority: optional
+Maintainer: Patrick Patterson <ppatters@debian.org>
+Build-Depends: debhelper (>= 5), libdbus-1-dev, libnss3-dev, libwvstreams-dev (>=4.4.1), pkg-config 
+Standards-Version: 3.7.3
+
+Package: pathfinderd
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Daemon for X.509 Path Discovery and Validation
+ Pathfinder is designed to provide a mechanism for any program to perform
+ RFC3280-compliant path validation of X.509 certificates, even when some of
+ the intermediate certificates are not present on the local machine. It will
+ automatically download any such certificates (and their CRLs) from the
+ Internet as needed using the AIA and CRL distribution point extensions of the
+ certificate it is processing.
+ .
+ This package has the UniConf enabled DBus Daemon for Pathfinder which has
+ been designed for central management and configuration of PKI Trust anchors
+ and configuration information.
+
+Package: pathfinder-utils
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Utilities to use with the Pathfinder Daemon
+ Pathfinder is designed to provide a mechanism for any program to perform
+ RFC3280-compliant path validation of X.509 certificates, even when some of
+ the intermediate certificates are not present on the local machine. It will
+ automatically download any such certificates (and their CRLs) from the
+ Internet as needed using the AIA and CRL distribution point extensions of the
+ certificate it is processing.
+ .
+ This package contains command line utilities to verify your configuration
+ and to allow scripts to talk to the Pathfinder Daemon.
+
+Package: libpathfinder-openssl-1
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Pathfinder integration Library for OpenSSL
+ Pathfinder is designed to provide a mechanism for any program to perform
+ RFC3280-compliant path validation of X.509 certificates, even when some of
+ the intermediate certificates are not present on the local machine. It will
+ automatically download any such certificates (and their CRLs) from the
+ Internet as needed using the AIA and CRL distribution point extensions of the
+ certificate it is processing.
+ .
+ This package contains the shared library to allow OpenSSL based programs to
+ use Pathfinder for their Certificate validation.
+
+Package: libpathfinder-nss-1
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Pathfinder integration Library for LibNSS
+ Pathfinder is designed to provide a mechanism for any program to perform
+ RFC3280-compliant path validation of X.509 certificates, even when some of
+ the intermediate certificates are not present on the local machine. It will
+ automatically download any such certificates (and their CRLs) from the
+ Internet as needed using the AIA and CRL distribution point extensions of the
+ certificate it is processing.
+ .
+ This package contains the shared library to allow LibNSS based programs to
+ use Pathfinder for their Certificate validation.
+
+Package: libpathfinder-dev
+Architecture: any
+Section: libdevel
+Provides: libpathfinder-1-dev
+Description: Development files for pathfinder
+ Pathfinder is designed to provide a mechanism for any program to perform
+ RFC3280-compliant path validation of X.509 certificates, even when some of
+ the intermediate certificates are not present on the local machine. It will
+ automatically download any such certificates (and their CRLs) from the
+ Internet as needed using the AIA and CRL distribution point extensions of the
+ certificate it is processing.
+ .
+ This package contains the development files to allow programmers to write
+ applications using either OpenSSL or LibNSS that use Pathfinder for their
+ Certificate validation.
