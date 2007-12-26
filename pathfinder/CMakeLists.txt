@@ -58,6 +58,10 @@ SET_TARGET_PROPERTIES(nsstest
 
 SUBDIRS(dbus t x509path libpathfinder)
 
+IF(NOT DEFINED CMAKE_INSTALL_LIBDIR)
+   SET(CMAKE_INSTALL_LIBDIR "/usr/lib")
+ENDIF(NOT DEFINED CMAKE_INSTALL_LIBDIR)
+
 CONFIGURE_FILE(version.h.in version.h)
 CONFIGURE_FILE(pathfinder-nss-uninstalled.pc.in pathfinder-nss-uninstalled.pc
 	       @ONLY)
@@ -69,7 +73,7 @@ CONFIGURE_FILE(pathfinder-nss.pc.in pathfinder-nss.pc
 CONFIGURE_FILE(pathfinder-openssl.pc.in pathfinder-openssl.pc
 	       @ONLY)
 INSTALL(FILES pathfinder-nss.pc pathfinder-openssl.pc
-	      DESTINATION lib/pkgconfig)
+	      DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 INSTALL (FILES pathclient.3 pathverify.3
 	      DESTINATION share/man/man3)
 INSTALL (FILES pathfinderd.8
