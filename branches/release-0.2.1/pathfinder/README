@@ -1,0 +1,136 @@
+=== About Pathfinder ===
+
+Pathfinder is designed to provide a mechanism for any program to perform 
+RFC3280-compliant path validation of X509 certificates, even when some of 
+the intermediate certificates are not present on the local machine. It will
+automatically download any such certificates (and their CRLs) from the Internet
+as needed using the AIA and CRL distribution point extensions of the certificates
+it is processing.
+
+=== Building Pathfinder ===
+
+Pathfinder uses the CMake build environment, which is analagous to the standard
+autoconf/automake system. Building proceeds in two steps:
+
+First, run "cmake .". This will create a set of makefiles which enables you to
+actually build pathfinder (this is analagous to running "./configure" with an 
+AutoConf-based system). 
+
+Next, run "make". This will actually build the executables and libraries that
+form Pathfinder.
+
+To install Pathfinder, run "make install". This will install all files needed
+to use Pathfinder into "/usr/local". If you wish to install Pathfinder into a
+different prefix, you must specify this at configure time:
+
+cmake -D CMAKE_INSTALL_PREFIX:PATH=<my preferred prefix> .
+
+For example, running cmake as follows would build and install everything into 
+/home/wlach/tmp:
+
+cmake -D CMAKE_INSTALL_PREFIX:PATH=/home/wlach/tmp .
+make install
+
+Pathfinder only has three dependancies: D-Bus (to provide interprocess 
+communication), WvStreams (to provide for downloading of certificates over
+HTTP), and OpenSSL (to provide the relevant X509 and cryptographic functions
+for path validation). However, in order to run the self tests (see below),
+you will also need to have valgrind.
+
+In order to build the pathfinder client libraries, you will need the OpenSSL
+and LibNSS devel files.
+
+=== Testing Pathfinder after building ===
+
+To run the self tests on Pathfinder after building, you can run:
+
+make test
+
+which will run all of the various tests in the /t directory. These tests are
+designed to ensure that Pathfinder can pass the NIST PKITS tests for PDVal.
+
+If it fails, the failure can be viewed by running:
+
+cat Testing/Temporary/LastTest.log
+
+Please report any failures to:
+
+http://code.google.com/p/pathfinder-pki/issues/list
+
+
+=== Using Pathfinder ===
+
+The heart of Pathfinder is a central daemon, "pathfinderd". This is the program
+that actually does all the work of checking whether a certificate is valid or
+not (by discovering a path and verifying it). Programs interface with pathfinder
+by calling a D-Bus method which contacts the daemon with a hexified DER-encoded 
+representation of the certificate they wish to validate.
+
+How to set up a simple test case:
+
+Say you had three certificates: 
+
+1. CACert.der (self-signed trust anchor; trusted, present on local machine)
+2. SubCACert.der (signed by CACert; existing only on a remote server)
+3. ClientCert.der (signed by SubCACert; the certificate to be validated)
+
+How would we set up pathfinder to validate them?
+
+First, you would create a directory to store the trusted certificates. In 
+this case, we only have one. For the sake of example, we'll put it in 
+'/tmp/trusted':
+
+mkdir -p /tmp/trusted
+cp CACert.der /tmp/trusted
+
+Now, we want to create a configuration file for the pathfinder daemon which
+specifies the trusted location. An example is contained within the pathfinder
+distribution:
+
+[Trusted directories]
+Extra certs = /tmp/trusted
+
+You may opt to use this config file by referring to it via a command-line 
+option. You want to run the pathfinder daemon as root, so it can listen on
+the D-Bus system bus. It is also possible to listen on the session bus, for
+testing purposes: just specify --session when running pathfinderd: for the
+sake of example, let's do that:
+
+./pathfinderd -c ini:pathfinderd.ini.sample --session
+
+Now that we have pathfinderd running, we'll want to validate our certificate.
+This can be done using the pathclient program, which will connect to the
+pathfinder daemon via D-Bus and attempt to validate the client certificate:
+
+./pathclient --session -t der ClientCert.der 
+
+If everything is set up correctly, you should receive a message stating the
+certificate is valid.
+
+=== Adding support for Pathfinder to your program ===
+
+Pathfinder provides a D-Bus interface that allows you to contact the pathfinder 
+daemon and request validation of a certificate. Currently, the interface only
+contains one method "validate".
+
+Interface name: ca.carillon.pathfinder
+Object name: /ca/carillon/pathfinder
+Method name: validate
+Method parameters: String, String, Bool, Bool
+ - String1: The certificate, in hexified der-encoded format. 
+ - String2: The set of policies that you wish to enforce, in tcl-list format. 
+   Examples: "2.5.29.32.0" (the anyPolicy OID), "{ 1.2.3.4 1.2.3.5 }" (two 
+   policies: 1.2.3.4 and 1.2.3.5)
+ - Bool1: Whether or not the initial explicit policy should be set as a
+   verification parameter. This demands a valid policy tree at the end of 
+   validation. Except in the case that very strict validation is desired, it
+   is recommended to set this value to 'false'.
+ - Bool2: Whether to inhibit policy mapping: this will disallow policy mapping
+   at the very beginning of the validation process. Except in the case that 
+   very strict validation is desired, it is recommended to set this value to 
+   'false'.
+
+For the convenience of those using OpenSSL or NSS (Netscape Security Services),
+two libraries containing a callback suitable for use with an SSL connection are
+provided. The "nsstest" and "openssltest" programs provided with the pathfinder
+distribution provide examples of their use.

@@ -1,0 +1,8 @@
+top_builddir=@PROJECT_SOURCE_DIR@
+
+Name: NSS Pathfinder Plugin Library
+Description: Library that allows NSS to use PathFinder for certificate validation
+Version: @PACKAGE_VERSION@
+Requires: nss >= 2.0.0, dbus-1 >= 1.0
+Libs: -L${top_builddir}/libpathfinder -lpathfinder-nss-1
+Cflags: -I${top_builddir}/libpathfinder

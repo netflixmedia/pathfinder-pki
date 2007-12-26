@@ -1,0 +1,10 @@
+# Defaults for pathfinder initscript
+# sourced by /etc/init.d/pathfinder
+# installed at /etc/default/pathfinder by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+
+# Additional options that are passed to the Daemon.
+DAEMON_OPTS="-c ini:/etc/pathfinderd.conf"

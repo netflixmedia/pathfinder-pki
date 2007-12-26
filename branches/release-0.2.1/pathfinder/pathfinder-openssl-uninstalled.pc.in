@@ -1,0 +1,8 @@
+top_builddir=@PROJECT_SOURCE_DIR@
+
+Name: OpenSSL Pathfinder Plugin Library
+Description: Library that allows OpenSSL to use PathFinder for certificate validation
+Version: @PACKAGE_VERSION@
+Requires: openssl >= 0.9.8, dbus-1 >= 1.0
+Libs: -L${top_builddir}/libpathfinder -lpathfinder-openssl-1
+Cflags: -I${top_builddir}/libpathfinder
