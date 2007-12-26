@@ -39,10 +39,13 @@ SET_TARGET_PROPERTIES(pathclient
 		      PROPERTIES COMPILE_FLAGS ${EXTRA_CFLAGS}
 		      		 LINK_FLAGS ${EXTRA_LINKFLAGS})
 
-INSTALL(TARGETS pathverify pathfinderd pathclient
+INSTALL(TARGETS pathverify pathclient
 	RUNTIME DESTINATION bin)
-INSTALL(FILES README AUTHORS LICENSE pathfinderd.ini.sample DESTINATION share/doc/pathfinder)
 
+INSTALL(TARGETS pathfinderd
+	RUNTIME DESTINATION sbin)
+
+INSTALL(FILES README AUTHORS LICENSE pathfinderd.ini.sample DESTINATION share/doc/pathfinder)
 
 ADD_EXECUTABLE(openssltest openssltest.cc)
 TARGET_LINK_LIBRARIES(openssltest pathfinder-openssl-1)
