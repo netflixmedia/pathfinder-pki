@@ -1,0 +1,11 @@
+[Trusted directories]
+Extra certs = /tmp/trusted
+
+[Verification options]
+skip crl check = 1
+
+[bridges]
+My bridge = /tmp/mybridge.p7c
+
+[intermediate CAs]
+E0:26:A2:10:00:7D:D5:96:95:14:0C:F2:2E:54:63:F1:65:66:D9:0E = 1

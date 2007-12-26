@@ -1,0 +1,41 @@
+=== About Pathviewer ===
+
+Pathviewer provides a graphical interface to viewing the results of path 
+discovery and validation, as provided by Pathfinder.
+
+=== Building Pathviewer ===
+
+Pathfinder uses the CMake build environment, which is analagous to the standard
+autoconf/automake system. Building proceeds in two steps:
+
+First, run "cmake .". This will create a set of makefiles which enables you to
+actually build pathfinder (this is analagous to running "./configure" with an 
+AutoConf-based system). 
+
+Next, run "make". This will actually build the executables and libraries that
+form Pathfinder.
+
+To install Pathfinder, run "make install". This will install all files needed
+to use Pathfinder into "/usr/local". If you wish to install Pathfinder into a
+different prefix, you must specify this at configure time:
+
+cmake -D CMAKE_INSTALL_PREFIX:PATH=<my preferred prefix> .
+
+For example, running cmake as follows would build and install everything into 
+/home/wlach/tmp:
+
+cmake -D CMAKE_INSTALL_PREFIX:PATH=/home/wlach/tmp .
+make install
+
+Pathfinder depends on the following libraries: D-Bus (to interface with 
+Pathfinder), libpathfinder-nss (for the validation method), and gtk+/libglade 
+(for the widgets).
+
+=== Using Pathviewer ===
+
+Simply run the pathviewer executable, and load the der encoded certificate of 
+your choice. Pathviewer will automatically attempt to connect to the pathfinder
+daemon and validate the certificate. You may reconfigure the pathfinder daemon
+while pathviewer is running: simply click on "refresh" if you wish to validate
+a certificate a second time.
+
