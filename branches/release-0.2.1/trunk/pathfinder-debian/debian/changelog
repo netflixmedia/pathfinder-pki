@@ -1,0 +1,6 @@
+pathfinder (0.1-1) unstable; urgency=low
+
+  * Initial release (Closes: #457605)
+
+ -- Patrick Patterson <ppatters@debian.org>  Sun, 23 Dec 2007 00:07:19 +0000
+
