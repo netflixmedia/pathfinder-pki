@@ -25,8 +25,13 @@ SET_TARGET_PROPERTIES(pathfinder-openssl-1-static PROPERTIES CLEAN_DIRECT_OUTPUT
 SET_TARGET_PROPERTIES(pathfinder-openssl-1-static PROPERTIES OUTPUT_NAME "pathfinder-openssl-1")
 SET_TARGET_PROPERTIES(pathfinder-openssl-1-static PROPERTIES COMPILE_FLAGS "${DBUS_CFLAGS} ${OPENSSL_CFLAGS} -fPIC")
 
+IF(NOT DEFINED CMAKE_INSTALL_LIBDIR)
+   SET(CMAKE_INSTALL_LIBDIR "lib")
+ENDIF(NOT DEFINED CMAKE_INSTALL_LIBDIR)
 
 INSTALL(TARGETS pathfinder-nss-1 pathfinder-openssl-1 pathfinder-nss-1-static 
-	pathfinder-openssl-1-static LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+	pathfinder-openssl-1-static LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" 
+				    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+
 INSTALL(FILES libpathfinder-nss.h libpathfinder-openssl.h libpathfinder.h
 	      DESTINATION include/pathfinder-1)
