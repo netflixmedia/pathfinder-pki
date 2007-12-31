@@ -1,7 +1,7 @@
 INCLUDE(UsePkgConfig)
 
 PROJECT(PATHFINDER)
-SET(PACKAGE_VERSION 0.2.1)
+SET(PACKAGE_VERSION 0.2.2)
 
 PKGCONFIG(libuniconf UNICONF_INCLUDEDIR UNICONF_LIBDIR UNICONF_LINKFLAGS UNICONF_CFLAGS)
 PKGCONFIG(dbus-1 DBUS_INCLUDEDIR DBUS_LIBDIR DBUS_LINKFLAGS DBUS_CFLAGS)
@@ -75,12 +75,19 @@ CONFIGURE_FILE(pathfinder-nss.pc.in pathfinder-nss.pc
 	       @ONLY)
 CONFIGURE_FILE(pathfinder-openssl.pc.in pathfinder-openssl.pc
 	       @ONLY)
+
 INSTALL(FILES pathfinder-nss.pc pathfinder-openssl.pc
 	      DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+
 INSTALL (FILES pathclient.3 pathverify.3
 	      DESTINATION share/man/man3)
+
 INSTALL (FILES pathfinderd.8
 	      DESTINATION share/man/man8)
+
+INSTALL (FILES pathfinderd-dbus.conf
+	      DESTINATION /etc/dbus-1/system.d
+	      RENAME pathfinderd.conf)
 
 ENABLE_TESTING()
 ADD_TEST(all valgrind --tool=memcheck t/all.t)
@@ -89,6 +96,6 @@ SET(CPACK_PACKAGE_NAME "pathfinder")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "pathfinder")
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
 SET(CPACK_PACKAGE_VERSION_MINOR "2")
-SET(CPACK_PACKAGE_VERSION_PATCH "1")
+SET(CPACK_PACKAGE_VERSION_PATCH "2")
 SET(CPACK_SOURCE_IGNORE_FILES "/.git/;.gitignore;.*~;/.svn/;CMakeFiles/;CMakeCache.txt;/Testing/;DartTestfile.txt;.pc$;.cmake;/_CPack_Packages/;version.h$;.tar.gz;.tar.Z;.*#.*";/pathviewer-0.1.0-Source/;Makefile)
 INCLUDE(CPack)
