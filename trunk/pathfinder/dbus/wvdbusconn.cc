@@ -72,6 +72,7 @@ void WvDBusConn::send(WvDBusMsg &msg)
 
 void WvDBusConn::send(WvDBusMsg &msg, uint32_t &serial)
 {
+    priv->print_message_trace(msg);
     if (!dbus_connection_send(priv->dbusconn, msg, &serial)) 
     { 
         seterr_both(ENOMEM, "Out of memory.\n");
@@ -85,6 +86,8 @@ void WvDBusConn::send(WvDBusMsg &msg, IWvDBusListener *reply,
     log(WvLog::Debug, "Sending message.\n");
     DBusPendingCall * pending;
 
+    priv->print_message_trace(msg);
+    
     // FIXME: allow custom timeouts?
     if (!dbus_connection_send_with_reply(priv->dbusconn, msg, &pending, 1000)) 
     { 
@@ -151,4 +154,9 @@ void WvDBusConn::del_method(WvStringParm interface, WvStringParm path,
                             WvStringParm name)
 {
     priv->del_listener(interface, path, name);
+}
+
+bool WvDBusConn::isok()
+{
+  return priv->isok();
 }

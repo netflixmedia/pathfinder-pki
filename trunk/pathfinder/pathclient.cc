@@ -96,6 +96,11 @@ int main(int argc, char *argv[])
     msg.append(initial_explicit_policy);
     msg.append(initial_policy_mapping_inhibit);
 
+    wvout->print("Message sent to daemon: busname: ca.carillon.pathfinder\n");
+    wvout->print("object: /ca/carillon/pathfinder method: validate\n");
+    wvout->print("parameter1: %s\n", x509.encode(WvX509::CertHex));
+    wvout->print("parameter2: %s\n", WvString(ANY_POLICY_OID));
+    
     // expect a reply with a bool and a single string as an argument
     WvDBusListener<bool,WvString> reply("/ca/carillon/pathfinder/validate", validate_cb);
     conn->send(msg, &reply, false);
