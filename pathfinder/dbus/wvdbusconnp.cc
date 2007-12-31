@@ -72,15 +72,24 @@ WvDBusConnPrivate::WvDBusConnPrivate(WvDBusConn *_conn, WvStringParm _name,
     dbusconn(NULL),
     name(_name),
     name_acquired(false),
-    log("WvDBusConnPrivate", WvLog::Debug)
+    log("WvDBusConnPrivate", WvLog::Debug),
+    want_to_die(false)
 {
     DBusError error;
     dbus_error_init(&error);
     dbusconn = dbus_bus_get(bus, &error);
-
-    init(true);
-    if (!!name)
-        request_name(name);
+    if (dbus_error_is_set(&error))
+    {
+        log(WvLog::Error, "bad news! dbus error is set! %s %s\n",
+            error.name, error.message);
+        close();
+    }
+    else
+    {
+        init(true);
+        if (!!name)
+          request_name(name);
+    }
 }
 
 
@@ -91,7 +100,8 @@ WvDBusConnPrivate::WvDBusConnPrivate(WvDBusConn *_conn, WvStringParm _name,
     dbusconn(NULL),
     name(_name),
     name_acquired(false),
-    log("WvDBusConnPrivate", WvLog::Debug)
+    log("WvDBusConnPrivate", WvLog::Debug),
+    want_to_die(false)
 {
     // it seems like we want to open a private connection to the bus
     // for this particular case.. we can't create multiple named connections
@@ -103,18 +113,18 @@ WvDBusConnPrivate::WvDBusConnPrivate(WvDBusConn *_conn, WvStringParm _name,
     {
         log(WvLog::Error, "bad news! dbus error is set! %s %s\n",
             error.name, error.message);
-    }
-
-    // dbus_bus_get(..) does the following for us.. but we aren't using
-    // dbus_bus_get
-    //dbus_connection_set_exit_on_disconnect(dbusconn, FALSE);
-    if (!dbus_bus_register(dbusconn, &error))
+        close();
+    } 
+    else if (!dbus_bus_register(dbusconn, &error))
     {
         log(WvLog::Error, "Error registering with the bus!\n");
+        close();
+    } 
+    else 
+    {
+        init(true);
+        request_name(name);
     }
-
-    init(true);
-    request_name(name);
 }
 
 
@@ -124,7 +134,8 @@ WvDBusConnPrivate::WvDBusConnPrivate(WvDBusConn *_conn, DBusConnection *_c) :
     dbusconn(_c),
     name(""),
     name_acquired(false),
-    log("WvDBusConnPrivate", WvLog::Debug)
+    log("WvDBusConnPrivate", WvLog::Debug),
+    want_to_die(false)
 {
     dbus_connection_ref(dbusconn);
     init(false);
@@ -154,7 +165,7 @@ void WvDBusConnPrivate::init(bool client)
                                              this, NULL))
     {
         log(WvLog::Error, "Couldn't set up watch functions!\n");
-        // set isok to false or something
+	return;
     }
 
     // FIXME: need to add real functions here, timeouts won't work until we
@@ -163,7 +174,8 @@ void WvDBusConnPrivate::init(bool client)
                                           _remove_timeout,
                                           _timeout_toggled,
                                           this, NULL);
-
+    want_to_die = true;
+    
     log("Done init..\n");
 
     dbus_connection_add_filter(dbusconn, _filter_func, this, NULL);
@@ -251,7 +263,7 @@ void WvDBusConnPrivate::execute()
 
 void WvDBusConnPrivate::close()
 {
-    if (conn)
+    if (conn && dbusconn)
     {
         if (name_acquired)
         {
@@ -268,6 +280,7 @@ void WvDBusConnPrivate::close()
         dbus_connection_unref(dbusconn);
         conn = NULL;
     }
+    want_to_die = true;
 }
 
 
@@ -368,4 +381,9 @@ void WvDBusConnPrivate::print_message_trace(DBusMessage *_msg)
         dbus_message_get_member(_msg),
         dbus_message_is_signal(_msg, dbus_message_get_interface(_msg),
                                dbus_message_get_path(_msg)));
+}
+
+bool WvDBusConnPrivate::isok()
+{
+  return want_to_die;
 }

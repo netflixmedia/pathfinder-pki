@@ -121,13 +121,13 @@ public:
                                           DBusMessage *_msg);
     void print_message_trace(DBusMessage *_msg);
 
-
     static void pending_call_notify(DBusPendingCall *pending, void *user_data);
     static void remove_listener_cb(void *memory);
 
     void execute();
     void close();
-
+    bool isok();
+    
     WvDBusConn *conn;
     WvDBusInterfaceDict ifacedict;
     DBusConnection *dbusconn;
@@ -135,6 +135,9 @@ public:
     bool name_acquired;
 
     WvLog log;
+private: 
+    bool want_to_die;
+
 };
 
 #endif // __WVDBUSCONNP_H

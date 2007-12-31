@@ -24,7 +24,7 @@
 using namespace boost;
 using namespace std;
 
-#define DEFAULT_CONFIG_MONIKER "ini:/etc/pathfinderd.ini"
+#define DEFAULT_CONFIG_MONIKER "ini:/etc/pathfinderd.conf"
 
 
 class PathFinderDaemon : public WvStreamsDaemon
@@ -47,6 +47,7 @@ public:
         args.add_set_bool_option('\0', "session", "Listen on the session "
                                  "bus (instead of the system bus)", 
                                  session_bus);
+	log(WvLog::Debug,"Pathfinder Instantiated\n");
     }
     virtual ~PathFinderDaemon()
     {
@@ -56,6 +57,7 @@ public:
 
     void cb(WvStreamsDaemon &daemon, void *)
     {
+	log(WvLog::Error, "Calling start callback.\n");
         // Mount config moniker
 	cfg.unmount(cfg.whichmount(), true); // just in case
 	cfg.mount(cfgmoniker);
@@ -73,11 +75,13 @@ public:
             for (i.rewind(); i.next();)
                 trusted_store->load(i->getme());
         }
+	
         {
             UniConf::Iter i(cfg["bridges"]);
             for (i.rewind(); i.next();)
                 intermediate_store->add_pkcs7(i->getme());
         }
+	
         // Initialize D-Bus
         WvDBusConn *conn = NULL;
         if (session_bus)

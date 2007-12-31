@@ -86,6 +86,8 @@ public:
     operator DBusConnection* () const;
 
     WvString name; // needs to be public for lookup
+    
+    virtual bool isok();
 
 protected:
     /**
