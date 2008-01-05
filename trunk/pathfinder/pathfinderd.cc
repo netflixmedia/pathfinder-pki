@@ -49,10 +49,13 @@ public:
                                  session_bus);
 	log(WvLog::Debug,"Pathfinder Instantiated\n");
     }
+   
     virtual ~PathFinderDaemon()
     {
-        dbusconn->del_method("ca.carillon.pathfinder", "/ca/carillon/pathfinder", 
-                             "validate");
+        if (dbusconn)
+	    dbusconn->del_method("ca.carillon.pathfinder", 
+				 "/ca/carillon/pathfinder", 
+				 "validate");
     }
 
     void cb(WvStreamsDaemon &daemon, void *)
