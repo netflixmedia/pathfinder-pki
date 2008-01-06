@@ -35,7 +35,9 @@ public:
     PathFinderDaemon() :
         WvStreamsDaemon("pathfinderd", PATHFINDER_VERSION, 
                         WvStreamsDaemonCallback(this, &PathFinderDaemon::cb)),
+        dbusconn(NULL),
         cfgmoniker(DEFAULT_CONFIG_MONIKER),
+   
         session_bus(false)
     {
         trusted_store = shared_ptr<WvX509Store>(new WvX509Store);
@@ -47,15 +49,17 @@ public:
         args.add_set_bool_option('\0', "session", "Listen on the session "
                                  "bus (instead of the system bus)", 
                                  session_bus);
-	log(WvLog::Debug,"Pathfinder Instantiated\n");
+	// log(WvLog::Debug,"Pathfinder Instantiated\n");
     }
    
     virtual ~PathFinderDaemon()
     {
         if (dbusconn)
+	{
 	    dbusconn->del_method("ca.carillon.pathfinder", 
 				 "/ca/carillon/pathfinder", 
 				 "validate");
+	}
     }
 
     void cb(WvStreamsDaemon &daemon, void *)
