@@ -12,8 +12,13 @@
 #include <secitem.h>
 #include <ssl.h>
 
+#ifdef __cplusplus
 extern "C" {
+#endif
+
 SECStatus nss_verify_cb(void *arg, PRFileDesc *socket, PRBool checksig, 
                         PRBool isServer);
+#ifdef __cplusplus
 }
+#endif
 #endif // __LIBPATHFINDER_NSS_H
