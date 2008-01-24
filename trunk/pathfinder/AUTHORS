@@ -8,8 +8,12 @@ Patrick Patterson <ppatterson@carillon.ca>
 
 === Copyright ===
 
-All code copyright (C) 2007 Carillon Information Security Inc. Licensed under 
-the LGPL, see LICENSE for details.
+All code copyright (C) 2007-2008 Carillon Information Security Inc. Licensed under 
+the LGPL, see LICENSE for details, including the exception to the LGPL for
+linking to OpenSSL.
 
 This product uses cryptographic software written by Eric Young 
 (eay@cryptsoft.com).
+
+This produce links against, and uses DBUS, which is a project overseen by
+the Freedesktop.Org project, and used here under the Academic Free License.
