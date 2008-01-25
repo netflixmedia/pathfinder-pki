@@ -201,7 +201,7 @@ static shared_ptr<WvX509> decode_pkcs7(const unsigned char *buffer, int len)
         X509 *_x = sk_X509_value(certs, 0);
         x = shared_ptr<WvX509>(new WvX509(X509_dup(_x)));
         printf("Cert %s\n", x->get_subject().cstr());
-   }
+    }
 
     return x;
 }
@@ -282,7 +282,7 @@ bool PathFinder::create_bridge(shared_ptr<WvX509> &cert)
     }
     else
     {
-      failed("No bridges to try... giving up");
+      failed("No bridges defined");
       return false;
     }
 }
