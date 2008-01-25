@@ -95,8 +95,8 @@ public:
             conn = new WvDBusConn("ca.carillon.pathfinder", DBUS_BUS_SESSION);
         else
             conn = new WvDBusConn("ca.carillon.pathfinder", DBUS_BUS_SYSTEM);
-        conn->addRef();
-        WvIStreamList::globallist.append(conn, true, "wvdbus conn");
+        //conn->addRef();
+        //WvIStreamList::globallist.append(conn, true, "wvdbus conn");
         dbusconn = conn;
         WvDBusMethodListener<WvString, WvString, bool, bool> *l = 
         new WvDBusMethodListener<WvString, WvString, bool, bool>(conn, "validate", 
