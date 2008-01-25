@@ -246,39 +246,45 @@ bool PathFinder::create_bridge(shared_ptr<WvX509> &cert)
 {
     vector< boost::shared_ptr<WvX509> > cross_certs;
     intermediate_store->get_cross_certs(cert, cross_certs);
-
-    log("Creating bridge for certificate %s.\n", cert->get_subject());
-
-    // first, attempt to find a cross cert which leads back to a trust anchor
-    for (WvX509Store::WvX509List::iterator i = cross_certs.begin(); i != cross_certs.end();
-         i++)
+    if (intermediate_store->count())
     {
-        log("Checking cross cert %s (with issuer %s)\n", (*i)->get_subject(), (*i)->get_issuer());
+      log("Creating bridge for certificate %s.\n", cert->get_subject());
 
-        if (trusted_store->exists((*i)->get_aki()) || 
-            (!!cfg["intermediate CAs"].xget((*i)->get_aki()) &&
-                1))
-        {
-            log("Found a cross certificate which leads back to a trust "
+      // first, attempt to find a cross cert which leads back to a trust anchor
+      for (WvX509Store::WvX509List::iterator i = cross_certs.begin(); i != cross_certs.end();
+           i++)
+      {
+          log("Checking cross cert %s (with issuer %s)\n", (*i)->get_subject(), (*i)->get_issuer());
+
+          if (trusted_store->exists((*i)->get_aki()) || 
+              (!!cfg["intermediate CAs"].xget((*i)->get_aki()) && 1))
+          {
+              log("Found a cross certificate which leads back to a trust "
                 "anchor. Choosing it.\n");
-            check_cert((*i));
-            return true;
-        }
-    }
+              check_cert((*i));
+              return true;
+          }
+      }
     
-    // otherwise, just follow the first one (if it exists) and hope for the
-    // best. I don't think we need to support multiple paths to a bridge 
-    // certificate at the moment. We have a check to make sure that 
-    // we're not adding the same cross certificate twice.
-    if (!cross_certs.empty() && 
-        added_certs.count(cross_certs[0]->get_ski().cstr()) == 0)
+      // otherwise, just follow the first one (if it exists) and hope for the
+      // best. I don't think we need to support multiple paths to a bridge 
+      // certificate at the moment. We have a check to make sure that 
+      // we're not adding the same cross certificate twice.
+      if (!cross_certs.empty() && 
+          added_certs.count(cross_certs[0]->get_ski().cstr()) == 0)
+      {
+          check_cert(cross_certs[0]);
+          return true;
+      }
+    
+      failed("Couldn't find bridge which leads back to trust anchor");
+      return false;
+    }
+    else
     {
-        check_cert(cross_certs[0]);
-        return true;
+      failed("No bridges to try... giving up");
+      return false;
     }
-    
-    failed("Couldn't find bridge which leads back to trust anchor");
-    return false;
 }
 
 

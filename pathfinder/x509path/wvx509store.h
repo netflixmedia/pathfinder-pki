@@ -46,7 +46,8 @@ class WvX509Store : public WvErrorBase
     void add_file(WvStringParm _fname);
     void add_cert(boost::shared_ptr<WvX509> &_cert);
     void add_pkcs7(WvStringParm _fname);
-
+    int count();
+    
   private:
     typedef std::multimap< std::string, boost::shared_ptr<WvX509> > CertMap;
     typedef std::pair< std::string, boost::shared_ptr<WvX509> > CertPair;
