@@ -31,7 +31,7 @@ int openssl_verify_cb(X509_STORE_CTX *ctx, void *arg)
 	*certdata_str_i++ = hex[(ch >> 4) & 0xf];
 	*certdata_str_i++ = hex[ch & 0xf];
     }
-    certdata_str_i = 0;
+    *certdata_str_i = 0;
     delete [] keybuf;
 
     const char *policy = "2.5.29.32.0"; // anyPolicy
