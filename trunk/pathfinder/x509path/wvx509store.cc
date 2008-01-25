@@ -189,3 +189,8 @@ void WvX509Store::get_cross_certs(shared_ptr<WvX509> &cert,
         }
     }
 }
+
+int WvX509Store::count()
+{
+    return certmap.size();
+}
