@@ -38,6 +38,8 @@ int openssl_verify_cb(X509_STORE_CTX *ctx, void *arg)
     char *errmsg;
     int validated = pathfinder_dbus_verify(certdata_str, policy, 0, 0, 
                                            &errmsg);
+    // This is horrible - we need to pass back the error message to the application
+    // somehow... 
     free(errmsg);
 
     delete[] certdata_str;
