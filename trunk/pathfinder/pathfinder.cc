@@ -127,8 +127,6 @@ bool PathFinder::get_signer(shared_ptr<WvX509> &cert)
     if (!certlist.empty())
     {
         log("Certificate may be in intermediate store. Checking.\n");
-        WvX509Store::WvX509List certlist;
-        intermediate_store->get(cert->get_aki(), certlist);
 
         // prefer one that is self-signed if we have more than one...
         // also disallow certificate's whose issuer matches our subject
@@ -174,40 +172,6 @@ bool PathFinder::get_signer(shared_ptr<WvX509> &cert)
 }
 
 
-static shared_ptr<WvX509> decode_pkcs7(const unsigned char *buffer, int len)
-{
-    shared_ptr<WvX509> x;
-
-    PKCS7 *pkcs7;
-    STACK_OF(X509) *certs=NULL;
-    int i;
-    const unsigned char *p = buffer;
-    pkcs7 = d2i_PKCS7(NULL, &p, len);
-
-    // If this isn't a valid PKCS7 object... don't return anything
-    if (!pkcs7)
-	return x;
-
-    i = OBJ_obj2nid(pkcs7->type);
-    if (i == NID_pkcs7_signed)
-	certs = pkcs7->d.sign->cert;
-    else if (i == NID_pkcs7_signedAndEnveloped)
-	certs = pkcs7->d.signed_and_enveloped->cert;
-    else
-	return x;
-    
-    if (certs != NULL && sk_X509_num(certs) > 0)
-    {
-        X509 *_x = sk_X509_value(certs, 0);
-        x = shared_ptr<WvX509>(new WvX509(X509_dup(_x)));
-        printf("Cert %s\n", x->get_subject().cstr());
-    }
-
-    return x;
-}
-
-
-
 void PathFinder::signer_download_finished_cb(WvStringParm urlstr, 
                                              WvStringParm mimetype, WvBuf &buf, 
                                              WvError _err, void *userdata)
@@ -226,9 +190,46 @@ void PathFinder::signer_download_finished_cb(WvStringParm urlstr,
     {
         log("Certificate from url %s is encoded in pkcs7. Decoding.\n", 
             urlstr);
-        shared_ptr<WvX509> cert = decode_pkcs7(buf.get(buf.used()), 
-                                                  buf.used());
-        check_cert(cert);
+	PKCS7 *pkcs7;
+	STACK_OF(X509) *certs = NULL;
+	int i,j;
+	int len = buf.used();
+	const unsigned char *p = buf.get(buf.used());
+	pkcs7 = d2i_PKCS7(NULL, &p, len);
+	
+	// If this isn't a valid PKCS7 object... don't return anything
+	if (!pkcs7)
+	{
+	    failed(WvString("%s is not a valid pkcs7 object!", urlstr)); 
+	    return;
+	}
+	
+	i = OBJ_obj2nid(pkcs7->type);
+	if (i == NID_pkcs7_signed)
+	    certs = pkcs7->d.sign->cert;
+	else if (i == NID_pkcs7_signedAndEnveloped)
+	    certs = pkcs7->d.signed_and_enveloped->cert;
+	else
+	{
+	    failed("The PKCS7 bundle does not appear to have any certificates!");
+	    return;
+	}
+	
+	if (certs != NULL && sk_X509_num(certs) > 0)
+	{
+	    for (j = 0; j < sk_X509_num(certs); j++)
+	    {
+		shared_ptr<WvX509> x;
+		X509 *_x = sk_X509_value(certs, j);
+		x = shared_ptr<WvX509>(new WvX509(X509_dup(_x)));
+		log("Extracting cert for %s from bundle.\n", x->get_subject().cstr());
+		if (added_certs[x->get_subject().cstr()] == true)
+		    log("Skipping '%s' because we've already got it in our list\n", x->get_subject());
+		else
+		    check_cert(x);
+	    }
+	}
+
         return;
     }
 
