@@ -72,7 +72,10 @@ install-arch:
 	# Add here commands to install the arch part of the package into 
 	# debian/tmp.
 	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
-
+	install -d $(CURDIR)/debian/tmp/etc/default
+	install -d $(CURDIR)/debian/tmp/etc/dbus-1/system.d/
+	install -m644 debian/pathfinderd.default debian/tmp/etc/default/pathfinderd
+	install -m644 pathfinder-dbus.conf debian/tmp/etc/dbus-1/system.d/pathfinder.conf
 	dh_install -s
 # Must not depend on anything. This is to be called by
 # binary-arch/binary-indep
@@ -90,7 +93,7 @@ binary-common:
 #	dh_installpam
 #	dh_installmime
 #	dh_python
-#	dh_installinit
+	dh_installinit
 #	dh_installcron
 #	dh_installinfo
 	dh_installman
