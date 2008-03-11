@@ -30,7 +30,16 @@ Extra certs = /etc/ssl/certs
 EOF
     	chown root:root
     	chmod 0640 /etc/pathfinderd.conf
-    fi   
+    fi
+    
+    update-rc.d pathfinderd defaults
+    
+    if `which invoke-rc.d` >/dev/null 2>&1; then
+    	invoke-rc.d pathfinderd start
+    else
+    	/etc/init.d/pathfinderd start
+    fi
+
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

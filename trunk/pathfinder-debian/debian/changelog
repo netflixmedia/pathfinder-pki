@@ -1,3 +1,11 @@
+pathfinder (0.2.3-2) unstable; urgency=low
+
+  * Fix missing init script links for pathfinderd
+  * Actually install the dbus system permissions and configuration file for
+    pathfinderd
+
+ -- Patrick Patterson <ppatters@debian.org>  Tues, 11 Mar 2008 21:30:00 +0000
+
 pathfinder (0.2.3-1) unstable; urgency=low
 
   * Initial release (Closes: #457605)
