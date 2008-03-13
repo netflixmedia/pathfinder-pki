@@ -135,7 +135,7 @@ public:
         PathValidator::ValidatedCb cb(this, &PathFinderDaemon::path_validated_cb);
         WvDBusReplyMsg *delayed_reply = new WvDBusReplyMsg(reply);
 
-        uint32_t flags;
+        uint32_t flags = 0;
         if (cfg["verification options"].xgetint("skip crl check", 0))
         {
             log("Skipping CRL checking as specified in configuration.\n");

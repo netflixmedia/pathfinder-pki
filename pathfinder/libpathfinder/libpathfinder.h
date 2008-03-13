@@ -11,10 +11,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int pathfinder_dbus_verify(const char *certhex, const char *policy, 
-                               const int initial_explicit_policy, 
-                               const int initial_policy_mapping_inhibit,
-                               char **errmsg);
+
+int pathfinder_dbus_verify(const char *certhex, const char *policy, 
+                           const int initial_explicit_policy, 
+                           const int initial_policy_mapping_inhibit,
+                           char **errmsg);
+
 #ifdef __cplusplus
 }
 #endif
