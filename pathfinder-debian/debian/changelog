@@ -1,4 +1,17 @@
-pathfinder (0.2.3-2) unstable; urgency=low
+pathfinder (0.2.4-1) unstable; urgency=low
+
+  * New Upstream version.
+  * Fix clean target (Closes: #471184)
+  * Fix a buglet in the policy mapping where an uninitialized variable
+    would sometimes give incorrect result.
+
+ -- Patrick Patterson <ppatters@debian.org>  Tue, 18 Mar 2008 15:55:33 +0000
+
+pathfinder (0.2.3-1) unstable; urgency=low
+
+ -- Patrick Patterson <ppatters@debian.org>  Tue, 11 Mar 2008 20:40:54 +0000
+
+pathfinder (0.2.3-1) unstable; urgency=low
 
   * Fix missing init script links for pathfinderd
   * Actually install the dbus system permissions and configuration file for
