@@ -43,8 +43,8 @@ build-indep-stamp: configure-stamp
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-arch-stamp build-indep-stamp configure-stamp CMakefiles
-	rm -r *.cmake DartTestfile.txt CMakeCache.txt
+	rm -rf build-arch-stamp build-indep-stamp configure-stamp CMakefiles
+	rm -rf *.cmake DartTestfile.txt CMakeCache.txt
 	# Add here commands to clean up after the build process.
 	[ ! -f Makefile ] || $(MAKE) clean
 
@@ -75,7 +75,7 @@ install-arch:
 	install -d $(CURDIR)/debian/tmp/etc/default
 	install -d $(CURDIR)/debian/tmp/etc/dbus-1/system.d/
 	install -m644 debian/pathfinderd.default debian/tmp/etc/default/pathfinderd
-	install -m644 pathfinder-dbus.conf debian/tmp/etc/dbus-1/system.d/pathfinder.conf
+	install -m644 pathfinderd-dbus.conf debian/tmp/etc/dbus-1/system.d/pathfinderd.conf
 	dh_install -s
 # Must not depend on anything. This is to be called by
 # binary-arch/binary-indep
