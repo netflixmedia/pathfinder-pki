@@ -43,8 +43,8 @@ build-indep-stamp: configure-stamp
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-arch-stamp build-indep-stamp configure-stamp
-
+	rm -f build-arch-stamp build-indep-stamp configure-stamp CMakefiles
+	rm -r *.cmake DartTestfile.txt CMakeCache.txt
 	# Add here commands to clean up after the build process.
 	[ ! -f Makefile ] || $(MAKE) clean
 
