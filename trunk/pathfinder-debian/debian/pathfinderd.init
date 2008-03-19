@@ -10,13 +10,22 @@
 #
 # Version:	@(#)skeleton  1.9  26-Feb-2001  miquels@cistron.nl
 #
-
+### BEGIN INIT INFO
+# Provides:          pathfinderd
+# Required-Start:    $remote_fs $syslog dbus
+# Required-Stop:     $remote_fs $syslog dbus
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Pathfinder X.509 Path Discovery and Validation Service 
+# Description:       Enable RFC3280 compliant X.509 path discovery and 
+#		     validation service via dbus.
+### END INIT INFO
 
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=/usr/bin/pathfinderd
-NAME=pathfinderd
-DESC=pathfinderd
+DAEMON=/usr/sbin/pathfinderd
+NAME="pathfinderd"
+DESC="Pathfinder X.509 PDVal Service"
 
 test -x $DAEMON || exit 0
 
