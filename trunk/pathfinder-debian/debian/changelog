@@ -1,3 +1,9 @@
+pathfinder (0.2.4-2) unstable; urgency=low
+
+  * Include LSB init scripts dependancy information (Closes: #471593)
+
+ -- Patrick Patterson <ppatters@debian.org>  Tue, 18 Mar 2008 15:55:33 +0000
+
 pathfinder (0.2.4-1) unstable; urgency=low
 
   * New Upstream version.
