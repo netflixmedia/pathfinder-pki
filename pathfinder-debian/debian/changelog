@@ -1,8 +1,10 @@
 pathfinder (0.2.4-2) unstable; urgency=low
 
   * Include LSB init scripts dependancy information (Closes: #471593)
+  * Fix the init script to actually start the daemon from the correct 
+    location
 
- -- Patrick Patterson <ppatters@debian.org>  Tue, 18 Mar 2008 15:55:33 +0000
+ -- Patrick Patterson <ppatters@debian.org>  Wed, 19 Mar 2008 20:13:32 +0000
 
 pathfinder (0.2.4-1) unstable; urgency=low
 
