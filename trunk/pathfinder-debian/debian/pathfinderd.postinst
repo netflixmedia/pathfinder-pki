@@ -20,21 +20,18 @@ set -e
 
 case "$1" in
     configure)
-    . /usr/share/debconf/confmodule
     
     if [ ! -e '/etc/pathfinderd.conf' ]; then
     	umask 077
-    	cat > /etc/pathfinderd.conf <<-EOF
-[Trusted directories]
-Extra certs = /etc/ssl/certs
-EOF
-    	chown root:root
+	echo [Trusted directories] > /etc/pathfinderd.conf
+	echo Extra certs = /etc/ssl/certs >> /etc/pathfinderd.conf
+    	chown root:root /etc/pathfinderd.conf
     	chmod 0640 /etc/pathfinderd.conf
     fi
     
     update-rc.d pathfinderd defaults
     
-    if `which invoke-rc.d` >/dev/null 2>&1; then
+    if [ -x "`which invoke-rc.d 2>/dev/null`" ]; then
     	invoke-rc.d pathfinderd start
     else
     	/etc/init.d/pathfinderd start
