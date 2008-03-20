@@ -1,3 +1,11 @@
+pathfinder (0.2.4-3) unstable; urgency=low
+
+  * Fix the init script to not have a syntax error.
+  * Fix postinst script to correctly run.
+  * Fix the init script to actually fork the daemon into the background.
+
+ -- Patrick Patterson <ppatters@debian.org>  Wed, 19 Mar 2008 21:19:50 +0000
+
 pathfinder (0.2.4-2) unstable; urgency=low
 
   * Include LSB init scripts dependancy information (Closes: #471593)
@@ -17,19 +25,11 @@ pathfinder (0.2.4-1) unstable; urgency=low
 
 pathfinder (0.2.3-1) unstable; urgency=low
 
- -- Patrick Patterson <ppatters@debian.org>  Tue, 11 Mar 2008 20:40:54 +0000
-
-pathfinder (0.2.3-1) unstable; urgency=low
-
   * Fix missing init script links for pathfinderd
   * Actually install the dbus system permissions and configuration file for
     pathfinderd
   * Install defaults file for pathfinderd.
+  * Initial release (Closes: #457605)
 
  -- Patrick Patterson <ppatters@debian.org>  Tue, 11 Mar 2008 20:40:54 +0000
 
-pathfinder (0.2.3-1) unstable; urgency=low
-
-  * Initial release (Closes: #457605)
-
- -- Patrick Patterson <ppatters@debian.org>  Sun, 23 Dec 2007 00:07:19 +0000

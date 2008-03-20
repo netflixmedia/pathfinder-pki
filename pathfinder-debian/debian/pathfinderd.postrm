@@ -20,14 +20,22 @@ set -e
 
 
 case "$1" in
-    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
-    if `which invoke-rc.d` >/dev/null 2>&1; then
-    	invoke-rc.d pathfinderd stop
-    else
-    	/etc/init.d/pathfinderd stop
-    fi
+    remove)
+    	# Do nothing
+    	;;
+    	
+    purge|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+	if [ -x "/etc/init.d/pathfinderd" ]; then
+    		if [ -x "`which invoke-rc.d 2>/dev/null`" ]; then
+    			invoke-rc.d pathfinderd stop
+    		else
+    			/etc/init.d/pathfinderd stop
+    		fi
     
-    update-rc.d pathfinderd remove
+    		rm -f /etc/init.d/pathfinderd  
+    		update-rc.d pathfinderd remove
+    		rm -f /etc/pathfinderd.conf /etc/dbus-1/system/pathfinderd.conf
+    	fi
     ;;
 
     *)

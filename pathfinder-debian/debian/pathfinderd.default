@@ -7,4 +7,4 @@
 #
 
 # Additional options that are passed to the Daemon.
-DAEMON_OPTS="-c ini:/etc/pathfinderd.conf"
+DAEMON_OPTS="-d -c ini:/etc/pathfinderd.conf"
