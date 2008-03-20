@@ -1,6 +1,7 @@
 debian/tmp/usr/include/pathfinder-1/libpathfinder.h
 debian/tmp/usr/include/pathfinder-1/libpathfinder-openssl.h
 debian/tmp/usr/include/pathfinder-1/libpathfinder-nss.h
+debian/tmp/usr/lib/libpathfinder-openssl-1.a
+debian/tmp/usr/lib/libpathfinder-nss-1.a
 debian/tmp/usr/lib/pkgconfig/pathfinder-nss.pc
 debian/tmp/usr/lib/pkgconfig/pathfinder-openssl.pc
-

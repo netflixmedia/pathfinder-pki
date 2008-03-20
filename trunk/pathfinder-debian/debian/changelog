@@ -1,3 +1,9 @@
+pathfinder (0.2.4-4) unstable; urgency=low
+
+  * Fix the diff, so that it doesn't include all of the CMake garbage.
+
+ -- Patrick Patterson <ppatters@debian.org>  Thu, 20 Mar 2008 02:10:55 +0000
+
 pathfinder (0.2.4-3) unstable; urgency=low
 
   * Fix the init script to not have a syntax error.
@@ -32,4 +38,3 @@ pathfinder (0.2.3-1) unstable; urgency=low
   * Initial release (Closes: #457605)
 
  -- Patrick Patterson <ppatters@debian.org>  Tue, 11 Mar 2008 20:40:54 +0000
-
