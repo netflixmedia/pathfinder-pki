@@ -110,6 +110,10 @@ public:
         P1 p1;
         convert_next(&iter, p1, err);
         P2 p2;
+        // when compiling with -O2, there's a crash here unless I print
+        // something to wvcon.  optimizer bug?
+        wvcon->print("\r\r\r\r", (int)&iter);
+        wvcon->flush(-1);
         convert_next(&iter, p2, err);
 
         cb(p1, p2, err);
@@ -312,7 +316,11 @@ public:
         convert_next(&iter, p2, err);
         P3 p3;
         convert_next(&iter, p3, err);
-        P3 p4;
+        P4 p4;
+        // when compiling with -O2, there's a crash here unless I print
+        // something to wvcon.  optimizer bug?
+        wvcon->print("\r\r\r\r", (int)&iter);
+        wvcon->flush(-1);
         convert_next(&iter, p4, err);
 
         cb(*conn, msg, p1, p2, p3, p4, err);
