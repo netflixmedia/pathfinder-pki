@@ -379,8 +379,14 @@ void WvDBusConnPrivate::print_message_trace(DBusMessage *_msg)
         dbus_message_get_path(_msg),
         dbus_message_get_interface(_msg),
         dbus_message_get_member(_msg),
+#if 0
+        // this breaks on method replies, because the interface and path
+        // don't bother being set.
         dbus_message_is_signal(_msg, dbus_message_get_interface(_msg),
                                dbus_message_get_path(_msg)));
+#else
+        "dunno");
+#endif
 }
 
 bool WvDBusConnPrivate::isok()
