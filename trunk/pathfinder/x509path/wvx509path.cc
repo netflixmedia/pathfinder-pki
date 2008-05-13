@@ -162,7 +162,7 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                 WvString crl_aki = crl->get_aki();
                 if (!crl_aki)
                 {
-                    log("Certificate revocation list for %s has no AKI.\n",
+                    log(WvLog::Info, "Certificate revocation list for %s has no AKI.\n",
                         cur->get_subject());
                     continue;
                 }
@@ -171,14 +171,14 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                     crl_signer = intermediate_store->get(crl_aki);
                 if (!crl_signer)
                 {
-                    log("Can't find CRL signer for %s's CRL in intermediate "
+                    log(WvLog::Info, "Can't find CRL signer for %s's CRL in intermediate "
                         "or trusted store.\n", cur->get_subject());
                     continue;
                 }
 
                 if (crl->validate(*(crl_signer.get())) != WvCRL::VALID)
                 {
-                    log("Certificate revocation list for %s is not valid.\n", 
+                    log(WvLog::Info, "Certificate revocation list for %s is not valid.\n", 
                         cur->get_subject());
                     continue;
                 }
@@ -197,7 +197,7 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
 
                 if (crl_issuer != cert_issuer)
                 {
-                    log("CRL's issuer (%s) does not match certificate's "
+                    log(WvLog::Info, "CRL's issuer (%s) does not match certificate's "
                         "issuer (%s).\n", crl_issuer, cert_issuer);
                     continue;
                 }
@@ -215,7 +215,7 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
 
                 if (crl->isrevoked(*(cur.get())))
                 {
-                    log("Certificate %s is revoked according to CRL.\n", 
+                    log(WvLog::Error, "Certificate %s is revoked according to CRL.\n", 
                         cur->get_subject());
                     return false;
                 }
