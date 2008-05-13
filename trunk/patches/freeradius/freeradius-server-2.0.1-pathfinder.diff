@@ -1,0 +1,159 @@
+diff -urN freeradius-server-2.0.1-clean/Make.inc.in freeradius-server-2.0.1-pathfinder/Make.inc.in
+--- freeradius-server-2.0.1-clean/Make.inc.in	2007-11-24 03:28:43.000000000 -0500
++++ freeradius-server-2.0.1-pathfinder/Make.inc.in	2008-03-12 14:28:14.000000000 -0400
+@@ -67,6 +67,10 @@
+ OPENSSL_LIBS	= @OPENSSL_LIBS@
+ OPENSSL_INCLUDE = @OPENSSL_INCLUDE@
+ 
++PATHFINDER_CFLAGS = @PATHFINDER_CFLAGS@
++PATHFINDER_LIBS   = @PATHFINDER_LIBS@
++
++
+ #
+ #  SQL driver defines
+ #
+diff -urN freeradius-server-2.0.1-clean/configure.in freeradius-server-2.0.1-pathfinder/configure.in
+--- freeradius-server-2.0.1-clean/configure.in	2008-01-22 08:25:45.000000000 -0500
++++ freeradius-server-2.0.1-pathfinder/configure.in	2008-03-12 14:28:14.000000000 -0400
+@@ -352,6 +352,21 @@
+   esac ]
+ )
+ 
++dnl extra argument: --with-pathfinder
++sinclude(/usr/share/aclocal/pkg.m4)
++WITH_PATHFINDER=yes
++AC_ARG_WITH(pathfinder,
++[  --with-pathfinder                With libpathfinder support. (default=yes)],
++[ case "$withval" in
++    no)
++	WITH_PATHFINDER=no
++	;;
++    *)
++	WITH_PATHFINDER=yes
++	;;
++  esac ]
++)
++
+ dnl #
+ dnl #  These next two arguments don't actually do anything.  They're
+ dnl #  place holders so that the top-level configure script can tell
+@@ -539,6 +554,16 @@
+   LIBS=$old_LIBS
+ fi
+ 
++dnl Check for libpathfinder
++if test "x$WITH_PATHFINDER" = "xyes"; then
++  PKG_CHECK_MODULES([PATHFINDER], [pathfinder-openssl dbus-1 openssl])
++  if test -n "$PATHFINDER_CFLAGS$PATHFINDER_LIBS"; then
++    AC_DEFINE(HAVE_PATHFINDER, 1, [we have pathfinder])
++  fi
++  AC_SUBST(PATHFINDER_CFLAGS)
++  AC_SUBST(PATHFINDER_LIBS)
++fi
++
+ AC_CHECK_LIB(ws2_32, htonl)
+ 
+ dnl Check the pcap library for the RADIUS sniffer.
+diff -urN freeradius-server-2.0.1-clean/src/modules/rlm_eap/types/rlm_eap_tls/Makefile.in freeradius-server-2.0.1-pathfinder/src/modules/rlm_eap/types/rlm_eap_tls/Makefile.in
+--- freeradius-server-2.0.1-clean/src/modules/rlm_eap/types/rlm_eap_tls/Makefile.in	2007-11-24 03:03:10.000000000 -0500
++++ freeradius-server-2.0.1-pathfinder/src/modules/rlm_eap/types/rlm_eap_tls/Makefile.in	2008-03-12 14:28:14.000000000 -0400
+@@ -5,8 +5,8 @@
+ TARGET      = @targetname@
+ SRCS        = rlm_eap_tls.c
+ HEADERS     = rlm_eap_tls.h ../../eap.h ../../rlm_eap.h
+-RLM_CFLAGS  = -I../.. -I../../libeap $(INCLTDL) $(OPENSSL_INCLUDE) @eap_tls_cflags@
+-RLM_LIBS    = @eap_tls_ldflags@ ../../libeap/$(LIBPREFIX)freeradius-eap.la $(OPENSSL_LIBS)
++RLM_CFLAGS  = -I../.. -I../../libeap $(INCLTDL) $(OPENSSL_INCLUDE) $(PATHFINDER_CFLAGS) @eap_tls_cflags@
++RLM_LIBS    = @eap_tls_ldflags@ ../../libeap/$(LIBPREFIX)freeradius-eap.la $(OPENSSL_LIBS) $(PATHFINDER_LIBS)
+ RLM_INSTALL =
+ 
+ RLM_DIR=../../
+diff -urN freeradius-server-2.0.1-clean/src/modules/rlm_eap/types/rlm_eap_tls/rlm_eap_tls.c freeradius-server-2.0.1-pathfinder/src/modules/rlm_eap/types/rlm_eap_tls/rlm_eap_tls.c
+--- freeradius-server-2.0.1-clean/src/modules/rlm_eap/types/rlm_eap_tls/rlm_eap_tls.c	2008-01-10 05:26:12.000000000 -0500
++++ freeradius-server-2.0.1-pathfinder/src/modules/rlm_eap/types/rlm_eap_tls/rlm_eap_tls.c	2008-03-12 14:48:51.000000000 -0400
+@@ -38,6 +38,10 @@
+ #include <sys/stat.h>
+ #endif
+ 
++#ifdef HAVE_PATHFINDER
++#include <libpathfinder.h>
++#endif
++
+ static CONF_PARSER module_config[] = {
+ 	{ "rsa_key_exchange", PW_TYPE_BOOLEAN,
+ 	  offsetof(EAP_TLS_CONF, rsa_key), NULL, "no" },
+@@ -262,6 +266,48 @@
+ }
+ 
+ 
++#ifdef HAVE_PATHFINDER
++/*
++ *      This callback is called instead of X509_verify_cert to perform path
++ *      validation on a certificate using pathfinder.
++ *
++ *      Currently conf->check_cert_issuer and conf->check_cert_cn are
++ *      not implemented.
++ */
++int cbtls_pathfinder(X509_STORE_CTX *ctx, void *arg)
++{
++    char *errmsg;
++    const char *hex = "0123456789ABCDEF";
++    size_t size = i2d_X509(ctx->cert, NULL);
++    unsigned char *keybuf, *iend;
++    iend = keybuf = malloc(size);
++    i2d_X509(ctx->cert, &iend);
++    char *certdata_str = malloc(size * 2 + 1);
++    unsigned char *cp = keybuf;
++    char *certdata_str_i = certdata_str;
++    while (cp < iend)
++    {
++        unsigned char ch = *cp++;
++        *certdata_str_i++ = hex[(ch >> 4) & 0xf];
++        *certdata_str_i++ = hex[ch & 0xf];
++    }
++    *certdata_str_i = 0;
++    free(keybuf);
++
++    const char *policy = "2.5.29.32.0"; // anyPolicy
++    int validated = pathfinder_dbus_verify(certdata_str, policy, 0, 0, &errmsg);
++
++    if (!validated)
++        radlog(L_ERR, "rlm_eap_tls: Path verification failed: %s", errmsg);
++
++    free(certdata_str);
++    free(errmsg);
++
++    return validated;
++}
++#endif
++
++
+ /*
+  *	Create Global context SSL and use it in every new session
+  *
+@@ -414,7 +460,12 @@
+ 	verify_mode |= SSL_VERIFY_PEER;
+ 	verify_mode |= SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+ 	verify_mode |= SSL_VERIFY_CLIENT_ONCE;
++#ifdef HAVE_PATHFINDER
++        SSL_CTX_set_verify(ctx, verify_mode, NULL);
++        SSL_CTX_set_cert_verify_callback(ctx, cbtls_pathfinder, NULL);
++#else
+ 	SSL_CTX_set_verify(ctx, verify_mode, cbtls_verify);
++#endif
+ 
+ 	if (conf->verify_depth) {
+ 		SSL_CTX_set_verify_depth(ctx, conf->verify_depth);
+@@ -637,7 +688,12 @@
+ 		verify_mode |= SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+ 		verify_mode |= SSL_VERIFY_CLIENT_ONCE;
+ 	}
++#ifdef HAVE_PATHFINDER
++        SSL_set_verify(ssn->ssl, verify_mode, NULL);
++        SSL_CTX_set_cert_verify_callback(inst->ctx, cbtls_pathfinder, NULL);
++#else
+ 	SSL_set_verify(ssn->ssl, verify_mode, cbtls_verify);
++#endif
+ 
+ 	/*
+ 	 *	Create a structure for all the items required to be
