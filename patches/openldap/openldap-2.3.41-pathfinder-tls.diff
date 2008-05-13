@@ -1,6 +1,6 @@
 diff -urN openldap-2.3.41-clean/build/top.mk openldap-2.3.41-pathfinder-tls/build/top.mk
 --- openldap-2.3.41-clean/build/top.mk	2008-02-11 18:24:07.000000000 -0500
-+++ openldap-2.3.41-pathfinder-tls/build/top.mk	2008-03-25 12:37:09.000000000 -0400
++++ openldap-2.3.41-pathfinder-tls/build/top.mk	2008-04-28 13:48:51.000000000 -0400
 @@ -200,6 +200,10 @@
  SLAPD_LIBS = @SLAPD_LIBS@ @SLAPD_PERL_LDFLAGS@ @SLAPD_SQL_LDFLAGS@ @SLAPD_SQL_LIBS@ @SLAPD_SLP_LIBS@ @SLAPD_GMP_LIBS@
  SLURPD_LIBS = @SLURPD_LIBS@
@@ -14,7 +14,7 @@ diff -urN openldap-2.3.41-clean/build/top.mk openldap-2.3.41-pathfinder-tls/buil
  DEFS = $(LDAP_INCPATH) $(XINCPATH) $(XDEFS) $(AC_DEFS) $(DEFINES)
 diff -urN openldap-2.3.41-clean/clients/tools/Makefile.in openldap-2.3.41-pathfinder-tls/clients/tools/Makefile.in
 --- openldap-2.3.41-clean/clients/tools/Makefile.in	2008-02-11 18:24:07.000000000 -0500
-+++ openldap-2.3.41-pathfinder-tls/clients/tools/Makefile.in	2008-03-25 12:37:09.000000000 -0400
++++ openldap-2.3.41-pathfinder-tls/clients/tools/Makefile.in	2008-04-28 13:48:51.000000000 -0400
 @@ -22,7 +22,7 @@
  MKVOPTS = -s
  
@@ -26,7 +26,7 @@ diff -urN openldap-2.3.41-clean/clients/tools/Makefile.in openldap-2.3.41-pathfi
  	ldpversion.c ldwversion.c ldcversion.c
 diff -urN openldap-2.3.41-clean/configure.in openldap-2.3.41-pathfinder-tls/configure.in
 --- openldap-2.3.41-clean/configure.in	2008-02-11 18:24:06.000000000 -0500
-+++ openldap-2.3.41-pathfinder-tls/configure.in	2008-03-25 12:37:09.000000000 -0400
++++ openldap-2.3.41-pathfinder-tls/configure.in	2008-04-28 13:48:51.000000000 -0400
 @@ -256,6 +256,9 @@
  OL_ARG_WITH(odbc,
  	[  --with-odbc             with specific ODBC support iodbc|unixodbc|auto],
@@ -88,7 +88,7 @@ diff -urN openldap-2.3.41-clean/configure.in openldap-2.3.41-pathfinder-tls/conf
  AC_ARG_WITH(xxinstall,[
 diff -urN openldap-2.3.41-clean/include/ldap.h openldap-2.3.41-pathfinder-tls/include/ldap.h
 --- openldap-2.3.41-clean/include/ldap.h	2008-02-11 18:24:10.000000000 -0500
-+++ openldap-2.3.41-pathfinder-tls/include/ldap.h	2008-03-25 12:37:09.000000000 -0400
++++ openldap-2.3.41-pathfinder-tls/include/ldap.h	2008-04-28 13:48:51.000000000 -0400
 @@ -137,6 +137,8 @@
  #define LDAP_OPT_X_TLS_CONNECT_CB	0x600c
  #define LDAP_OPT_X_TLS_CONNECT_ARG	0x600d
@@ -100,7 +100,7 @@ diff -urN openldap-2.3.41-clean/include/ldap.h openldap-2.3.41-pathfinder-tls/in
  #define LDAP_OPT_X_TLS_HARD		1
 diff -urN openldap-2.3.41-clean/libraries/libldap/Makefile.in openldap-2.3.41-pathfinder-tls/libraries/libldap/Makefile.in
 --- openldap-2.3.41-clean/libraries/libldap/Makefile.in	2008-02-11 18:24:11.000000000 -0500
-+++ openldap-2.3.41-pathfinder-tls/libraries/libldap/Makefile.in	2008-03-25 12:37:09.000000000 -0400
++++ openldap-2.3.41-pathfinder-tls/libraries/libldap/Makefile.in	2008-04-28 13:48:51.000000000 -0400
 @@ -44,8 +44,10 @@
  
  LIB_DEFS = -DLDAP_LIBRARY
@@ -115,7 +115,7 @@ diff -urN openldap-2.3.41-clean/libraries/libldap/Makefile.in openldap-2.3.41-pa
  
 diff -urN openldap-2.3.41-clean/libraries/libldap/init.c openldap-2.3.41-pathfinder-tls/libraries/libldap/init.c
 --- openldap-2.3.41-clean/libraries/libldap/init.c	2008-02-11 18:24:11.000000000 -0500
-+++ openldap-2.3.41-pathfinder-tls/libraries/libldap/init.c	2008-03-25 12:37:09.000000000 -0400
++++ openldap-2.3.41-pathfinder-tls/libraries/libldap/init.c	2008-04-28 13:48:51.000000000 -0400
 @@ -104,7 +104,12 @@
  #ifdef HAVE_OPENSSL_CRL
  	{0, ATTR_TLS,	"TLS_CRLCHECK",		NULL,	LDAP_OPT_X_TLS_CRLCHECK},
@@ -132,7 +132,7 @@ diff -urN openldap-2.3.41-clean/libraries/libldap/init.c openldap-2.3.41-pathfin
  	{0, ATTR_NONE,		NULL,		NULL,	0}
 diff -urN openldap-2.3.41-clean/libraries/libldap/tls.c openldap-2.3.41-pathfinder-tls/libraries/libldap/tls.c
 --- openldap-2.3.41-clean/libraries/libldap/tls.c	2008-02-11 18:24:12.000000000 -0500
-+++ openldap-2.3.41-pathfinder-tls/libraries/libldap/tls.c	2008-03-25 12:37:09.000000000 -0400
++++ openldap-2.3.41-pathfinder-tls/libraries/libldap/tls.c	2008-04-28 13:48:51.000000000 -0400
 @@ -47,6 +47,10 @@
  #include <ssl.h>
  #endif
@@ -288,7 +288,7 @@ diff -urN openldap-2.3.41-clean/libraries/libldap/tls.c openldap-2.3.41-pathfind
  tls_report_error( void )
 diff -urN openldap-2.3.41-clean/libraries/libldap_r/Makefile.in openldap-2.3.41-pathfinder-tls/libraries/libldap_r/Makefile.in
 --- openldap-2.3.41-clean/libraries/libldap_r/Makefile.in	2008-02-11 18:24:13.000000000 -0500
-+++ openldap-2.3.41-pathfinder-tls/libraries/libldap_r/Makefile.in	2008-03-25 12:37:09.000000000 -0400
++++ openldap-2.3.41-pathfinder-tls/libraries/libldap_r/Makefile.in	2008-04-28 13:48:51.000000000 -0400
 @@ -51,9 +51,10 @@
  
  LIB_DEFS = -DLDAP_LIBRARY
@@ -303,7 +303,7 @@ diff -urN openldap-2.3.41-clean/libraries/libldap_r/Makefile.in openldap-2.3.41-
  UNIX_LINK_LIBS = $(LDAP_LIBLBER_LA) $(AC_LIBS) $(SECURITY_LIBS)
 diff -urN openldap-2.3.41-clean/libraries/librewrite/Makefile.in openldap-2.3.41-pathfinder-tls/libraries/librewrite/Makefile.in
 --- openldap-2.3.41-clean/libraries/librewrite/Makefile.in	2008-02-11 18:24:14.000000000 -0500
-+++ openldap-2.3.41-pathfinder-tls/libraries/librewrite/Makefile.in	2008-03-25 12:37:09.000000000 -0400
++++ openldap-2.3.41-pathfinder-tls/libraries/librewrite/Makefile.in	2008-04-28 13:48:51.000000000 -0400
 @@ -30,7 +30,7 @@
  PROGRAMS	= rewrite
  XLIBS = $(LIBRARY) $(LDAP_LIBLUTIL_A) \
@@ -315,7 +315,7 @@ diff -urN openldap-2.3.41-clean/libraries/librewrite/Makefile.in openldap-2.3.41
  rewrite:	$(XLIBS) rewrite.o parse.o
 diff -urN openldap-2.3.41-clean/servers/slapd/Makefile.in openldap-2.3.41-pathfinder-tls/servers/slapd/Makefile.in
 --- openldap-2.3.41-clean/servers/slapd/Makefile.in	2008-02-11 18:24:14.000000000 -0500
-+++ openldap-2.3.41-pathfinder-tls/servers/slapd/Makefile.in	2008-03-25 12:37:09.000000000 -0400
++++ openldap-2.3.41-pathfinder-tls/servers/slapd/Makefile.in	2008-04-28 13:48:51.000000000 -0400
 @@ -73,7 +73,7 @@
  XLDFLAGS = $(MODULES_LDFLAGS)
  
@@ -327,7 +327,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/Makefile.in openldap-2.3.41-pathfi
  BUILD_OPT = "--enable-slapd"
 diff -urN openldap-2.3.41-clean/servers/slapd/bconfig.c openldap-2.3.41-pathfinder-tls/servers/slapd/bconfig.c
 --- openldap-2.3.41-clean/servers/slapd/bconfig.c	2008-02-11 18:24:15.000000000 -0500
-+++ openldap-2.3.41-pathfinder-tls/servers/slapd/bconfig.c	2008-03-25 12:37:09.000000000 -0400
++++ openldap-2.3.41-pathfinder-tls/servers/slapd/bconfig.c	2008-04-28 13:48:51.000000000 -0400
 @@ -137,6 +137,8 @@
  	CFG_TLS_DH_FILE,
  	CFG_TLS_VERIFY,
@@ -394,7 +394,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/bconfig.c openldap-2.3.41-pathfind
  
 diff -urN openldap-2.3.41-clean/tests/progs/Makefile.in openldap-2.3.41-pathfinder-tls/tests/progs/Makefile.in
 --- openldap-2.3.41-clean/tests/progs/Makefile.in	2008-02-11 18:24:28.000000000 -0500
-+++ openldap-2.3.41-pathfinder-tls/tests/progs/Makefile.in	2008-03-25 12:37:09.000000000 -0400
++++ openldap-2.3.41-pathfinder-tls/tests/progs/Makefile.in	2008-04-28 13:48:51.000000000 -0400
 @@ -23,7 +23,7 @@
  LDAP_LIBDIR= ../../libraries
  
