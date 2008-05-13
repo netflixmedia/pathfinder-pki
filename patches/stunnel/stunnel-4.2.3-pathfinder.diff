@@ -1,0 +1,272 @@
+diff -urN stunnel-4.23-clean/configure.ac stunnel-4.23-pathfinder/configure.ac
+--- stunnel-4.23-clean/configure.ac	2008-05-03 13:14:42.000000000 -0400
++++ stunnel-4.23-pathfinder/configure.ac	2008-05-09 14:00:17.000000000 -0400
+@@ -276,6 +276,22 @@
+     [AC_MSG_WARN([Openssl engine header not found])])
+ 
+ AC_MSG_NOTICE([**************************************** optional features])
++# Use Pathfinder?
++AC_ARG_WITH(pathfinder, [  --with-pathfinder       with libpathfinder support])
++sinclude(/usr/share/aclocal/pkg.m4)
++if test "$with_pathfinder" != "no"; then
++    PKG_CHECK_MODULES([PATHFINDER], [pathfinder-openssl dbus-1 openssl])
++    if test -n "$PATHFINDER_CFLAGS$PATHFINDER_LIBS"; then
++        AC_DEFINE(HAVE_PATHFINDER, 1, [we have pathfinder])
++        AC_SUBST(PATHFINDER_CFLAGS)
++        AC_SUBST(PATHFINDER_LIBS)
++
++        # Add Pathfinder includes and libraries
++        CFLAGS="$CFLAGS $PATHFINDER_CFLAGS"
++        LIBS="$LIBS $PATHFINDER_LIBS"
++    fi
++fi
++
+ # Use RSA?
+ AC_MSG_CHECKING([whether to disable RSA support])
+ AC_ARG_ENABLE(rsa,
+diff -urN stunnel-4.23-clean/src/options.c stunnel-4.23-pathfinder/src/options.c
+--- stunnel-4.23-clean/src/options.c	2008-03-27 05:51:45.000000000 -0400
++++ stunnel-4.23-pathfinder/src/options.c	2008-05-09 15:48:45.000000000 -0400
+@@ -924,6 +924,55 @@
+         break;
+     }
+ 
++#ifdef HAVE_PATHFINDER
++    /* pathfinder */
++    switch(cmd) {
++    case CMD_INIT:
++        section->option.pathfinder = 0;
++        break;
++    case CMD_EXEC:
++        if(strcasecmp(opt, "pathfinder"))
++            break;
++        if(!strcasecmp(arg, "yes") || !strcasecmp(arg, "on")
++                                   || !strcasecmp(arg, "enabled")
++                                   || !strcasecmp(arg, "1"))
++            section->option.pathfinder = 1;
++        else if(!strcasecmp(arg, "no") || !strcasecmp(arg, "off")
++                                       || !strcasecmp(arg, "disabled")
++                                       || !strcasecmp(arg, "0"))
++            section->option.pathfinder = 0;
++        else
++            s_log(LOG_ERR, "Invalid pathfinder setting.");
++        return NULL; /* OK */
++    case CMD_DEFAULT:
++        s_log(LOG_RAW, "%-15s = no", "pathfinder");
++        break;
++    case CMD_HELP:
++        s_log(LOG_RAW, "%-15s = yes|no use pathfinder to validate certificates",
++                       "pathfinder");
++        break;
++    }
++
++    /* pf_policy */
++    switch(cmd) {
++    case CMD_INIT:
++        section->pf_policy = "2.5.29.32.0"; // anyPolicy
++        break;
++    case CMD_EXEC:
++        if(strcasecmp(opt, "pf_policy"))
++            break;
++        section->pf_policy=stralloc(arg);
++        return NULL; /* OK */
++    case CMD_DEFAULT:
++        s_log(LOG_RAW, "%-15s = 2.5.29.32.0 (anyPolicy)", "pf_policy");
++        break;
++    case CMD_HELP:
++        s_log(LOG_RAW, "%-15s = policy OID for pathfinder to match",
++                       "pf_policy");
++        break;
++    }
++#endif /* HAVE_PATHFINDER */
++
+     /* protocol */
+     switch(cmd) {
+     case CMD_INIT:
+diff -urN stunnel-4.23-clean/src/prototypes.h stunnel-4.23-pathfinder/src/prototypes.h
+--- stunnel-4.23-clean/src/prototypes.h	2008-03-27 05:09:25.000000000 -0400
++++ stunnel-4.23-pathfinder/src/prototypes.h	2008-05-09 15:02:50.000000000 -0400
+@@ -219,6 +219,11 @@
+     char *protocol_password;
+     char *protocol_authentication;
+ 
++#ifdef HAVE_PATHFINDER
++        /* policy OID for pathfinder to match, if pathfinder is used */
++    char *pf_policy;
++#endif
++
+         /* on/off switches */
+     struct {
+         unsigned int cert:1;
+@@ -235,6 +240,9 @@
+ #if SSLEAY_VERSION_NUMBER >= 0x00907000L
+         unsigned int ocsp:1;
+ #endif
++#ifdef HAVE_PATHFINDER
++        unsigned int pathfinder:1;
++#endif
+     } option;
+ } LOCAL_OPTIONS;
+ 
+diff -urN stunnel-4.23-clean/src/verify.c stunnel-4.23-pathfinder/src/verify.c
+--- stunnel-4.23-clean/src/verify.c	2008-03-26 15:17:01.000000000 -0400
++++ stunnel-4.23-pathfinder/src/verify.c	2008-05-09 15:40:02.000000000 -0400
+@@ -37,6 +37,9 @@
+ 
+ #include "common.h"
+ #include "prototypes.h"
++#ifdef HAVE_PATHFINDER
++    #include <libpathfinder.h>
++#endif
+ 
+ /**************************************** prototypes */
+ 
+@@ -49,6 +52,9 @@
+ static int cert_check(CLI *c, X509_STORE_CTX *, char *, int);
+ static int crl_check(CLI *c, X509_STORE_CTX *, char *);
+ static int ocsp_check(CLI *c, X509_STORE_CTX *, char *);
++#ifdef HAVE_PATHFINDER
++    static int verify_callback_pathfinder(X509_STORE_CTX *ctx, void *arg);
++#endif
+ 
+ /**************************************** verify initialization */
+ 
+@@ -59,6 +65,11 @@
+     if(section->verify_level>1 && !section->ca_file && !section->ca_dir) {
+         s_log(LOG_ERR, "Either CApath or CAfile "
+             "has to be used for authentication");
++#ifdef HAVE_PATHFINDER
++        if(section->option.pathfinder)
++            s_log(LOG_ERR, "(with pathfinder, this is ONLY to populate the "
++                           "certificate hint-list)");
++#endif
+         die(1);
+     }
+ 
+@@ -69,6 +80,9 @@
+     }
+ 
+     if(section->ca_file) {
++#ifdef HAVE_PATHFINDER
++        if(!section->option.pathfinder) {
++#endif
+         if(!SSL_CTX_load_verify_locations(section->ctx,
+                 section->ca_file, NULL)) {
+             s_log(LOG_ERR, "Error loading verify certificates from %s",
+@@ -76,6 +90,9 @@
+             sslerror("SSL_CTX_load_verify_locations");
+             die(1);
+         }
++#ifdef HAVE_PATHFINDER
++        }
++#endif
+         /* list of trusted CAs for the client to choose the right cert */
+         SSL_CTX_set_client_CA_list(section->ctx,
+             SSL_load_client_CA_file(section->ca_file));
+@@ -84,6 +101,9 @@
+         load_file_lookup(section->revocation_store, section->ca_file);
+     }
+ 
++#ifdef HAVE_PATHFINDER
++    if(!section->option.pathfinder) {
++#endif
+     if(section->ca_dir) {
+         if(!SSL_CTX_load_verify_locations(section->ctx,
+                 NULL, section->ca_dir)) {
+@@ -95,7 +115,14 @@
+         s_log(LOG_DEBUG, "Verify directory set to %s", section->ca_dir);
+         add_dir_lookup(section->revocation_store, section->ca_dir);
+     }
++#ifdef HAVE_PATHFINDER
++    }
++#endif
+ 
++    // skip CRL checking with pathfinder, since it does that for us
++#ifdef HAVE_PATHFINDER
++    if(!section->option.pathfinder) {
++#endif
+     if(section->crl_file)
+         load_file_lookup(section->revocation_store, section->crl_file);
+ 
+@@ -103,9 +130,25 @@
+         section->revocation_store->cache=0; /* don't cache CRLs */
+         add_dir_lookup(section->revocation_store, section->crl_dir);
+     }
++#ifdef HAVE_PATHFINDER
++    }
++#endif
+ 
+-    SSL_CTX_set_verify(section->ctx, section->verify_level==SSL_VERIFY_NONE ?
+-        SSL_VERIFY_PEER : section->verify_level, verify_callback);
++    // use the pathfinder callback if enabled, else use the built-in
++    // verification.
++    int verify = section->verify_level==SSL_VERIFY_NONE ?
++                    SSL_VERIFY_PEER : section->verify_level;
++#ifdef HAVE_PATHFINDER
++    if(section->option.pathfinder) {
++        SSL_CTX_set_verify(section->ctx, verify, NULL);
++        SSL_CTX_set_cert_verify_callback(section->ctx,
++                                         verify_callback_pathfinder, NULL);
++    }
++    else
++        SSL_CTX_set_verify(section->ctx, verify, verify_callback);
++#else
++    SSL_CTX_set_verify(section->ctx, verify, verify_callback);
++#endif
+ 
+     if(section->ca_dir && section->verify_use_only_my)
+         s_log(LOG_NOTICE, "Peer certificate location %s", section->ca_dir);
+@@ -176,6 +219,53 @@
+     return 1; /* accept connection */
+ }
+ 
++#ifdef HAVE_PATHFINDER
++static int verify_callback_pathfinder(X509_STORE_CTX *ctx, void *arg)
++{
++    /* retrieve the pointer to the SSL of the connection currently treated
++     * and the application specific data stored into the SSL object */
++    SSL *ssl=X509_STORE_CTX_get_ex_data(ctx,
++             SSL_get_ex_data_X509_STORE_CTX_idx());
++    CLI *c=SSL_get_ex_data(ssl, cli_index);
++
++    const char *hex = "0123456789ABCDEF";
++    size_t size = i2d_X509(ctx->cert, NULL);
++    unsigned char *keybuf, *iend;
++    iend = keybuf = malloc(size);
++    i2d_X509(ctx->cert, &iend);
++    char *certdata_str = malloc(size * 2 + 1);
++    unsigned char *cp = keybuf;
++    char *certdata_str_i = certdata_str;
++    while (cp < iend)
++    {
++        unsigned char ch = *cp++;
++        *certdata_str_i++ = hex[( ch >> 4 ) & 0xf];
++        *certdata_str_i++ = hex[ch & 0xf];
++    }
++    *certdata_str_i = 0;
++    free( keybuf );
++
++    const char *policy = c->opt->pf_policy;
++    if (!policy || !strcmp(policy, ""))
++        policy = "2.5.29.32.0"; // anyPolicy
++
++    int initial_explicit_policy = strcmp(policy, "2.5.29.32.0") ? 1 : 0;
++
++    char *errmsg;
++    int validated = pathfinder_dbus_verify(certdata_str, policy,
++                                           initial_explicit_policy,
++                                           0, &errmsg);
++    if (!validated) {
++        s_log(LOG_ERR, "Pathfinder certificate validation: Error, %s", errmsg);
++    }
++
++    free(errmsg);
++    free(certdata_str);
++
++    return validated;
++}
++#endif
++
+ /**************************************** certificate checking */
+ 
+ static int cert_check(CLI *c, X509_STORE_CTX *callback_ctx,
