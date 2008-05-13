@@ -63,7 +63,7 @@ void validate_crl(WvX509Store *store, shared_ptr<WvX509> &x509)
 
 void WvX509Path::validate_failed(WvStringParm errstring, WvError &err)
 {
-    log("%s. Failed.\n", errstring);
+    log(WvLog::Error, "%s. Failed.\n", errstring);
     err.seterr(errstring);
 }
 
@@ -432,9 +432,11 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
 
         policy_tree.intersection(initial_policy_set, policy_level);
         if (policy_tree.isnull())
+        {
+            validate_failed("Policy tree is null during policy "
+                            "checking", err);
             return false;
-
-
+        }
     }
 
     return true;
