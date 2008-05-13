@@ -1,6 +1,6 @@
 diff -urN openldap-2.3.41-clean/GPL_getcert openldap-2.3.41-pathfinder-getcert/GPL_getcert
 --- openldap-2.3.41-clean/GPL_getcert	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/GPL_getcert	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/GPL_getcert	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,340 @@
 +		    GNU GENERAL PUBLIC LICENSE
 +		       Version 2, June 1991
@@ -344,8 +344,21 @@ diff -urN openldap-2.3.41-clean/GPL_getcert openldap-2.3.41-pathfinder-getcert/G
 +Public License instead of this License.
 diff -urN openldap-2.3.41-clean/README_getcert openldap-2.3.41-pathfinder-getcert/README_getcert
 --- openldap-2.3.41-clean/README_getcert	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/README_getcert	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,24 @@
++++ openldap-2.3.41-pathfinder-getcert/README_getcert	2008-04-28 13:43:23.000000000 -0400
+@@ -0,0 +1,37 @@
++	April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++
++	The getcert package has been updated by Carillon Information
++	Security Inc. to work with newer versions of OpenLDAP, and has 
++	been tested with 2.3.39 and 2.3.41, as well as to work with 
++	Carillon's "Pathfinder" path validation tool.
++
++	Below is the original information included with Boeing's 
++	getcert release.
++
++	  -Dave Coombs <dcoombs@carillon.ca>
++
++=====
 +
 +
 +
@@ -372,7 +385,7 @@ diff -urN openldap-2.3.41-clean/README_getcert openldap-2.3.41-pathfinder-getcer
 +                 marc.amis@boeing.com
 diff -urN openldap-2.3.41-clean/build/top.mk openldap-2.3.41-pathfinder-getcert/build/top.mk
 --- openldap-2.3.41-clean/build/top.mk	2008-02-11 18:24:07.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/build/top.mk	2008-03-25 12:18:48.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/build/top.mk	2008-04-28 13:42:51.000000000 -0400
 @@ -200,6 +200,10 @@
  SLAPD_LIBS = @SLAPD_LIBS@ @SLAPD_PERL_LDFLAGS@ @SLAPD_SQL_LDFLAGS@ @SLAPD_SQL_LIBS@ @SLAPD_SLP_LIBS@ @SLAPD_GMP_LIBS@
  SLURPD_LIBS = @SLURPD_LIBS@
@@ -386,7 +399,7 @@ diff -urN openldap-2.3.41-clean/build/top.mk openldap-2.3.41-pathfinder-getcert/
  DEFS = $(LDAP_INCPATH) $(XINCPATH) $(XDEFS) $(AC_DEFS) $(DEFINES)
 diff -urN openldap-2.3.41-clean/clients/tools/Makefile.in openldap-2.3.41-pathfinder-getcert/clients/tools/Makefile.in
 --- openldap-2.3.41-clean/clients/tools/Makefile.in	2008-02-11 18:24:07.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/clients/tools/Makefile.in	2008-03-25 12:18:48.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/clients/tools/Makefile.in	2008-04-28 13:42:51.000000000 -0400
 @@ -22,7 +22,7 @@
  MKVOPTS = -s
  
@@ -398,7 +411,7 @@ diff -urN openldap-2.3.41-clean/clients/tools/Makefile.in openldap-2.3.41-pathfi
  	ldpversion.c ldwversion.c ldcversion.c
 diff -urN openldap-2.3.41-clean/configure.in openldap-2.3.41-pathfinder-getcert/configure.in
 --- openldap-2.3.41-clean/configure.in	2008-02-11 18:24:06.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/configure.in	2008-03-25 12:18:48.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/configure.in	2008-04-28 13:42:51.000000000 -0400
 @@ -256,6 +256,9 @@
  OL_ARG_WITH(odbc,
  	[  --with-odbc             with specific ODBC support iodbc|unixodbc|auto],
@@ -537,8 +550,22 @@ diff -urN openldap-2.3.41-clean/configure.in openldap-2.3.41-pathfinder-getcert/
  [servers/slapd/back-ldbm/Makefile:build/top.mk:servers/slapd/back-ldbm/Makefile.in:build/mod.mk]
 diff -urN openldap-2.3.41-clean/ldap_proxy_build.txt openldap-2.3.41-pathfinder-getcert/ldap_proxy_build.txt
 --- openldap-2.3.41-clean/ldap_proxy_build.txt	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/ldap_proxy_build.txt	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,151 @@
++++ openldap-2.3.41-pathfinder-getcert/ldap_proxy_build.txt	2008-04-28 13:44:11.000000000 -0400
+@@ -0,0 +1,165 @@
++	April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++
++	LDAP Proxy has been updated by Carillon Information Security Inc. 
++	to work with modern versions of OpenLDAP (tested with 2.3.39 and 
++	2.3.41), and also to work with Carillon's "Pathfinder" path
++	validation tool.
++
++	The below build instructions, included with Boeing's original
++	version, are somewhat out of date, but mostly valid.  We will 
++	update them in due course... Note that modern version of autoconf 
++	are compatible now as well.
++
++	  -Dave Coombs <dcoombs@carillon.ca>
++=====
 +
 +
 +    Building LDAP Proxy version 4.0 from Source Code            September 2004
@@ -638,7 +665,7 @@ diff -urN openldap-2.3.41-clean/ldap_proxy_build.txt openldap-2.3.41-pathfinder-
 +
 +
 +        cd ldap_proxy_4.0_source
-+        ./configure --prefix=/usr/local/apps/ldap_proxy_4.0 \
++        ./configure --prefix=/opt/ldap_proxy \
 +            --with-threads --without-tls --without-cyrus-sasl \
 +            --enable-debug --enable-syslog --enable-slapd --enable-getcert \
 +            --disable-ipv6 --disable-rlookups --disable-slurpd --disable-bdb
@@ -659,16 +686,16 @@ diff -urN openldap-2.3.41-clean/ldap_proxy_build.txt openldap-2.3.41-pathfinder-
 +
 +
 +        cd ldap_proxy_4.0_source/servers/slapd/back-getcert/PROTO_FILES/
-+        tar cf - * | (cd /usr/local/apps/ldap_proxy_4.0; tar xlpf -)
++        tar cf - * | (cd /opt/ldap_proxy; tar xlpf -)
 +
 +
 +    9) Set ownership and permission attributes in the installed LDAP Proxy:
 +
 +        Log in as "root".
-+        cd /usr/local/apps/ldap_proxy_4.0/bin/
++        cd /opt/ldap_proxy/bin/
 +        # Edit the "PROXYHOME" line in the "set_permissions.sh"
 +        # script to point to the LDAP Proxy install directory
-+        # (Example: "PROXYHOME=/usr/local/apps/ldap_proxy_4.0").
++        # (Example: "PROXYHOME=/opt/ldap_proxy").
 +        ./set_permissions.sh
 +
 +
@@ -676,7 +703,7 @@ diff -urN openldap-2.3.41-clean/ldap_proxy_build.txt openldap-2.3.41-pathfinder-
 +    version Boeing distributes.  Continue with the configuration steps in
 +    section 6 (Proxy Administration) of the main LDAP Proxy web page
 +    "ldap_proxy_release_notes.html" now located in
-+    "/usr/local/apps/ldap_proxy_4.0/docs/".
++    "/opt/ldap_proxy/docs/".
 +
 +
 +                Marc Amis      September 2004
@@ -692,7 +719,7 @@ diff -urN openldap-2.3.41-clean/ldap_proxy_build.txt openldap-2.3.41-pathfinder-
 +    -----------------------------------------------------------------------
 diff -urN openldap-2.3.41-clean/servers/slapd/Makefile.in openldap-2.3.41-pathfinder-getcert/servers/slapd/Makefile.in
 --- openldap-2.3.41-clean/servers/slapd/Makefile.in	2008-02-11 18:24:14.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/Makefile.in	2008-03-25 12:18:48.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/Makefile.in	2008-04-28 13:42:51.000000000 -0400
 @@ -73,7 +73,7 @@
  XLDFLAGS = $(MODULES_LDFLAGS)
  
@@ -704,7 +731,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/Makefile.in openldap-2.3.41-pathfi
  BUILD_OPT = "--enable-slapd"
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/Makefile.in openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/Makefile.in
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/Makefile.in	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/Makefile.in	2008-03-25 12:18:48.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/Makefile.in	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,23 @@
 +# Makefile.in  version "3.0  5/20/2004";
 +
@@ -731,8 +758,18 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/Makefile.in openldap-
 +
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/README openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/README
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/README	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/README	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,13 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/README	2008-04-28 13:45:10.000000000 -0400
+@@ -0,0 +1,23 @@
++	April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++
++	getcert and LDAP Proxy have been updated by Carillon Information
++	Security Inc. to work with modern versions of OpenLDAP (tested
++	with 2.3.39 and 2.3.41), and also to work with Carillon's 
++	"Pathfinder" path-validation tool.
++
++	  -Dave Coombs <dcoombs@carillon.ca
++=====
++
 +
 +
 +        Documentation including installation, configuration,
@@ -748,14 +785,14 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/README op
 +
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/bin/set_permissions.sh openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/bin/set_permissions.sh
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/bin/set_permissions.sh	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/bin/set_permissions.sh	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/bin/set_permissions.sh	2008-04-28 13:45:29.000000000 -0400
 @@ -0,0 +1,33 @@
 +#!/bin/sh
 +#
 +#  Set default file ownership and permissions 
 +#  on the LDAP Proxy install base.
 +#
-+PROXYHOME=/usr/local/apps/ldap_proxy_4.2
++PROXYHOME=$1
 +
 +if test ! -d $PROXYHOME
 +then
@@ -785,14 +822,14 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/bin/set_p
 +exit 0
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/bin/start_ldap_proxy openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/bin/start_ldap_proxy
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/bin/start_ldap_proxy	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/bin/start_ldap_proxy	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/bin/start_ldap_proxy	2008-04-28 13:45:33.000000000 -0400
 @@ -0,0 +1,47 @@
 +#!/bin/sh
 +#
 +# Start up ldap_proxy
 +# marc.amis@boeing.com
 +#
-+PROXYHOME=/usr/local/apps/ldap_proxy_4.2
++PROXYHOME=/opt/ldap_proxy
 +
 +#
 +# Choose which port this LDAP Proxy will listen on for LDAP commands.
@@ -836,11 +873,11 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/bin/start
 +exit 0
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/bin/stop_ldap_proxy openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/bin/stop_ldap_proxy
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/bin/stop_ldap_proxy	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/bin/stop_ldap_proxy	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/bin/stop_ldap_proxy	2008-04-28 13:45:35.000000000 -0400
 @@ -0,0 +1,68 @@
 +#!/bin/sh
 +#
-+PROXYHOME=/usr/local/apps/ldap_proxy_4.2
++PROXYHOME=/opt/ldap_proxy
 +
 +# marc.amis@boeing.com
 +#
@@ -908,7 +945,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/bin/stop_
 +exit 0
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/COPYRIGHT_CMU openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/COPYRIGHT_CMU
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/COPYRIGHT_CMU	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/COPYRIGHT_CMU	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/COPYRIGHT_CMU	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,29 @@
 +
 +    This statement refers to the base64_encode() routine 
@@ -941,7 +978,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/COPYR
 +
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/COPYRIGHT_OpenLDAP openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/COPYRIGHT_OpenLDAP
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/COPYRIGHT_OpenLDAP	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/COPYRIGHT_OpenLDAP	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/COPYRIGHT_OpenLDAP	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,62 @@
 +Copyright 1998-2004 The OpenLDAP Foundation
 +All rights reserved.
@@ -1007,7 +1044,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/COPYR
 +
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/GPL_getcert openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/GPL_getcert
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/GPL_getcert	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/GPL_getcert	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/GPL_getcert	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,340 @@
 +		    GNU GENERAL PUBLIC LICENSE
 +		       Version 2, June 1991
@@ -1351,7 +1388,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/GPL_g
 +Public License instead of this License.
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/LICENSE_OpenLDAP openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/LICENSE_OpenLDAP
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/LICENSE_OpenLDAP	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/LICENSE_OpenLDAP	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/LICENSE_OpenLDAP	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,47 @@
 +The OpenLDAP Public License
 +  Version 2.8, 17 August 2003
@@ -1402,7 +1439,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/LICEN
 +distribute verbatim copies of this document is granted.
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fa.html openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fa.html
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fa.html	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fa.html	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fa.html	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,54 @@
 +<html>
 +<head>
@@ -1460,7 +1497,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowc
 +</html>
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fca.html openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fca.html
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fca.html	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fca.html	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fca.html	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,54 @@
 +<html>
 +<head>
@@ -1518,7 +1555,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowc
 +</html>
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fcb.html openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fcb.html
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fcb.html	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fcb.html	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fcb.html	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,54 @@
 +<html>
 +<head>
@@ -1576,7 +1613,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowc
 +</html>
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fcc.html openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fcc.html
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fcc.html	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fcc.html	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fcc.html	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,54 @@
 +<html>
 +<head>
@@ -1634,7 +1671,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowc
 +</html>
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fo.html openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fo.html
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fo.html	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fo.html	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_fo.html	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,54 @@
 +<html>
 +<head>
@@ -1692,7 +1729,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowc
 +</html>
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_gc.html openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_gc.html
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_gc.html	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_gc.html	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/chart_gc.html	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,54 @@
 +<html>
 +<head>
@@ -1750,7 +1787,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowc
 +</html>
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/ldap_proxy_flowcharts.html openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/ldap_proxy_flowcharts.html
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/ldap_proxy_flowcharts.html	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/ldap_proxy_flowcharts.html	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/flowcharts/ldap_proxy_flowcharts.html	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,42 @@
 +<html>
 +<head>
@@ -1796,8 +1833,22 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/flowc
 +</html>
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_proxy_build.txt openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_proxy_build.txt
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_proxy_build.txt	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_proxy_build.txt	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,151 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_proxy_build.txt	2008-04-28 13:45:57.000000000 -0400
+@@ -0,0 +1,165 @@
++	April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++
++	LDAP Proxy has been updated by Carillon Information Security Inc. 
++	to work with modern versions of OpenLDAP (tested with 2.3.39 and 
++	2.3.41), and also to work with Carillon's "Pathfinder" path
++	validation tool.
++
++	The below build instructions, included with Boeing's original
++	version, are somewhat out of date, but mostly valid.  We will 
++	update them in due course... Note that modern version of autoconf 
++	are compatible now as well.
++
++	  -Dave Coombs <dcoombs@carillon.ca>
++=====
 +
 +
 +    Building LDAP Proxy version 4.0 from Source Code            September 2004
@@ -1897,7 +1948,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_
 +
 +
 +        cd ldap_proxy_4.0_source
-+        ./configure --prefix=/usr/local/apps/ldap_proxy_4.0 \
++        ./configure --prefix=/opt/ldap_proxy \
 +            --with-threads --without-tls --without-cyrus-sasl \
 +            --enable-debug --enable-syslog --enable-slapd --enable-getcert \
 +            --disable-ipv6 --disable-rlookups --disable-slurpd --disable-bdb
@@ -1918,16 +1969,16 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_
 +
 +
 +        cd ldap_proxy_4.0_source/servers/slapd/back-getcert/PROTO_FILES/
-+        tar cf - * | (cd /usr/local/apps/ldap_proxy_4.0; tar xlpf -)
++        tar cf - * | (cd /opt/ldap_proxy; tar xlpf -)
 +
 +
 +    9) Set ownership and permission attributes in the installed LDAP Proxy:
 +
 +        Log in as "root".
-+        cd /usr/local/apps/ldap_proxy_4.0/bin/
++        cd /opt/ldap_proxy/bin/
 +        # Edit the "PROXYHOME" line in the "set_permissions.sh"
 +        # script to point to the LDAP Proxy install directory
-+        # (Example: "PROXYHOME=/usr/local/apps/ldap_proxy_4.0").
++        # (Example: "PROXYHOME=/opt/ldap_proxy").
 +        ./set_permissions.sh
 +
 +
@@ -1935,7 +1986,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_
 +    version Boeing distributes.  Continue with the configuration steps in
 +    section 6 (Proxy Administration) of the main LDAP Proxy web page
 +    "ldap_proxy_release_notes.html" now located in
-+    "/usr/local/apps/ldap_proxy_4.0/docs/".
++    "/opt/ldap_proxy/docs/".
 +
 +
 +                Marc Amis      September 2004
@@ -1951,8 +2002,8 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_
 +    -----------------------------------------------------------------------
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_proxy_release_notes.html openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_proxy_release_notes.html
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_proxy_release_notes.html	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_proxy_release_notes.html	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,1879 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_proxy_release_notes.html	2008-04-28 13:46:07.000000000 -0400
+@@ -0,0 +1,1890 @@
 +<html>
 +<head>
 +<title>LDAP Proxy Release Notes</title>
@@ -1963,6 +2014,17 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_
 +</style>
 +</head>
 +<body bgcolor="cyan">
++
++<h1>NOTE</h1>
++The LDAP Proxy has been updated by Carillon Information Security Inc. to
++work with modern version of OpenLDAP (tested with 2.3.39 and 2.3.41), as
++well as to work with Carillon's "Pathfinder" path-validation tool.
++<p>
++The instructions contained herein are now slightly out of date.  We intend
++to document this new version in due course...
++<p>
++Please <a href="mailto:info@carillon.ca">contact us</a> for help!
++
 +
 +<center>
 +<h1>LDAP Proxy Release Notes</h1>
@@ -2422,24 +2484,24 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_
 +The configuration options are as follows:
 +<p>
 +<pre>
-+    ucdata-path     /usr/local/apps/ldap_proxy_4.1/share/openldap/ucdata
++    ucdata-path     /opt/ldap_proxy/share/openldap/ucdata
 +
 +	Path to unicode support data used by slapd front end process.
 +
-+    include	    /usr/local/apps/ldap_proxy_4.1/etc/openldap/schema/core.schema
-+    include	    /usr/local/apps/ldap_proxy_4.1/etc/openldap/schema/cosine.schema
-+    include	    /usr/local/apps/ldap_proxy_4.1/etc/openldap/schema/inetorgperson.schema
++    include	    /opt/ldap_proxy/etc/openldap/schema/core.schema
++    include	    /opt/ldap_proxy/etc/openldap/schema/cosine.schema
++    include	    /opt/ldap_proxy/etc/openldap/schema/inetorgperson.schema
 +
 +	These include files define the default LDAP database schema.
 +	Only attributes listed in the schema files included with these
 +	include statements can be returned by the LDAP Proxy.
 +
-+    pidfile         /usr/local/apps/ldap_proxy_4.1/var/slapd.pid
++    pidfile         /opt/ldap_proxy/var/slapd.pid
 +
 +	This is where the Proxy will store the Process ID of the 
 +	front-end process when ldap_proxy is started.
 +
-+    argsfile        /usr/local/apps/ldap_proxy_4.1/var/slapd.args
++    argsfile        /opt/ldap_proxy/var/slapd.args
 +
 +	This is where the Proxy will store the command line entry 
 +	that was used to start slapd.
@@ -2517,14 +2579,14 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_
 +                     degrade proxy performance.]
 +	[Default: 0]
 +
-+    certificate_serverlist  /usr/local/apps/ldap_proxy_4.1/libexec/certificate_server_list.txt
++    certificate_serverlist  /opt/ldap_proxy/libexec/certificate_server_list.txt
 +
 +	"certificate_serverlist" is the full path name of the 
 +	certificate_server_list file.  This file lists all the LDAP
 +	servers that we can query for public X.509 certificates.
 +	[Default: NULL]
 +
-+    ldap_serverlist  /usr/local/apps/ldap_proxy_4.1/libexec/ldap_server_list.txt
++    ldap_serverlist  /opt/ldap_proxy/libexec/ldap_server_list.txt
 +
 +	"ldap_serverlist" is the full path name of the ldap_server_list file.
 +	If this file exists and is not empty, the LDAP Proxy will be able
@@ -3834,8 +3896,8 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/doc/ldap_
 +</html>
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/etc/openldap/slapd.conf openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/etc/openldap/slapd.conf
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/etc/openldap/slapd.conf	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/etc/openldap/slapd.conf	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,244 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/etc/openldap/slapd.conf	2008-04-28 13:46:17.000000000 -0400
+@@ -0,0 +1,255 @@
 +#
 +# See slapd.conf(5) for details on configuration options defined for
 +# the OpenLDAP front-end process.  See the LDAP Proxy documentation 
@@ -3843,12 +3905,12 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/etc/openl
 +# the Proxy backend process.
 +# This file should NOT be world readable.
 +#
-+ucdata-path	/usr/local/apps/ldap_proxy_4.2/share/openldap/ucdata
-+include		/usr/local/apps/ldap_proxy_4.2/etc/openldap/schema/core.schema
-+include		/usr/local/apps/ldap_proxy_4.2/etc/openldap/schema/cosine.schema
-+include		/usr/local/apps/ldap_proxy_4.2/etc/openldap/schema/inetorgperson.schema
-+pidfile		/usr/local/apps/ldap_proxy_4.2/var/slapd.pid
-+argsfile	/usr/local/apps/ldap_proxy_4.2/var/slapd.args
++ucdata-path	/opt/ldap_proxy/share/openldap/ucdata
++include		/opt/ldap_proxy/etc/openldap/schema/core.schema
++include		/opt/ldap_proxy/etc/openldap/schema/cosine.schema
++include		/opt/ldap_proxy/etc/openldap/schema/inetorgperson.schema
++pidfile		/opt/ldap_proxy/var/slapd.pid
++argsfile	/opt/ldap_proxy/var/slapd.args
 +
 +# This loglevel pertains to frontend logging only.
 +#loglevel 1024
@@ -3862,6 +3924,15 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/etc/openl
 +# the default, disables this feature.
 +idletimeout 600
 +
++
++# For TLS, or TLS with Pathfinder
++#TLSCertificateFile	/path/to/cert.pem
++#TLSCertificateKeyFile	/path/to/key.pem
++#TLSVerifyClient	demand
++#TLSPathfinder		on
++#TLSPathfinderPolicy	1.2.3.4.5
++
++
 +#######################################################################
 +# ldap_proxy backend definitions
 +#######################################################################
@@ -3869,6 +3940,8 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/etc/openl
 +database getcert
 +readonly off
 +lastmod off
++#getcert_pathfinder	on
++#getcert_pf_policy	1.2.3.4.5
 +
 +# Allow anyone to search for certificates
 +access to * by anonymous read
@@ -3906,13 +3979,13 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/etc/openl
 +# certificate_server_list file.  This file lists all the LDAP
 +# servers that we can query for public X.509 certificates.
 +# [Default: NULL]
-+certificate_serverlist  /usr/local/apps/ldap_proxy_4.2/libexec/certificate_server_list.txt
++certificate_serverlist  /opt/ldap_proxy/libexec/certificate_server_list.txt
 +
 +# "ldap_serverlist" is the full path name of the ldap_server_list file.
 +# If this file exists and is not empty, the LDAP Proxy will be able
 +# to fetch attribute values such as CRL lists and signing certificates.
 +# [Default: NULL]
-+ldap_serverlist  /usr/local/apps/ldap_proxy_4.2/libexec/ldap_server_list.txt
++ldap_serverlist  /opt/ldap_proxy/libexec/ldap_server_list.txt
 +
 +# "certificate_check" determines how much checking the LDAP Proxy will do 
 +# on the X.509 public encryption certificates it finds on the remote LDAP servers.
@@ -4082,7 +4155,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/etc/openl
 +#--------------------------------------------------------------------------
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/libexec/certificate_server_list.txt openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/libexec/certificate_server_list.txt
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/libexec/certificate_server_list.txt	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/libexec/certificate_server_list.txt	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/libexec/certificate_server_list.txt	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,57 @@
 +#
 +#  certificate_server_list     (for use with ldap_proxy version 4.x)
@@ -4143,7 +4216,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/libexec/c
 +
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/libexec/ldap_server_list.txt openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/libexec/ldap_server_list.txt
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/libexec/ldap_server_list.txt	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/libexec/ldap_server_list.txt	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/PROTO_FILES/libexec/ldap_server_list.txt	2008-04-28 13:42:51.000000000 -0400
 @@ -0,0 +1,34 @@
 +#
 +#  ldap_server_list     (for use with ldap_proxy version 4.x)
@@ -4181,12 +4254,16 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/PROTO_FILES/libexec/l
 +none
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/bind.c openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/bind.c
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/bind.c	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/bind.c	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,78 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/bind.c	2008-04-28 13:46:50.000000000 -0400
+@@ -0,0 +1,82 @@
 +/* bind.c   3.0   6/16/2004  */
 +/*
 + *  This is the bind.c file for the getcert SLAPD backend.
 + *  Marc Amis  (marc.amis@boeing.com)
++ *
++ *  April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++ *  Updated for modern OpenLDAP versions and Pathfinder support.
++ *  Dave Coombs <dcoombs@carillon.ca>
 + */
 +
 +#include <stdio.h>
@@ -4263,12 +4340,16 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/bind.c openldap-2.3.4
 +}
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/close.c openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/close.c
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/close.c	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/close.c	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,124 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/close.c	2008-04-28 13:46:55.000000000 -0400
+@@ -0,0 +1,128 @@
 +/* close.c   4.1  12/08/2006  */
 +/*
 + *  This is the close.c file for the getcert SLAPD backend.
 + *  Marc Amis  (marc.amis@boeing.com)
++ *
++ *  April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++ *  Updated for modern OpenLDAP versions and Pathfinder support.
++ *  Dave Coombs <dcoombs@carillon.ca>
 + */
 +
 +#include <stdio.h>
@@ -4391,12 +4472,16 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/close.c openldap-2.3.
 +}
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/config.c openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/config.c
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/config.c	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/config.c	2008-03-25 12:18:48.000000000 -0400
-@@ -0,0 +1,707 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/config.c	2008-04-28 13:46:58.000000000 -0400
+@@ -0,0 +1,711 @@
 +/* config.c   version 4.2    February 22, 2007  */
 +/*
 + *  This is the config.c file for the getcert SLAPD backend.
 + *  Marc Amis	(marc.amis@boeing.com)
++ *
++ *  April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++ *  Updated for modern OpenLDAP versions and Pathfinder support.
++ *  Dave Coombs <dcoombs@carillon.ca>
 + */
 +
 +#include <stdio.h>
@@ -5102,13 +5187,17 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/config.c openldap-2.3
 +}
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/getcert.h openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/getcert.h
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/getcert.h	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/getcert.h	2008-03-25 12:18:48.000000000 -0400
-@@ -0,0 +1,471 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/getcert.h	2008-04-28 13:47:01.000000000 -0400
+@@ -0,0 +1,475 @@
 +/*  getcert.h      July 12, 2007  */
 +static char ldap_proxy_version[] = "4.2";
 +/*
 + *  Data structures and definitions for LDAP Proxy getcert backend process.
 + *	Marc Amis      marc.amis@boeing.com
++ *
++ *  April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++ *  Updated for modern OpenLDAP versions and Pathfinder support.
++ *  Dave Coombs <dcoombs@carillon.ca>
 + */
 +
 +enum boolean {FALSE, TRUE};
@@ -5577,9 +5666,14 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/getcert.h openldap-2.
 +/* End of getcert.h */
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/init.c openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/init.c
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/init.c	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/init.c	2008-03-25 12:18:48.000000000 -0400
-@@ -0,0 +1,157 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/init.c	2008-04-28 13:47:04.000000000 -0400
+@@ -0,0 +1,162 @@
 +/* init.c   version 4.1   October 4, 2006  */
++/*
++ *  April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++ *  Updated for modern OpenLDAP versions and Pathfinder support.
++ *  Dave Coombs <dcoombs@carillon.ca>
++ */
 +
 +#include "portable.h"
 +#include <stdio.h>
@@ -5738,12 +5832,16 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/init.c openldap-2.3.4
 +}
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/open.c openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/open.c
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/open.c	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/open.c	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,347 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/open.c	2008-04-28 13:47:08.000000000 -0400
+@@ -0,0 +1,351 @@
 +/* open.c   4.2   February 22, 2007  */
 +/*
 + *  This is the open.c file for the getcert SLAPD backend.
 + *  Marc Amis  (marc.amis@boeing.com)
++ *
++ *  April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++ *  Updated for modern OpenLDAP versions and Pathfinder support.
++ *  Dave Coombs <dcoombs@carillon.ca>
 + */
 +
 +#include <stdio.h>
@@ -6089,8 +6187,13 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/open.c openldap-2.3.4
 +}
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/proto-getcert.h openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/proto-getcert.h
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/proto-getcert.h	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/proto-getcert.h	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,20 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/proto-getcert.h	2008-04-28 13:47:15.000000000 -0400
+@@ -0,0 +1,25 @@
++/*
++ *  April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++ *  Updated for modern OpenLDAP versions and Pathfinder support.
++ *  Dave Coombs <dcoombs@carillon.ca>
++ */
 +#ifndef _GETCERT_EXTERNAL_H
 +#define _GETCERT_EXTERNAL_H
 +
@@ -6113,13 +6216,17 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/proto-getcert.h openl
 +#endif /* _GETCERT_EXTERNAL_H */
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/read_cert_serverlist.c openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/read_cert_serverlist.c
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/read_cert_serverlist.c	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/read_cert_serverlist.c	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,416 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/read_cert_serverlist.c	2008-04-28 13:47:21.000000000 -0400
+@@ -0,0 +1,420 @@
 +/*  read_cert_serverlist.c  version 3.1   10/3/2004  */
 +/*
 + *  This is the read_cert_serverlist.c file for use by the
 + *  getcert SLAPD backend.
 + *  Marc Amis	(marc.amis@boeing.com)
++ *
++ *  April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++ *  Updated for modern OpenLDAP versions and Pathfinder support.
++ *  Dave Coombs <dcoombs@carillon.ca>
 + */
 +
 +#include <stdio.h>
@@ -6533,8 +6640,8 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/read_cert_serverlist.
 +} /* read_cert_serverlist */
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/read_ldap_serverlist.c openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/read_ldap_serverlist.c
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/read_ldap_serverlist.c	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/read_ldap_serverlist.c	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,395 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/read_ldap_serverlist.c	2008-04-28 13:47:23.000000000 -0400
+@@ -0,0 +1,399 @@
 +/*  read_ldap_serverlist.c  version 3.4   4/28/2006  */
 +/*
 + *  This is the read_ldap_serverlist.c file for use by the getcert SLAPD
@@ -6555,6 +6662,10 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/read_ldap_serverlist.
 + *
 + *       The first four items are required.
 + *       Comments have '#' in column one.
++ *
++ *  April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++ *  Updated for modern OpenLDAP versions and Pathfinder support.
++ *  Dave Coombs <dcoombs@carillon.ca>
 + */
 +
 +#include <stdio.h>
@@ -6932,8 +7043,8 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/read_ldap_serverlist.
 +} /* read_ldap_serverlist */
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/search.c openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/search.c
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/search.c	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/search.c	2008-03-25 12:18:48.000000000 -0400
-@@ -0,0 +1,8156 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/search.c	2008-04-28 13:47:26.000000000 -0400
+@@ -0,0 +1,8160 @@
 +/* search.c    4.2    August 22, 2007    marc.amis@boeing.com */
 +/*
 + *  This is the part of the "getcert" backend to 
@@ -6954,6 +7065,10 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/search.c openldap-2.3
 + *  attribute name and BaseDN listed in ldap_server_lists.txt.
 + *
 + *	Marc Amis      The Boeing Company       marc.amis@boeing.com
++ *
++ *  April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++ *  Updated for modern OpenLDAP versions and Pathfinder support.
++ *  Dave Coombs <dcoombs@carillon.ca>
 + */
 +
 +/* Set editor column width to 100. */
@@ -15092,12 +15207,16 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/search.c openldap-2.3
 +}
 diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/unbind.c openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/unbind.c
 --- openldap-2.3.41-clean/servers/slapd/back-getcert/unbind.c	1969-12-31 19:00:00.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/unbind.c	2008-03-25 12:18:41.000000000 -0400
-@@ -0,0 +1,28 @@
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/back-getcert/unbind.c	2008-04-28 13:47:47.000000000 -0400
+@@ -0,0 +1,32 @@
 +/* unbind.c   3.3  3/16/2006  */
 +/*
 + *  This is the unbind.c file for the getcert SLAPD backend.
 + *      Marc Amis    (marc.amis@boeing.com)
++ *
++ *  April 14, 2008 -- (c) 2008 Carillon Information Security Inc.
++ *  Updated for modern OpenLDAP versions and Pathfinder support.
++ *  Dave Coombs <dcoombs@carillon.ca>
 + */
 +
 +#include <stdio.h>
@@ -15124,7 +15243,7 @@ diff -urN openldap-2.3.41-clean/servers/slapd/back-getcert/unbind.c openldap-2.3
 +}
 diff -urN openldap-2.3.41-clean/servers/slapd/result.c openldap-2.3.41-pathfinder-getcert/servers/slapd/result.c
 --- openldap-2.3.41-clean/servers/slapd/result.c	2008-02-11 18:24:17.000000000 -0500
-+++ openldap-2.3.41-pathfinder-getcert/servers/slapd/result.c	2008-03-25 12:18:41.000000000 -0400
++++ openldap-2.3.41-pathfinder-getcert/servers/slapd/result.c	2008-04-28 13:42:51.000000000 -0400
 @@ -530,7 +530,7 @@
  	if ( rs->sr_err == SLAPD_ABANDON || op->o_abandon )
  		goto abandon;
