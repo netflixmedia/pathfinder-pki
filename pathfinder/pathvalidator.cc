@@ -40,6 +40,7 @@ void PathValidator::validate()
     boost::shared_ptr<PathFinder> pathfinder(new PathFinder(cert_to_be_validated,
                                                             trusted_store,
                                                             intermediate_store,
+                                                            validation_flags,
                                                             cfg, cb, NULL));
 
     pathfinder_map.insert(PathFinderPair(cert_to_be_validated->get_ski().cstr(),

@@ -30,6 +30,7 @@ public:
     PathFinder(boost::shared_ptr<WvX509> &_cert,
                boost::shared_ptr<WvX509Store> &_trusted_store,
                boost::shared_ptr<WvX509Store> &_intermediate_store,
+               uint32_t _validation_flags,
                UniConf &_cfg, 
                PathFoundCb _cb, void *_userdata);
     
@@ -62,6 +63,8 @@ public:
     boost::shared_ptr<WvX509> cert_to_be_validated;
     boost::shared_ptr<WvX509Store> trusted_store;
     boost::shared_ptr<WvX509Store> intermediate_store;
+
+    uint32_t validation_flags;
 
     boost::shared_ptr<WvX509> curcert; // cert we are currently working on
     boost::shared_ptr<WvX509Path> path;

@@ -17,12 +17,14 @@ using namespace std;
 PathFinder::PathFinder(shared_ptr<WvX509> &_cert, 
                        shared_ptr<WvX509Store> &_trusted_store, 
                        shared_ptr<WvX509Store> &_intermediate_store,
+                       uint32_t _validation_flags,
                        UniConf &_cfg,
                        PathFoundCb _cb, 
                        void *_userdata) :
     cert_to_be_validated(_cert),
     trusted_store(_trusted_store),
     intermediate_store(_intermediate_store),
+    validation_flags(_validation_flags),
     path(new WvX509Path),
     userdata(_userdata),
     cfg(_cfg),
@@ -104,8 +106,8 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
     }
     else
     {
-        log("Certificate has no non-self signers (and may be a trust anchor). "
-            "Stop, perform path validation.\n");
+        log("Certificate has no non-self signers (and may be a trust "
+            "anchor). Stop, perform path validation.\n");
     }
 
     // otherwise, we've hit a self-signed certificate and are done fetching
@@ -291,6 +293,12 @@ bool PathFinder::create_bridge(shared_ptr<WvX509> &cert)
 
 bool PathFinder::get_crl(shared_ptr<WvX509> &cert)
 {
+    if (validation_flags & WVX509_SKIP_CRL_CHECK)
+    {
+        log(WvLog::Debug5, "Not attempting to get CRL: checking disabled.\n");
+        return true;
+    }
+
     log("Attempting to get CRL.\n");
     WvStringList crl_urls;
     cert->get_crl_urls(crl_urls);
