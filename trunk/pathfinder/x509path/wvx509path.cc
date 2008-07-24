@@ -102,7 +102,7 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
     shared_ptr<WvX509> prev = trusted_store->get(trusted_aki);    
     if (!prev)
     {
-        validate_failed("Trusted root for path not in store", err);
+        validate_failed(WvString("Trusted root for path (%s) not in store", trusted_aki), err);
         return false;
     }
 
