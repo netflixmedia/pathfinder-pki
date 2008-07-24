@@ -125,6 +125,7 @@ bool PathFinder::get_signer(shared_ptr<WvX509> &cert)
     log("Attempting to get signer.\n");
 
     WvX509Store::WvX509List certlist;
+    trusted_store->get(cert->get_aki(), certlist);
     intermediate_store->get(cert->get_aki(), certlist);
     if (!certlist.empty())
     {
