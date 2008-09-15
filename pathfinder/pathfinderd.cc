@@ -50,8 +50,6 @@ public:
    
     virtual ~PathFinderDaemon()
     {
-        dbusconn->del_callback(this);
-        WVRELEASE(dbusconn);
     }
 
     void cb()
@@ -88,7 +86,7 @@ public:
         dbusconn->add_callback(WvDBusConn::PriNormal, 
                                wv::bind(&PathFinderDaemon::incoming, this, 
                                         _1), this);
-        add_die_stream(dbusconn, false, "wvdbus conn");
+        add_die_stream(dbusconn, true, "wvdbus conn");
     }
 
     bool incoming(WvDBusMsg &msg)        
