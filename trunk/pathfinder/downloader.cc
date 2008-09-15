@@ -14,11 +14,10 @@
 #include "downloader.h"
 
 Downloader::Downloader(WvStringParm _url, WvHttpPool *_pool, 
-                       DownloadFinishedCb _cb, void *_userdata) :
+                       DownloadFinishedCb _cb) :
     url(_url),
     pool(_pool),
     finished_cb(_cb),
-    userdata(_userdata),
     done(false),
     log("Pathfinder Download", WvLog::Debug5)
 {
@@ -77,7 +76,7 @@ void Downloader::download_closed_cb(WvStream &s)
     {
         log("Didn't download item successfully (%s).\n", s.errstr());
         err.seterr_both(s.geterr(), s.errstr());
-        finished_cb(url, mimetype, downloadbuf, err, userdata);
+        finished_cb(url, mimetype, downloadbuf, err);
         return;
     }
     WvHTTPHeaderDict::Iter i(stream->headers);
@@ -96,5 +95,5 @@ void Downloader::download_closed_cb(WvStream &s)
 #endif
 
     done = true;
-    finished_cb(url, mimetype, downloadbuf, err, userdata);
+    finished_cb(url, mimetype, downloadbuf, err);
 }
