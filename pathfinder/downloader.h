@@ -17,13 +17,12 @@
 #include <wvstream.h>
 #include <xplc/ptr.h>
 
-typedef wv::function<void(WvStringParm, WvStringParm, WvBuf&, WvError, void*)> DownloadFinishedCb;
+typedef wv::function<void(WvStringParm, WvStringParm, WvBuf&, WvError)> DownloadFinishedCb;
 
 class Downloader
 {
   public:
-    Downloader(WvStringParm _url, WvHttpPool *_pool, DownloadFinishedCb _cb, 
-               void *_userdata);
+    Downloader(WvStringParm _url, WvHttpPool *_pool, DownloadFinishedCb _cb);
     virtual ~Downloader();
     void download();
     bool is_done() { return done; }
@@ -37,7 +36,6 @@ class Downloader
     WvHttpPool *pool;
     xplc_ptr<WvBufUrlStream> stream;
     DownloadFinishedCb finished_cb;
-    void *userdata;
     bool done;
     WvLog log;
 };

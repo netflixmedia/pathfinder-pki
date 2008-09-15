@@ -168,15 +168,16 @@ bool PathFinder::get_signer(shared_ptr<WvX509> &cert)
     WvStringList ca_urls;
     cert->get_ca_urls(ca_urls);
 
-    DownloadFinishedCb cb = wv::bind(&PathFinder::signer_download_finished_cb, this, _1, _2, _3, _4, _5);
+    DownloadFinishedCb cb = wv::bind(&PathFinder::signer_download_finished_cb, 
+                                     this, _1, _2, _3, _4);
 
-    return retrieve_object(ca_urls, cb, NULL);
+    return retrieve_object(ca_urls, cb);
 }
 
 
 void PathFinder::signer_download_finished_cb(WvStringParm urlstr, 
                                              WvStringParm mimetype, WvBuf &buf, 
-                                             WvError _err, void *userdata)
+                                             WvError _err)
 {
     if (_err.geterr())
     {
@@ -311,14 +312,15 @@ bool PathFinder::get_crl(shared_ptr<WvX509> &cert)
     }
 
     DownloadFinishedCb cb = wv::bind(&PathFinder::crl_download_finished_cb, 
-                                     this, _1, _2, _3, _4, _5);
-    return retrieve_object(crl_urls, cb, cert.get());
+                                     this, _1, _2, _3, _4, cert);
+    return retrieve_object(crl_urls, cb);
 }
 
 
 void PathFinder::crl_download_finished_cb(WvStringParm urlstr, 
                                           WvStringParm mimetype, WvBuf &buf, 
-                                          WvError _err, void *userdata)
+                                          WvError _err, 
+                                          shared_ptr<WvX509> &cert)
 {
     if (_err.geterr())
     {
@@ -326,23 +328,20 @@ void PathFinder::crl_download_finished_cb(WvStringParm urlstr,
         return;
     }
 
-    WvX509 *cert = static_cast<WvX509 *>(userdata);
-
     log("Got CRL with mimetype %s.\n", mimetype);
     
     shared_ptr<WvCRL> crl(new WvCRL);
     if (!strncmp("-----BEGIN", (const char *) buf.peek(0, 10), 10))
         crl->decode(WvCRL::CRLPEM, buf);
     else
-        crl->decode(WvCRL::CRLDER, buf); 
+        crl->decode(WvCRL::CRLDER, buf);
     path->add_crl(cert->get_ski(), crl);
 
     check_done();
 }
 
 
-bool PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb,
-                                 void *_userdata)
+bool PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
 {
     if (!_urls.count())
     {
@@ -357,8 +356,7 @@ bool PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb,
         WvUrl url(_urls.popstr());
         if (url.getproto() == "http" || url.getproto() == "https")
         {
-            shared_ptr<Downloader> d(new Downloader(url, pool, _cb, 
-                                                           _userdata));
+            shared_ptr<Downloader> d(new Downloader(url, pool, _cb));
             downloaders.push_back(d);
             d->download();    
             return true;

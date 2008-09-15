@@ -46,14 +46,14 @@ public:
     
     bool get_signer(boost::shared_ptr<WvX509> &cert);
     void signer_download_finished_cb(WvStringParm urlstr, WvStringParm mimetype, 
-                                     WvBuf &buf, WvError _err, void *userdata);
+                                     WvBuf &buf, WvError _err);
     
     bool get_crl(boost::shared_ptr<WvX509> &cert);
     void crl_download_finished_cb(WvStringParm urlstr, WvStringParm mimetype, 
-                                  WvBuf &buf, WvError _err, void *userdata);
+                                  WvBuf &buf, WvError _err, 
+                                  boost::shared_ptr<WvX509> &cert);
     
-    bool retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb, 
-                         void *_userdata);
+    bool retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb);
 
 
     bool create_bridge(boost::shared_ptr<WvX509> &cert);
