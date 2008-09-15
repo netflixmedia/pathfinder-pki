@@ -50,11 +50,13 @@ void PathValidator::validate()
 }
 
 
-void PathValidator::path_found_cb(shared_ptr<WvX509Path> &path, WvError err, void *)
+void PathValidator::path_found_cb(shared_ptr<WvX509Path> &path, WvError err, 
+                                  void *)
 {
     if (!err.isok())
     {
-        log("Encountered error (%s) during path discovery. Aborting.\n", err.errstr());
+        log("Encountered error (%s) during path discovery. Aborting.\n", 
+            err.errstr());
         // FIXME: abort all pathfinding activities.
         validated_cb(cert_to_be_validated, false, err, userdata);
         return;
@@ -64,12 +66,14 @@ void PathValidator::path_found_cb(shared_ptr<WvX509Path> &path, WvError err, voi
     bool valid = path->validate(trusted_store, intermediate_store, 
                                 initial_policy_set, validation_flags, 
                                 extra_certs, err);
-    log("Initial path validated, certificate is %svalid.\n", valid ? "" : "NOT ");
+    log("Initial path validated, certificate is %svalid.\n", 
+        valid ? "" : "NOT ");
    
     if (!extra_certs.empty())
     {
-        log("There are %s extra certificates to be processed before the path can "
-            "be said to be valid. This is not yet supported.\n", extra_certs.size());
+        log(WvLog::Warning, "There are %s extra certificates to be processed "
+            "before the path can be said to be valid. This is not yet "
+            "supported.\n", extra_certs.size());
         valid = false;
     }
 
