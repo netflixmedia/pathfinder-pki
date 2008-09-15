@@ -39,7 +39,7 @@ bool PathServer::incoming(WvDBusConn *conn, WvDBusMsg &msg)
             "'%s'.\n", method);
         return true;
     }
-    
+
     WvDBusMsg::Iter args(msg);
     WvString certhex = args.getnext();
     WvString initial_policy_set_tcl = args.getnext();
