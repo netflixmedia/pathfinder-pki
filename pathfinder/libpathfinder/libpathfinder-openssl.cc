@@ -3,7 +3,8 @@
  *
  * Copyright (C) 2007 Carillon Information Security Inc.
  *
- * This library is covered by the LGPL v2.1 or later, please read LICENSE for details.
+ * This library is covered by the LGPL v2.1 or later, please read LICENSE 
+ * for details.
  */
 #include "libpathfinder-openssl.h"
 #include "libpathfinder.h"
