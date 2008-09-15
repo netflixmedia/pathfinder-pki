@@ -35,12 +35,13 @@ PathValidator::PathValidator(shared_ptr<WvX509> &_cert,
 
 void PathValidator::validate()
 {
-    PathFoundCb cb = wv::bind(&PathValidator::path_found_cb, this, _1, _2, _3);
-    boost::shared_ptr<PathFinder> pathfinder(new PathFinder(cert_to_be_validated,
-                                                            trusted_store,
-                                                            intermediate_store,
-                                                            validation_flags,
-                                                            cfg, cb, NULL));
+    PathFoundCb cb = wv::bind(&PathValidator::path_found_cb, this, _1, _2);
+    boost::shared_ptr<PathFinder> pathfinder(
+        new PathFinder(cert_to_be_validated,
+                       trusted_store,
+                       intermediate_store,
+                       validation_flags,
+                       cfg, cb));
 
     pathfinder_map.insert(PathFinderPair(cert_to_be_validated->get_ski().cstr(),
                                          pathfinder));                                                            
@@ -49,8 +50,7 @@ void PathValidator::validate()
 }
 
 
-void PathValidator::path_found_cb(shared_ptr<WvX509Path> &path, WvError err, 
-                                  void *)
+void PathValidator::path_found_cb(shared_ptr<WvX509Path> &path, WvError err)
 {
     if (!err.isok())
     {

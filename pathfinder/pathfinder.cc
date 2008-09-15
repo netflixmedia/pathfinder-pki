@@ -19,14 +19,12 @@ PathFinder::PathFinder(shared_ptr<WvX509> &_cert,
                        shared_ptr<WvX509Store> &_intermediate_store,
                        uint32_t _validation_flags,
                        UniConf &_cfg,
-                       PathFoundCb _cb, 
-                       void *_userdata) :
+                       PathFoundCb _cb) :
     cert_to_be_validated(_cert),
     trusted_store(_trusted_store),
     intermediate_store(_intermediate_store),
     validation_flags(_validation_flags),
     path(new WvX509Path),
-    userdata(_userdata),
     cfg(_cfg),
     path_found_cb(_cb),
     log("PathFinder")
@@ -58,7 +56,7 @@ void PathFinder::failed(WvStringParm reason)
 
 void PathFinder::failed()
 {
-    path_found_cb(path, err, userdata);
+    path_found_cb(path, err);
 }
 
 
@@ -170,11 +168,9 @@ bool PathFinder::get_signer(shared_ptr<WvX509> &cert)
     WvStringList ca_urls;
     cert->get_ca_urls(ca_urls);
 
-
     DownloadFinishedCb cb = wv::bind(&PathFinder::signer_download_finished_cb, this, _1, _2, _3, _4, _5);
 
-    // return retrieve_object(ca_urls, cb, NULL);
-    return false;
+    return retrieve_object(ca_urls, cb, NULL);
 }
 
 
@@ -314,10 +310,9 @@ bool PathFinder::get_crl(shared_ptr<WvX509> &cert)
         return true;
     }
 
-    return false;
-    // WLACH:FIXME
-    // DownloadFinishedCb cb(this, &PathFinder::crl_download_finished_cb);
-    // return retrieve_object(crl_urls, cb, cert.get());
+    DownloadFinishedCb cb = wv::bind(&PathFinder::crl_download_finished_cb, 
+                                     this, _1, _2, _3, _4, _5);
+    return retrieve_object(crl_urls, cb, cert.get());
 }
 
 
@@ -388,5 +383,5 @@ void PathFinder::check_done()
 
     log("All objects needed to validate path have been put into place. We "
         "are done\n");
-    path_found_cb(path, err, userdata);
+    path_found_cb(path, err);
 }

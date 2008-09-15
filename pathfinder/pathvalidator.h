@@ -29,7 +29,7 @@ class PathValidator
     void validate();
 
   private:
-    void path_found_cb(boost::shared_ptr<WvX509Path> &path, WvError err, void *);
+    void path_found_cb(boost::shared_ptr<WvX509Path> &path, WvError err);
     typedef std::map< std::string, boost::shared_ptr<PathFinder> > PathFinderMap;
     typedef std::pair< std::string, boost::shared_ptr<PathFinder> > PathFinderPair;
     PathFinderMap pathfinder_map;

@@ -22,7 +22,7 @@
 #include "wvx509path.h"
 #include "wvx509store.h"
 
-typedef wv::function<void(boost::shared_ptr<WvX509Path> &, WvError, void *)> PathFoundCb;
+typedef wv::function<void(boost::shared_ptr<WvX509Path> &, WvError)> PathFoundCb;
 
 class PathFinder
 {
@@ -32,7 +32,7 @@ public:
                boost::shared_ptr<WvX509Store> &_intermediate_store,
                uint32_t _validation_flags,
                UniConf &_cfg, 
-               PathFoundCb _cb, void *_userdata);
+               PathFoundCb _cb);
     
     virtual ~PathFinder(); 
     WvString cert_ski() { return cert_to_be_validated->get_ski(); }
@@ -75,7 +75,6 @@ public:
 
     WvHttpPool *pool;
 
-    void *userdata;
     PathFoundCb path_found_cb;
     UniConf cfg;
     WvError err;
