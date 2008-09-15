@@ -29,8 +29,8 @@ Downloader::~Downloader()
 {   
     if (stream)
     {
-        stream->setcallback(WvStreamCallback(), NULL);
-        stream->setclosecallback(IWvStreamCallback());
+        stream->setcallback(0);
+        stream->setclosecallback(0);
     }
 }
 
@@ -39,14 +39,15 @@ void Downloader::download()
 {
     log("Downloading.\n");
     stream = pool->addurl(url);
-    stream->setcallback(WvStreamCallback(this, &Downloader::download_cb), NULL);
-    stream->setclosecallback(IWvStreamCallback(this, 
-                                          &Downloader::download_closed_cb));
-    WvIStreamList::globallist.append(stream, true, WvString("download url %s", url));
+    stream->setcallback(wv::bind(&Downloader::download_cb, this, wv::ref(*stream)));
+    stream->setclosecallback(wv::bind(&Downloader::download_closed_cb, this, 
+                                      wv::ref(*stream)));
+    WvIStreamList::globallist.append(stream, true, WvString("download url %s", 
+                                                            url));
 }
 
 
-void Downloader::download_cb(WvStream &s, void *)
+void Downloader::download_cb(WvStream &s)
 {
     char buf[1024];
     size_t numread = 0;

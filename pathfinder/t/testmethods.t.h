@@ -2,7 +2,6 @@
 #define __TESTMETHODS_H
 #include <map>
 #include <vector>
-#include <wvcallback.h>
 #include <wvfileutils.h>
 #include <wvlogrcv.h>
 #include <wvtest.h>

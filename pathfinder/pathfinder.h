@@ -22,7 +22,7 @@
 #include "wvx509path.h"
 #include "wvx509store.h"
 
-typedef WvCallback<void, boost::shared_ptr<WvX509Path> &, WvError, void *> PathFoundCb;
+typedef wv::function<void(boost::shared_ptr<WvX509Path> &, WvError, void *)> PathFoundCb;
 
 class PathFinder
 {

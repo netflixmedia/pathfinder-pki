@@ -1,7 +1,7 @@
 /*
  * pathclient.cc
  *
- * Copyright (C) 2007 Carillon Information Security Inc.
+ * Copyright (C) 2007-2008 Carillon Information Security Inc.
  *
  * This program and accompanying library is covered by the LGPL v2.1 or later, 
  * please read LICENSE for details.
@@ -14,23 +14,17 @@
 #include <wvx509.h>
 
 #include "wvdbusconn.h"
-#include "wvdbuslistener.h"
+#include "wvdbusmsg.h"
 #include "wvx509policytree.h"
 
 static bool done = false;
 
-static void validate_cb(bool valid, WvString reason, WvError err)
+static bool incoming(WvDBusMsg &msg)
 {
-    if (err.isok())
-    {
-        wvcon->print("Certificate is %svalid.\n", valid ? "" : "NOT ");
-        if (!valid)
-            wvcon->print("Reason for failure: %s.\n", reason);
-    }
-    else
-        wverr->print("There was an error attempting to validate (%s).\n",
-                     err.errstr());
+    fprintf(stderr, "\n * %s\n\n", ((WvString)msg).cstr());
     done = true;
+
+    return true;
 }
 
 
@@ -40,17 +34,16 @@ int main(int argc, char *argv[])
     
     WvStringList remaining_args;
     WvString certtype = "pem";
-    bool session_bus = false;
+    WvString moniker("dbus:system");
     bool initial_explicit_policy = false;
     bool initial_policy_mapping_inhibit = false;
 
     WvArgs args;
     args.add_required_arg("CERTIFICATE");
+    args.add_option('m', "moniker", "Specify the dbus moniker to use "
+                    "(default: dbus:system)", "MONIKER", moniker);
     args.add_option('t', "type", "Certificate type: der or pem (default: pem)", 
                     "type", certtype);
-    args.add_set_bool_option('\0', "session", "Listen on the session "
-                             "bus (instead of the system bus)", 
-                             session_bus);    
     args.add_set_bool_option('e', "initial-explicit-policy", "Set initial "
                              "explicit policy when validating", 
                              initial_explicit_policy);    
@@ -83,11 +76,10 @@ int main(int argc, char *argv[])
         return -1;
     }
     
-    WvDBusConn *conn = NULL;
-    if (session_bus)
-        conn = new WvDBusConn(DBUS_BUS_SESSION);
-    else
-        conn = new WvDBusConn(DBUS_BUS_SYSTEM);
+    WvDBusConn conn(moniker);
+    WvIStreamList::globallist.append(&conn, false, "wvdbus conn");
+
+    conn.add_callback(WvDBusConn::PriNormal, incoming);
 
     WvDBusMsg msg("ca.carillon.pathfinder", "/ca/carillon/pathfinder", 
                   "ca.carillon.pathfinder", "validate");
@@ -101,12 +93,8 @@ int main(int argc, char *argv[])
     wvout->print("parameter1: %s\n", x509.encode(WvX509::CertHex));
     wvout->print("parameter2: %s\n", WvString(ANY_POLICY_OID));
     
-    // expect a reply with a bool and a single string as an argument
-    WvDBusListener<bool,WvString> reply("/ca/carillon/pathfinder/validate", validate_cb);
-    conn->send(msg, &reply, false);
+    msg.send(conn);
 
-    WvIStreamList::globallist.append(conn, true, "wvdbus conn");
-    
     while (WvIStreamList::globallist.isok() && !done)
         WvIStreamList::globallist.runonce();
     
