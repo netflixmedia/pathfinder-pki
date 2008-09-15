@@ -48,10 +48,6 @@ public:
                         "MONIKER", dbusmoniker);
     }
    
-    virtual ~PathFinderDaemon()
-    {
-    }
-
     void cb()
     {
         // Mount config moniker
