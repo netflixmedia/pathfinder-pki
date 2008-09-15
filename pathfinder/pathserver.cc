@@ -9,16 +9,22 @@
 
 #include "pathserver.h"
 
+using namespace boost;
+using namespace std;
+
 
 PathServer::PathServer(boost::shared_ptr<WvX509Store> _trusted_store,
-                       boost::shared_ptr<WvX509Store> _intermediate_store)
+                       boost::shared_ptr<WvX509Store> _intermediate_store,
+                       UniConf &_cfg) :
+    log("PathFinder"),
+    cfg(_cfg)
 {
     trusted_store = _trusted_store;
     intermediate_store = _intermediate_store;
 }
 
 
-bool PathServer::incoming(WvDBusConn &conn, WvDBusMsg &msg)        
+bool PathServer::incoming(WvDBusConn *conn, WvDBusMsg &msg)        
 {
     if (msg.get_dest() != "ca.carillon.pathfinder" || 
         msg.get_path() != "/ca/carillon/pathfinder") 
@@ -37,7 +43,7 @@ bool PathServer::incoming(WvDBusConn &conn, WvDBusMsg &msg)
     WvDBusMsg::Iter args(msg);
     WvString certhex = args.getnext();
     WvString initial_policy_set_tcl = args.getnext();
-    bool inital_explicit_policy = args.getnext();
+    bool initial_explicit_policy = args.getnext();
     bool initial_policy_mapping_inhibit = args.getnext();
     
     shared_ptr<WvX509> cert(new WvX509());
@@ -46,7 +52,7 @@ bool PathServer::incoming(WvDBusConn &conn, WvDBusMsg &msg)
     {
         log(WvLog::Warning, "Received a request to validate an invalid "
             "certificate. Aborting.\n");
-        conn.send(msg.reply().append(false));
+        conn->send(msg.reply().append(false));
         return true;
     }
 
@@ -61,13 +67,13 @@ bool PathServer::incoming(WvDBusConn &conn, WvDBusMsg &msg)
         log("Skipping CRL checking as specified in configuration.\n");
         flags |= WVX509_SKIP_CRL_CHECK;
     }
-    if (inital_explicit_policy)
+    if (initial_explicit_policy)
         flags |= WVX509_INITIAL_EXPLICIT_POLICY;
     if (initial_policy_mapping_inhibit)
         flags |= WVX509_INITIAL_POLICY_MAPPING_INHIBIT;
     
     PathValidator::ValidatedCb cb = wv::bind(
-        &PathFinderDaemon::path_validated_cb, this, _1, _2, _3, conn, reply);
+        &PathServer::path_validated_cb, this, _1, _2, _3, conn, reply);
     PathValidator *pv = new PathValidator(cert, initial_policy_set_tcl, 
                                           flags, trusted_store, 
                                           intermediate_store, cfg, 
@@ -82,7 +88,7 @@ bool PathServer::incoming(WvDBusConn &conn, WvDBusMsg &msg)
 
 
 void PathServer::path_validated_cb(boost::shared_ptr<WvX509> &cert, bool valid, 
-                                   WvError err, WvDBusConn &conn, 
+                                   WvError err, WvDBusConn *conn, 
                                    WvDBusMsg *reply)
 {
     uint32_t flags = 0;
@@ -93,6 +99,6 @@ void PathServer::path_validated_cb(boost::shared_ptr<WvX509> &cert, bool valid,
     // send reply
     reply->append(valid);
     reply->append(err.errstr());
-    conn.send(*reply);
+    conn->send(*reply);
     WVDELETE(reply);
 }
