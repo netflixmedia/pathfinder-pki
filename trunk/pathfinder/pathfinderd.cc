@@ -7,14 +7,17 @@
  * please read LICENSE for details.
  */
 
+#include <boost/shared_ptr.hpp>
 #include <uniconfroot.h>
 #include <wvargs.h>
+#include <wvdbusconn.h>
 #include <wvstreamsdaemon.h>
 
+#include "pathserver.h"
 #include "version.h"
+#include "wvx509path.h"
 
 using namespace boost;
-using namespace std;
 
 #define DEFAULT_CONFIG_MONIKER "ini:/etc/pathfinderd.conf"
 #define DEFAULT_DBUS_MONIKER "dbus:system"
@@ -75,10 +78,11 @@ public:
         add_die_stream(dbusconn, true, "wvdbus conn");
         
         // Initialize pathfinder "server" object
-        pathserver = new PathServer(trusted_store, intermediate_store);
+        pathserver = new PathServer(trusted_store, intermediate_store,
+                                    cfg);
         dbusconn->add_callback(WvDBusConn::PriNormal, 
-                               wv::bind(&PathServer::incoming, this, 
-                                        *dbusconn, _1), this);
+                               wv::bind(&PathServer::incoming, pathserver, 
+                                        dbusconn, _1), this);
     }
     
     shared_ptr<WvX509Store> trusted_store;
