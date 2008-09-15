@@ -18,7 +18,7 @@ INCLUDE_DIRECTORIES(${PATHFINDER_SOURCE_DIR}
                     ${PATHFINDER_SOURCE_DIR}/x509path 
 		    ${PATHFINDER_SOURCE_DIR}/libpathfinder)
 
-ADD_LIBRARY(pathology STATIC pathfinder.cc pathvalidator.cc downloader.cc)
+ADD_LIBRARY(pathology STATIC pathfinder.cc pathvalidator.cc downloader.cc pathserver.cc)
 SET_TARGET_PROPERTIES(pathology
 		      PROPERTIES COMPILE_FLAGS "${EXTRA_CFLAGS}")
 
