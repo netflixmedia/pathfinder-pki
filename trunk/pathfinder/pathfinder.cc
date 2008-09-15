@@ -30,13 +30,13 @@ PathFinder::PathFinder(shared_ptr<WvX509> &_cert,
     log("PathFinder")
 {
     pool = new WvHttpPool();
-    WvIStreamList::globallist.append(pool, false);
-    pool->addRef();
+    WvIStreamList::globallist.append(pool, false, "pathfinder http pool");
 }
 
 
 PathFinder::~PathFinder()
 {
+    WvIStreamList::globallist.unlink(pool);
     WVRELEASE(pool);
 }
 
