@@ -25,7 +25,7 @@ public:
 	s->listen(smoniker);
 	moniker = s->get_addr();
 	fprintf(stderr, "Server address is '%s'\n", moniker.cstr());
-	WvIStreamList::globallist.append(s, false);
+	WvIStreamList::globallist.append(s, false, "dbus server");
     }
     
     ~TestDBusServer()
@@ -46,6 +46,7 @@ public:
 
 static int myreply_count = 0;
 static bool myreply_ok = false;
+
 static bool myreply(WvDBusMsg &msg)
 {
     myreply_count++;
@@ -63,7 +64,7 @@ WVTEST_MAIN("pathserver basic")
 {
     TestDBusServer serv;
     WvDBusConn conn1(serv.moniker);
-    WvIStreamList::globallist.append(&conn1, false);
+    WvIStreamList::globallist.append(&conn1, false, "dbus connection");
     
     conn1.request_name("ca.carillon.pathfinder");
 
@@ -82,21 +83,17 @@ WVTEST_MAIN("pathserver basic")
                                            "GoodCACert.crt"));
 
     WvDBusMsg msg("ca.carillon.pathfinder", "/ca/carillon/pathfinder", 
-                  "x.y.z.anything", "validate");
+                  "ca.carillon.pathfinder", "validate");
     msg.append(x509.encode(WvX509::CertHex));
     msg.append(WvString(ANY_POLICY_OID));
     msg.append(false);
     msg.append(false);
 
     conn1.send(msg, myreply);
-    
+
     while (myreply_count < 1)
         WvIStreamList::globallist.runonce();
-    
+
     WVPASSEQ(myreply_count, 1);
     WVFAILEQ(myreply_ok, 1);
-
-    conn1.close();
-
-    //conn1.del_callback(&pathserver);
 }
