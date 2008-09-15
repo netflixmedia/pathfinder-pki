@@ -85,9 +85,6 @@ INSTALL (FILES pathfinderd-dbus.conf
 	      DESTINATION /etc/dbus-1/system.d
 	      RENAME pathfinderd.conf)
 
-ENABLE_TESTING()
-ADD_TEST(all valgrind --tool=memcheck t/all.t)
-
 SET(CPACK_PACKAGE_NAME "pathfinder")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "pathfinder")
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
