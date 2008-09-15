@@ -10,21 +10,55 @@
 #include <wvargs.h>
 #include <wvcrash.h>
 #include <wvistreamlist.h>
+#include <wvlogrcv.h>
 #include <wvstream.h>
+#include <wvdbusconn.h>
 #include <wvx509.h>
 
-#include "wvdbusconn.h"
-#include "wvdbusmsg.h"
 #include "wvx509policytree.h"
 
+static WvLog::LogLevel log_level = WvLog::Info;
 static bool done = false;
 
 static bool reply(WvDBusMsg &msg)
 {
-    wvout->print("got reply: %s\n", msg.get_argstr());
+    if (msg.iserror())
+    {
+        wvout->print("Error response (%s) to validation request.\n", 
+                     msg.get_error());
+        done = true;
+        return true;
+    }
+
+    WvDBusMsg::Iter args(msg);
+    bool ok = args.getnext();
+    WvString errstr = args.getnext();
+
+    if (ok)
+        wvout->print("Pathfinder daemon says certificate is ok.\n");
+    else 
+    {
+        wvout->print("Certificate is NOT ok. Error: %s.\n", errstr);
+    }
 
     done = true;
     
+    return true;
+}
+
+
+static bool dec_log_level(void *)
+{
+    if ((int)log_level > (int)WvLog::Critical)
+        log_level = (WvLog::LogLevel)((int)log_level - 1);
+    return true;
+}
+
+
+static bool inc_log_level(void *)
+{
+    if ((int)log_level < (int)WvLog::Debug5)
+        log_level = (WvLog::LogLevel)((int)log_level + 1);
     return true;
 }
 
@@ -51,12 +85,20 @@ int main(int argc, char *argv[])
     args.add_set_bool_option('p', "initial-policy-mapping-inhibit", "Inhibit "
                              "policy mapping when validating", 
                              initial_policy_mapping_inhibit);    
+    args.add_option('q', "quiet",
+            "Decrease log level (can be used multiple times)",
+            WvArgs::NoArgCallback(&dec_log_level));
+    args.add_option('v', "verbose",
+            "Increase log level (can be used multiple times)",
+            WvArgs::NoArgCallback(&inc_log_level));
     
     if (!args.process(argc, argv, &remaining_args))
     {
         args.print_help(argc, argv);
         return 1;
     }
+
+    WvLogConsole console_log(1, log_level);
 
     WvString certname = remaining_args.popstr();
 
@@ -87,10 +129,12 @@ int main(int argc, char *argv[])
     msg.append(initial_explicit_policy);
     msg.append(initial_policy_mapping_inhibit);
 
+#if 0
     wvout->print("Message sent to daemon: busname: ca.carillon.pathfinder\n");
     wvout->print("object: /ca/carillon/pathfinder method: validate\n");
     wvout->print("parameter1: %s\n", x509.encode(WvX509::CertHex));
     wvout->print("parameter2: %s\n", WvString(ANY_POLICY_OID));
+#endif
     
     conn.send(msg, &reply);
 
