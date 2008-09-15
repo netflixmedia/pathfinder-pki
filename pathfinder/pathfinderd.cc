@@ -136,11 +136,11 @@ public:
             flags |= WVX509_INITIAL_POLICY_MAPPING_INHIBIT;
 
         PathValidator::ValidatedCb cb = wv::bind(
-            &PathFinderDaemon::path_validated_cb, this, _1, _2, _3, _4);
+            &PathFinderDaemon::path_validated_cb, this, _1, _2, _3, reply);
         PathValidator *pv = new PathValidator(cert, initial_policy_set_tcl, 
                                               flags, trusted_store, 
                                               intermediate_store, cfg, 
-                                              cb, reply);
+                                              cb);
         shared_ptr<PathValidator> validator(pv);
         validatormap.insert(
             pair< WvDBusMsg *, shared_ptr<PathValidator> >(reply, validator));
@@ -151,10 +151,8 @@ public:
 
 
     void path_validated_cb(boost::shared_ptr<WvX509> &cert, bool valid, 
-                           WvError err, void *userdata)
+                           WvError err, WvDBusMsg *reply)
     {
-        WvDBusMsg *reply = static_cast<WvDBusMsg *>(userdata);
-
         uint32_t flags = 0;
         log("Path validated for certificate %s. Result: %svalid\n", 
             cert->get_subject(), valid ? "" : "NOT ");

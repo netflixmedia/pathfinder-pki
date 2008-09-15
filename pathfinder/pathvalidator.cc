@@ -20,12 +20,11 @@ PathValidator::PathValidator(shared_ptr<WvX509> &_cert,
                              shared_ptr<WvX509Store> &_trusted_store,
                              shared_ptr<WvX509Store> &_intermediate_store,
                              UniConf &_cfg, 
-                             ValidatedCb _cb, void *_userdata) :
+                             ValidatedCb _cb) :
     cert_to_be_validated(_cert),
     validation_flags(_validation_flags),
     trusted_store(_trusted_store),
     intermediate_store(_intermediate_store),
-    userdata(_userdata),
     cfg(_cfg),
     validated_cb(_cb),
     log("Path Validator")
@@ -58,7 +57,7 @@ void PathValidator::path_found_cb(shared_ptr<WvX509Path> &path, WvError err,
         log("Encountered error (%s) during path discovery. Aborting.\n", 
             err.errstr());
         // FIXME: abort all pathfinding activities.
-        validated_cb(cert_to_be_validated, false, err, userdata);
+        validated_cb(cert_to_be_validated, false, err);
         return;
     }
 
@@ -77,7 +76,7 @@ void PathValidator::path_found_cb(shared_ptr<WvX509Path> &path, WvError err,
         valid = false;
     }
 
-    validated_cb(cert_to_be_validated, valid, err, userdata);
+    validated_cb(cert_to_be_validated, valid, err);
 }
 
 
