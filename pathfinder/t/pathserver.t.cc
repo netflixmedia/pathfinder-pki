@@ -31,6 +31,15 @@ public:
     ~TestDBusServer()
     {
 	WVRELEASE(s);
+        /* Flush connections out of the globallist, necessary to trigger
+         * the actual killing of the WvDBusServer object (it's ref-
+         * counted based on #connections).  No self-respecting program would
+         * need to do this, but we don't want Valgrind thinking we're leaking
+         * memory, or the open file descriptor checker freaking out.
+         */
+        for (int i = 0; i < 1; ++i)
+            WvIStreamList::globallist.runonce();
+        WVPASS(WvIStreamList::globallist.isempty());
     }
 };
 
@@ -88,8 +97,6 @@ WVTEST_MAIN("pathserver basic")
     WVFAILEQ(myreply_ok, 1);
 
     conn1.close();
-    for (int i = 0; i < 1; ++i)
-    	WvIStreamList::globallist.runonce();
 
     //conn1.del_callback(&pathserver);
 }
