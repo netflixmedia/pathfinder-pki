@@ -110,6 +110,7 @@ int main(int argc, char *argv[])
     }
 
     shared_ptr<WvX509> x509(new WvX509);
+
     if (certtype == "der")
         x509->decode(WvX509::CertFileDER, certname);   
     else if (certtype == "pem")
