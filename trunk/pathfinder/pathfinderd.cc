@@ -128,7 +128,7 @@ public:
         log("Received a request to validate certificate with subject %s.\n", 
             cert->get_subject());
 
-        WvDBusMsg reply = msg.reply();
+        WvDBusMsg *reply = new WvDBusMsg(msg.reply());
             
         uint32_t flags = 0;
         if (cfg["verification options"].xgetint("skip crl check", 0))
@@ -149,7 +149,7 @@ public:
                                               cb, reply);
         shared_ptr<PathValidator> validator(pv);
         validatormap.insert(
-            pair< WvDBusMsg, shared_ptr<PathValidator> >(reply, validator));
+            pair< WvDBusMsg *, shared_ptr<PathValidator> >(reply, validator));
         validator->validate();
 
         return true;
@@ -159,10 +159,8 @@ public:
     void path_validated_cb(boost::shared_ptr<WvX509> &cert, bool valid, 
                            WvError err, void *userdata)
     {
-#if 0
-        WvDBusReplyMsg *reply = static_cast<WvDBusReplyMsg *>(userdata);
+        WvDBusMsg *reply = static_cast<WvDBusMsg *>(userdata);
 
-        WvX509Path::WvX509List extra_certs;
         uint32_t flags = 0;
         log("Path validated for certificate %s. Result: %svalid\n", 
             cert->get_subject(), valid ? "" : "NOT ");
@@ -173,14 +171,13 @@ public:
         reply->append(err.errstr());
         dbusconn->send(*reply);
         WVDELETE(reply);
-#endif
     }
 
     
     WvDBusConn *dbusconn;
     shared_ptr<WvX509Store> trusted_store;
     shared_ptr<WvX509Store> intermediate_store;
-    typedef std::map<WvDBusMsg, boost::shared_ptr<PathValidator> > ValidatorMap;
+    typedef std::map<WvDBusMsg *, boost::shared_ptr<PathValidator> > ValidatorMap;
     ValidatorMap validatormap;
     WvString cfgmoniker;
     WvString dbusmoniker;

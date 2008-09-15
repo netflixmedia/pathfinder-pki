@@ -19,11 +19,12 @@
 
 static bool done = false;
 
-static bool incoming(WvDBusMsg &msg)
+static bool reply(WvDBusMsg &msg)
 {
-    fprintf(stderr, "\n * %s\n\n", ((WvString)msg).cstr());
-    done = true;
+    wvout->print("got reply: %s\n", msg.get_argstr());
 
+    done = true;
+    
     return true;
 }
 
@@ -79,8 +80,6 @@ int main(int argc, char *argv[])
     WvDBusConn conn(moniker);
     WvIStreamList::globallist.append(&conn, false, "wvdbus conn");
 
-    conn.add_callback(WvDBusConn::PriNormal, incoming);
-
     WvDBusMsg msg("ca.carillon.pathfinder", "/ca/carillon/pathfinder", 
                   "ca.carillon.pathfinder", "validate");
     msg.append(x509.encode(WvX509::CertHex));
@@ -93,7 +92,7 @@ int main(int argc, char *argv[])
     wvout->print("parameter1: %s\n", x509.encode(WvX509::CertHex));
     wvout->print("parameter2: %s\n", WvString(ANY_POLICY_OID));
     
-    msg.send(conn);
+    conn.send(msg, &reply);
 
     while (WvIStreamList::globallist.isok() && !done)
         WvIStreamList::globallist.runonce();
