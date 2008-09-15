@@ -1,12 +1,19 @@
-Makefile
 *CMakeFiles*
 CMakeCache.txt
-DartTestfile.txt
 CPack*
+DartTestfile.txt
+Makefile
 Testing
 cmake_install.cmake
+libpathfinder/libpathfinder-nss-1.a
 libpathfinder/libpathfinder-nss-1.so
+libpathfinder/libpathfinder-nss-1.so.1
+libpathfinder/libpathfinder-nss-1.so.1.0.0
+libpathfinder/libpathfinder-openssl-1.a
 libpathfinder/libpathfinder-openssl-1.so
+libpathfinder/libpathfinder-openssl-1.so.1
+libpathfinder/libpathfinder-openssl-1.so.1.0.0
+libpathology.a
 nsstest
 openssltest
 pathclient
@@ -18,3 +25,4 @@ pathfinderd
 pathverify
 t/all.t
 version.h
+x509path/libx509path.a

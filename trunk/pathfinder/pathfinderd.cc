@@ -13,9 +13,7 @@
 #include <wvcrash.h>
 #include <wvistreamlist.h>
 #include <wvstreamsdaemon.h>
-#include <xplc/ptr.h>
 #include "wvdbusconn.h"
-#include "wvdbuslistener.h"
 
 #include "pathvalidator.h"
 #include "version.h"
@@ -25,20 +23,18 @@ using namespace boost;
 using namespace std;
 
 #define DEFAULT_CONFIG_MONIKER "ini:/etc/pathfinderd.conf"
+#define DEFAULT_DBUS_MONIKER "dbus:system"
 
 
 class PathFinderDaemon : public WvStreamsDaemon
 {
 public:
-    typedef WvCallback<void, WvDBusConn&, WvDBusReplyMsg&, WvString, WvString, bool, bool, WvError> ValidateReqCb;
-
     PathFinderDaemon() :
         WvStreamsDaemon("pathfinderd", PATHFINDER_VERSION, 
-                        WvStreamsDaemonCallback(this, &PathFinderDaemon::cb)),
+                        wv::bind(&PathFinderDaemon::cb, this)),
         dbusconn(NULL),
         cfgmoniker(DEFAULT_CONFIG_MONIKER),
-   
-        session_bus(false)
+        dbusmoniker(DEFAULT_DBUS_MONIKER)
     {
         trusted_store = shared_ptr<WvX509Store>(new WvX509Store);
         intermediate_store = shared_ptr<WvX509Store>(new WvX509Store);
@@ -46,25 +42,20 @@ public:
         args.add_option('c', "config", WvString("Config moniker (default: %s)",
                                                 DEFAULT_CONFIG_MONIKER),
                         "ini:filename.ini", cfgmoniker);
-        args.add_set_bool_option('\0', "session", "Listen on the session "
-                                 "bus (instead of the system bus)", 
-                                 session_bus);
-	// log(WvLog::Debug,"Pathfinder Instantiated\n");
+        args.add_option('m', "moniker", 
+                        WvString("Specify the D-Bus moniker to use (default: "
+                                 "%s)", DEFAULT_DBUS_MONIKER), 
+                        "MONIKER", dbusmoniker);
     }
    
     virtual ~PathFinderDaemon()
     {
-        if (dbusconn)
-	{
-	    dbusconn->del_method("ca.carillon.pathfinder", 
-				 "/ca/carillon/pathfinder", 
-				 "validate");
-	}
+        dbusconn->del_callback(this);
+        WVRELEASE(dbusconn);
     }
 
-    void cb(WvStreamsDaemon &daemon, void *)
+    void cb()
     {
-	log(WvLog::Error, "Calling start callback.\n");
         // Mount config moniker
 	cfg.unmount(cfg.whichmount(), true); // just in case
 	cfg.mount(cfgmoniker);
@@ -90,51 +81,55 @@ public:
         }
 	
         // Initialize D-Bus
-        WvDBusConn *conn = NULL;
-        if (session_bus)
-            conn = new WvDBusConn("ca.carillon.pathfinder", DBUS_BUS_SESSION);
-        else
-            conn = new WvDBusConn("ca.carillon.pathfinder", DBUS_BUS_SYSTEM);
-        //conn->addRef();
-        //WvIStreamList::globallist.append(conn, true, "wvdbus conn");
-        dbusconn = conn;
-        WvDBusMethodListener<WvString, WvString, bool, bool> *l = 
-        new WvDBusMethodListener<WvString, WvString, bool, bool>(conn, "validate", 
-                                              ValidateReqCb(this, &PathFinderDaemon::validate_req_cb));
-        dbusconn->add_method("ca.carillon.pathfinder", "/ca/carillon/pathfinder", l);
-        add_die_stream(conn, true, "wvdbus conn");
-    }
+        dbusconn = new WvDBusConn(dbusmoniker);
+        dbusconn->request_name("ca.carillon.pathfinder");
+        // FIXME: need to check for success of name request
 
-    void validate_req_cb(WvDBusConn &conn, WvDBusReplyMsg &reply, WvString certpem, 
-                         WvString initial_policy_set_tcl, bool inital_explicit_policy, 
-                         bool initial_policy_mapping_inhibit, WvError err)
+        dbusconn->add_callback(WvDBusConn::PriNormal, 
+                               wv::bind(&PathFinderDaemon::incoming, this, 
+                                        _1), this);
+        add_die_stream(dbusconn, true, "wvdbus conn");
+    }                          
+
+    bool incoming(WvDBusMsg &msg)        
     {
-        if (!err.isok())
+        if (msg.get_dest() != "ca.carillon.pathfinder" || 
+            msg.get_path() != "/ca/carillon/pathfinder") 
+            return false;
+
+        // I guess it's for us!
+        WvString method(msg.get_member());
+        
+        if (method != "validate") 
         {
-            log(WvLog::Warning, "Received a message, but there was an error (%s).\n",
-                err.errstr().cstr());
-            bool valid = false;
-            reply.append(valid);
-            dbusconn->send(reply);
-            return;
+            log(WvLog::Warning, "Got a message asking for unknown method "
+                "'%s'.\n", method);
+            return true;
         }
+        
+        fprintf(stderr, "\n * %s\n\n", ((WvString)msg).cstr());
+
+        WvDBusMsg::Iter args(msg);
+	WvString certhex = args.getnext();
+        WvString initial_policy_set_tcl = args.getnext();
+        bool inital_explicit_policy = args.getnext();
+        bool initial_policy_mapping_inhibit = args.getnext();
 
         shared_ptr<WvX509> cert(new WvX509());
-        cert->decode(WvX509::CertHex, certpem);
+        cert->decode(WvX509::CertHex, certhex);
         if (!cert->isok())
         {
             log(WvLog::Warning, "Received a request to validate an invalid "
                 "certificate. Aborting.\n");
-            bool valid = false;
-            reply.append(valid);
-            dbusconn->send(reply);
-            return;
+            dbusconn->send(msg.reply().append(false));
+            return true;
         }
 
-        log("Received a request to validate certificate with subject %s.\n", cert->get_subject());
-        PathValidator::ValidatedCb cb(this, &PathFinderDaemon::path_validated_cb);
-        WvDBusReplyMsg *delayed_reply = new WvDBusReplyMsg(reply);
+        log("Received a request to validate certificate with subject %s.\n", 
+            cert->get_subject());
 
+        WvDBusMsg reply = msg.reply();
+            
         uint32_t flags = 0;
         if (cfg["verification options"].xgetint("skip crl check", 0))
         {
@@ -146,18 +141,25 @@ public:
         if (initial_policy_mapping_inhibit)
             flags |= WVX509_INITIAL_POLICY_MAPPING_INHIBIT;
 
-        shared_ptr<PathValidator> validator(new PathValidator(cert, initial_policy_set_tcl, flags, 
-                                                              trusted_store, intermediate_store,
-                                                              cfg, cb, delayed_reply));
+        PathValidator::ValidatedCb cb = wv::bind(
+            &PathFinderDaemon::path_validated_cb, this, _1, _2, _3, _4);
+        PathValidator *pv = new PathValidator(cert, initial_policy_set_tcl, 
+                                              flags, trusted_store, 
+                                              intermediate_store, cfg, 
+                                              cb, reply);
+        shared_ptr<PathValidator> validator(pv);
         validatormap.insert(
-            pair< WvDBusReplyMsg *, shared_ptr<PathValidator> >(delayed_reply, 
-                                                                validator));
+            pair< WvDBusMsg, shared_ptr<PathValidator> >(reply, validator));
         validator->validate();
+
+        return true;
     }
 
-    void path_validated_cb(boost::shared_ptr<WvX509> &cert, bool valid, WvError err,
-                           void *userdata)
+
+    void path_validated_cb(boost::shared_ptr<WvX509> &cert, bool valid, 
+                           WvError err, void *userdata)
     {
+#if 0
         WvDBusReplyMsg *reply = static_cast<WvDBusReplyMsg *>(userdata);
 
         WvX509Path::WvX509List extra_certs;
@@ -171,16 +173,18 @@ public:
         reply->append(err.errstr());
         dbusconn->send(*reply);
         WVDELETE(reply);
+#endif
     }
 
-    xplc_ptr<WvDBusConn> dbusconn;
+    
+    WvDBusConn *dbusconn;
     shared_ptr<WvX509Store> trusted_store;
     shared_ptr<WvX509Store> intermediate_store;
-    typedef std::map<WvDBusReplyMsg *, boost::shared_ptr<PathValidator> > ValidatorMap;
+    typedef std::map<WvDBusMsg, boost::shared_ptr<PathValidator> > ValidatorMap;
     ValidatorMap validatormap;
     WvString cfgmoniker;
+    WvString dbusmoniker;
     UniConfRoot cfg;
-    bool session_bus;
 };
 
 

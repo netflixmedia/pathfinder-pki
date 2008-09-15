@@ -170,8 +170,11 @@ bool PathFinder::get_signer(shared_ptr<WvX509> &cert)
     WvStringList ca_urls;
     cert->get_ca_urls(ca_urls);
 
-    DownloadFinishedCb cb(this, &PathFinder::signer_download_finished_cb);
-    return retrieve_object(ca_urls, cb, NULL);
+
+    DownloadFinishedCb cb = wv::bind(&PathFinder::signer_download_finished_cb, this, _1, _2, _3, _4, _5);
+
+    // return retrieve_object(ca_urls, cb, NULL);
+    return false;
 }
 
 
@@ -311,8 +314,10 @@ bool PathFinder::get_crl(shared_ptr<WvX509> &cert)
         return true;
     }
 
-    DownloadFinishedCb cb(this, &PathFinder::crl_download_finished_cb);
-    return retrieve_object(crl_urls, cb, cert.get());
+    return false;
+    // WLACH:FIXME
+    // DownloadFinishedCb cb(this, &PathFinder::crl_download_finished_cb);
+    // return retrieve_object(crl_urls, cb, cert.get());
 }
 
 

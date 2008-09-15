@@ -16,8 +16,8 @@
 class PathValidator
 {
   public:
-    typedef WvCallback<void, boost::shared_ptr<WvX509> &, bool, 
-                       WvError, void *> ValidatedCb;
+    typedef wv::function<void(boost::shared_ptr<WvX509> &, bool, 
+                              WvError, void *)> ValidatedCb;
     PathValidator(boost::shared_ptr<WvX509> &_cert,
                   WvStringParm _initial_policy_set_tcl, 
                   uint32_t _validation_flags,

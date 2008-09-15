@@ -36,7 +36,7 @@ PathValidator::PathValidator(shared_ptr<WvX509> &_cert,
 
 void PathValidator::validate()
 {
-    PathFoundCb cb(this, &PathValidator::path_found_cb);
+    PathFoundCb cb = wv::bind(&PathValidator::path_found_cb, this, _1, _2, _3);
     boost::shared_ptr<PathFinder> pathfinder(new PathFinder(cert_to_be_validated,
                                                             trusted_store,
                                                             intermediate_store,

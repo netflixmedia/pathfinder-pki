@@ -17,9 +17,7 @@
 #include <wvstream.h>
 #include <xplc/ptr.h>
 
-
-typedef WvCallback<void, WvStringParm, WvStringParm, WvBuf&, 
-    WvError, void*> DownloadFinishedCb;
+typedef wv::function<void(WvStringParm, WvStringParm, WvBuf&, WvError, void*)> DownloadFinishedCb;
 
 class Downloader
 {
@@ -32,7 +30,7 @@ class Downloader
 
   private:
     WvDynBuf downloadbuf;
-    void download_cb(WvStream &s, void *);
+    void download_cb(WvStream &s);
     void download_closed_cb(WvStream &s);
 
     WvString url;
