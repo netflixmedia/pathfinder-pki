@@ -17,14 +17,14 @@ class PathValidator
 {
   public:
     typedef wv::function<void(boost::shared_ptr<WvX509> &, bool, 
-                              WvError, void *)> ValidatedCb;
+                              WvError)> ValidatedCb;
     PathValidator(boost::shared_ptr<WvX509> &_cert,
                   WvStringParm _initial_policy_set_tcl, 
                   uint32_t _validation_flags,
                   boost::shared_ptr<WvX509Store> &_trusted_store,
                   boost::shared_ptr<WvX509Store> &_intermediate_store,
                   UniConf &_cfg, 
-                  ValidatedCb _cb, void *_userdata);
+                  ValidatedCb _cb);
     
     void validate();
 
@@ -43,7 +43,6 @@ class PathValidator
 
     UniConf cfg;
     ValidatedCb validated_cb;
-    void *userdata;
 
     WvLog log;
 };

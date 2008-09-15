@@ -41,8 +41,8 @@ static bool inc_log_level(void *)
 }
 
 
-static void path_validated_cb(boost::shared_ptr<WvX509> &cert, bool valid, WvError err,
-                              void *userdata)
+static void path_validated_cb(boost::shared_ptr<WvX509> &cert, bool valid, 
+                              WvError err)
 {
     done = true;
 
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
     PathValidator p(x509, initial_policy_set_tcl, crl_check ? 0 : WVX509_SKIP_CRL_CHECK, 
                     trusted_store, intermediate_store,
-                    cfg, path_validated_cb, NULL);
+                    cfg, path_validated_cb);
     p.validate();
 
     while (!done && WvIStreamList::globallist.isok())
