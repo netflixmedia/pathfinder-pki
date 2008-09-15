@@ -25,4 +25,5 @@ pathfinderd
 pathverify
 t/all.t
 version.h
+wvcrash.txt
 x509path/libx509path.a
