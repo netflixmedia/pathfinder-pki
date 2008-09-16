@@ -1,0 +1,433 @@
+diff -urN openldap-2.3.43-clean/build/top.mk openldap-2.3.43-pathfinder-tls/build/top.mk
+--- openldap-2.3.43-clean/build/top.mk	2008-02-11 18:24:07.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/build/top.mk	2008-09-15 11:30:03.000000000 -0400
+@@ -200,6 +200,10 @@
+ SLAPD_LIBS = @SLAPD_LIBS@ @SLAPD_PERL_LDFLAGS@ @SLAPD_SQL_LDFLAGS@ @SLAPD_SQL_LIBS@ @SLAPD_SLP_LIBS@ @SLAPD_GMP_LIBS@
+ SLURPD_LIBS = @SLURPD_LIBS@
+ 
++PATHFINDER_INC = @PATHFINDER_INC@
++PATHFINDER_LIBS = @PATHFINDER_LIBS@
++
++
+ # Our Defaults
+ CC = $(AC_CC)
+ DEFS = $(LDAP_INCPATH) $(XINCPATH) $(XDEFS) $(AC_DEFS) $(DEFINES)
+diff -urN openldap-2.3.43-clean/clients/tools/Makefile.in openldap-2.3.43-pathfinder-tls/clients/tools/Makefile.in
+--- openldap-2.3.43-clean/clients/tools/Makefile.in	2008-02-11 18:24:07.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/clients/tools/Makefile.in	2008-09-15 11:30:03.000000000 -0400
+@@ -22,7 +22,7 @@
+ MKVOPTS = -s
+ 
+ XLIBS =  $(LDAP_L)
+-XXLIBS	= $(SECURITY_LIBS) $(LUTIL_LIBS)
++XXLIBS	= $(SECURITY_LIBS) $(LUTIL_LIBS) $(PATHFINDER_LIBS)
+ 
+ XSRCS	= ldsversion.c ldmversion.c lddversion.c ldrversion.c \
+ 	ldpversion.c ldwversion.c ldcversion.c
+diff -urN openldap-2.3.43-clean/configure.in openldap-2.3.43-pathfinder-tls/configure.in
+--- openldap-2.3.43-clean/configure.in	2008-02-11 18:24:06.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/configure.in	2008-09-15 11:30:03.000000000 -0400
+@@ -256,6 +256,9 @@
+ OL_ARG_WITH(odbc,
+ 	[  --with-odbc             with specific ODBC support iodbc|unixodbc|auto],
+ 	auto, [auto iodbc unixodbc] )
++OL_ARG_WITH(pathfinder,
++	[  --with-pathfinder       with libpathfinder support],
++	auto, [auto yes no] )
+ 
+ dnl ----------------------------------------------------------------
+ dnl Server options
+@@ -2307,6 +2310,37 @@
+ fi
+ 
+ dnl ----------------------------------------------------------------
++dnl
++dnl Check for libpathfinder
++dnl
++ol_link_pathfinder=no
++if test $ol_with_pathfinder != no ; then
++    AC_CHECK_HEADERS(pathfinder-1/libpathfinder.h)
++
++    if test $ac_cv_header_pathfinder_1_libpathfinder_h = yes ; then
++        save_LIBS="$LIBS"
++        LIBS="-lpathfinder-openssl-1 -ldbus-1 -lssl $LIBS"
++        AC_CHECK_LIB(pathfinder-openssl-1, pathfinder_dbus_verify, 
++                           [have_pathfinder=yes], [have_pathfinder=no])
++        LIBS="$save_LIBS"
++
++        if test $have_pathfinder = yes ; then
++            ol_with_pathfinder=found
++            ol_link_pathfinder=yes
++
++            PATHFINDER_INC=$(pkg-config --cflags pathfinder-openssl)
++            PATHFINDER_LIBS=$(pkg-config --libs pathfinder-openssl)
++        fi
++    fi
++fi
++                                                             
++if test $ol_link_pathfinder = yes ; then                     
++       AC_DEFINE(HAVE_PATHFINDER, 1, [define if you have -lpathfinder-openssl-1])                                                            
++fi                                                           
++                                                             
++
++
++dnl ----------------------------------------------------------------
+ dnl FreeBSD (and others) have crypt(3) in -lcrypt
+ if test $ol_enable_crypt != no ; then
+ 	save_LIBS="$LIBS"
+@@ -3173,6 +3207,10 @@
+ AC_SUBST(SLAPD_SQL_LIBS)
+ AC_SUBST(SLAPD_SQL_INCLUDES)
+ 
++AC_SUBST(PATHFINDER_INC)
++AC_SUBST(PATHFINDER_LIBS)
++
++
+ dnl ----------------------------------------------------------------
+ dnl final help output
+ AC_ARG_WITH(xxinstall,[
+diff -urN openldap-2.3.43-clean/include/ldap.h openldap-2.3.43-pathfinder-tls/include/ldap.h
+--- openldap-2.3.43-clean/include/ldap.h	2008-02-11 18:24:10.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/include/ldap.h	2008-09-15 11:30:03.000000000 -0400
+@@ -137,6 +137,8 @@
+ #define LDAP_OPT_X_TLS_CONNECT_CB	0x600c
+ #define LDAP_OPT_X_TLS_CONNECT_ARG	0x600d
+ #define LDAP_OPT_X_TLS_DHFILE		0x600e
++#define LDAP_OPT_X_TLS_PATHFINDER       0x600f
++#define LDAP_OPT_X_TLS_PF_POLICY        0x6010
+ 
+ #define LDAP_OPT_X_TLS_NEVER	0
+ #define LDAP_OPT_X_TLS_HARD		1
+diff -urN openldap-2.3.43-clean/include/stamp-h1 openldap-2.3.43-pathfinder-tls/include/stamp-h1
+--- openldap-2.3.43-clean/include/stamp-h1	1969-12-31 19:00:00.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/include/stamp-h1	2008-09-15 11:32:40.000000000 -0400
+@@ -0,0 +1 @@
++timestamp for include/portable.h
+diff -urN openldap-2.3.43-clean/include/stamp-h2 openldap-2.3.43-pathfinder-tls/include/stamp-h2
+--- openldap-2.3.43-clean/include/stamp-h2	1969-12-31 19:00:00.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/include/stamp-h2	2008-09-15 11:32:40.000000000 -0400
+@@ -0,0 +1 @@
++timestamp for include/ldap_features.h
+diff -urN openldap-2.3.43-clean/include/stamp-h3 openldap-2.3.43-pathfinder-tls/include/stamp-h3
+--- openldap-2.3.43-clean/include/stamp-h3	1969-12-31 19:00:00.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/include/stamp-h3	2008-09-15 11:32:40.000000000 -0400
+@@ -0,0 +1 @@
++timestamp for include/lber_types.h
+diff -urN openldap-2.3.43-clean/libraries/libldap/Makefile.in openldap-2.3.43-pathfinder-tls/libraries/libldap/Makefile.in
+--- openldap-2.3.43-clean/libraries/libldap/Makefile.in	2008-02-11 18:24:11.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/libraries/libldap/Makefile.in	2008-09-15 11:30:03.000000000 -0400
+@@ -44,8 +44,10 @@
+ 
+ LIB_DEFS = -DLDAP_LIBRARY
+ 
++XINCPATH = $(PATHFINDER_INC)
++
+ XLIBS = $(LIBRARY) $(LDAP_LIBLBER_LA) $(LDAP_LIBLUTIL_A)
+-XXLIBS = $(SECURITY_LIBS) $(LUTIL_LIBS)
++XXLIBS = $(SECURITY_LIBS) $(LUTIL_LIBS) $(PATHFINDER_LIBS)
+ NT_LINK_LIBS = $(LDAP_LIBLBER_LA) $(AC_LIBS) $(SECURITY_LIBS)
+ UNIX_LINK_LIBS = $(LDAP_LIBLBER_LA) $(AC_LIBS) $(SECURITY_LIBS)
+ 
+diff -urN openldap-2.3.43-clean/libraries/libldap/init.c openldap-2.3.43-pathfinder-tls/libraries/libldap/init.c
+--- openldap-2.3.43-clean/libraries/libldap/init.c	2008-02-11 18:24:11.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/libraries/libldap/init.c	2008-09-15 11:30:03.000000000 -0400
+@@ -104,7 +104,12 @@
+ #ifdef HAVE_OPENSSL_CRL
+ 	{0, ATTR_TLS,	"TLS_CRLCHECK",		NULL,	LDAP_OPT_X_TLS_CRLCHECK},
+ #endif
+-        
++
++#ifdef HAVE_PATHFINDER
++        {0, ATTR_TLS,   "TLS_PATHFINDER",       NULL,   LDAP_OPT_X_TLS_PATHFINDER},
++        {0, ATTR_TLS,   "TLS_PF_POLICY",        NULL,   LDAP_OPT_X_TLS_PF_POLICY},
++#endif
++
+ #endif
+ 
+ 	{0, ATTR_NONE,		NULL,		NULL,	0}
+diff -urN openldap-2.3.43-clean/libraries/libldap/tls.c openldap-2.3.43-pathfinder-tls/libraries/libldap/tls.c
+--- openldap-2.3.43-clean/libraries/libldap/tls.c	2008-02-11 18:24:12.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/libraries/libldap/tls.c	2008-09-15 11:30:03.000000000 -0400
+@@ -47,6 +47,10 @@
+ #include <ssl.h>
+ #endif
+ 
++#ifdef HAVE_PATHFINDER
++#include <libpathfinder.h>
++#endif
++
+ static int  tls_opt_trace = 1;
+ static char *tls_opt_certfile = NULL;
+ static char *tls_opt_keyfile = NULL;
+@@ -57,6 +61,10 @@
+ #ifdef HAVE_OPENSSL_CRL
+ static int  tls_opt_crlcheck = LDAP_OPT_X_TLS_CRL_NONE;
+ #endif
++#ifdef HAVE_PATHFINDER
++static int  tls_opt_pathfinder = 0;
++static char *tls_opt_pf_policy = NULL;
++#endif
+ static char *tls_opt_ciphersuite = NULL;
+ static char *tls_opt_randfile = NULL;
+ 
+@@ -68,6 +76,10 @@
+ static void tls_info_cb( const SSL *ssl, int where, int ret );
+ static int tls_verify_cb( int ok, X509_STORE_CTX *ctx );
+ static int tls_verify_ok( int ok, X509_STORE_CTX *ctx );
++#ifdef HAVE_PATHFINDER
++    static int tls_pathfinder_verify_cb( X509_STORE_CTX *ctx, void *arg );
++    static int tls_pathfinder_verify_ok( X509_STORE_CTX *ctx, void *arg );
++#endif
+ static RSA * tls_tmp_rsa_cb( SSL *ssl, int is_export, int key_length );
+ static STACK_OF(X509_NAME) * get_ca_list( char * bundle, char * dir );
+ 
+@@ -383,9 +395,26 @@
+ 			}
+ 		}
+ 
++#ifdef HAVE_PATHFINDER
++                if (tls_opt_pathfinder)
++                {
++                    SSL_CTX_set_verify( tls_def_ctx, i, NULL );
++                    SSL_CTX_set_cert_verify_callback( tls_def_ctx,
++                            tls_opt_require_cert == LDAP_OPT_X_TLS_ALLOW ?
++                            tls_pathfinder_verify_ok : tls_pathfinder_verify_cb,
++                            NULL );
++                }
++                else
++                {
++                    SSL_CTX_set_verify( tls_def_ctx, i,
++                            tls_opt_require_cert == LDAP_OPT_X_TLS_ALLOW ?
++                            tls_verify_ok : tls_verify_cb );
++                }
++#else
+ 		SSL_CTX_set_verify( tls_def_ctx, i,
+ 			tls_opt_require_cert == LDAP_OPT_X_TLS_ALLOW ?
+ 			tls_verify_ok : tls_verify_cb );
++#endif
+ 		SSL_CTX_set_tmp_rsa_callback( tls_def_ctx, tls_tmp_rsa_cb );
+ 		if ( tls_opt_dhfile ) {
+ 			SSL_CTX_set_tmp_dh_callback( tls_def_ctx, tls_tmp_dh_cb );
+@@ -1290,6 +1319,15 @@
+ 		*(int *)arg = tls_opt_crlcheck;
+ 		break;
+ #endif
++#ifdef HAVE_PATHFINDER
++        case LDAP_OPT_X_TLS_PATHFINDER:
++                *(int *)arg = tls_opt_pathfinder;
++                break;
++        case LDAP_OPT_X_TLS_PF_POLICY:
++                *(char **)arg = tls_opt_pf_policy ?
++                        LDAP_STRDUP( tls_opt_pf_policy ) : NULL;
++                break;
++#endif
+ 	case LDAP_OPT_X_TLS_CIPHER_SUITE:
+ 		*(char **)arg = tls_opt_ciphersuite ?
+ 			LDAP_STRDUP( tls_opt_ciphersuite ) : NULL;
+@@ -1423,6 +1461,15 @@
+ 		}
+ 		return -1;
+ #endif
++#ifdef HAVE_PATHFINDER
++        case LDAP_OPT_X_TLS_PATHFINDER:
++                tls_opt_pathfinder = *(int *) arg;
++                break;
++        case LDAP_OPT_X_TLS_PF_POLICY:
++                if ( tls_opt_pf_policy ) LDAP_FREE( tls_opt_pf_policy );
++                tls_opt_pf_policy = arg ? LDAP_STRDUP( (char *) arg ) : NULL;
++                break;
++#endif
+ 	case LDAP_OPT_X_TLS_CIPHER_SUITE:
+ 		if ( tls_opt_ciphersuite ) LDAP_FREE( tls_opt_ciphersuite );
+ 		tls_opt_ciphersuite = arg ? LDAP_STRDUP( (char *) arg ) : NULL;
+@@ -1607,6 +1654,60 @@
+ 	return 1;
+ }
+ 
++#ifdef HAVE_PATHFINDER
++static int
++tls_pathfinder_verify_cb( X509_STORE_CTX *ctx, void *arg)
++{
++        SSL *ssl = X509_STORE_CTX_get_ex_data( ctx,
++                SSL_get_ex_data_X509_STORE_CTX_idx() );
++
++        const char *hex     = "0123456789ABCDEF";
++        size_t size = i2d_X509( ctx->cert, NULL );
++        unsigned char *keybuf, *iend;
++        iend = keybuf = malloc( size );
++        i2d_X509( ctx->cert, &iend );
++        char *certdata_str = malloc( size * 2 + 1 );
++        unsigned char *cp = keybuf;
++        char *certdata_str_i = certdata_str;
++        while (cp < iend)
++        {
++                unsigned char ch = *cp++;
++                *certdata_str_i++ = hex[( ch >> 4 ) & 0xf];
++                *certdata_str_i++ = hex[ch & 0xf];
++        }
++        *certdata_str_i = 0;
++        free( keybuf );
++
++        const char *policy = tls_opt_pf_policy;
++        if (!policy || !strcmp( policy, "" ))
++                policy = "2.5.29.32.0"; // anyPolicy
++
++        int initial_explicit_policy = strcmp(policy, "2.5.29.32.0") ? 1 : 0;
++
++        char *errmsg;
++        int validated = pathfinder_dbus_verify( certdata_str,
++                                                policy,
++                                                initial_explicit_policy,
++                                                0, &errmsg);
++        if (!validated)
++                LDAP_LOG( TRANSPORT, ERR,
++                        "TLS pathfinder certificate verification: Error, %s\n",
++                        errmsg, 0, 0 );
++
++        free(errmsg);
++        free(certdata_str);
++
++        return validated;
++}
++
++static int
++tls_pathfinder_verify_ok( X509_STORE_CTX *ctx, void *arg)
++{
++        (void) tls_pathfinder_verify_cb( ctx, arg );
++        return 1;
++}
++#endif
++
+ /* Inspired by ERR_print_errors in OpenSSL */
+ static void
+ tls_report_error( void )
+diff -urN openldap-2.3.43-clean/libraries/libldap_r/Makefile.in openldap-2.3.43-pathfinder-tls/libraries/libldap_r/Makefile.in
+--- openldap-2.3.43-clean/libraries/libldap_r/Makefile.in	2008-02-11 18:24:13.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/libraries/libldap_r/Makefile.in	2008-09-15 11:30:03.000000000 -0400
+@@ -51,9 +51,10 @@
+ 
+ LIB_DEFS = -DLDAP_LIBRARY
+ 
++XINCPATH = $(PATHFINDER_INC)
+ XDEFS = -DLDAP_R_COMPILE -I$(XXDIR)
+ XLIBS = $(LIBRARY) $(LDAP_LIBLBER_LA) $(LDAP_LIBLUTIL_A)
+-XXLIBS = $(SECURITY_LIBS) $(LUTIL_LIBS)
++XXLIBS = $(SECURITY_LIBS) $(LUTIL_LIBS) $(PATHFINDER_LIBS)
+ XXXLIBS = $(LTHREAD_LIBS)
+ NT_LINK_LIBS = $(LDAP_LIBLBER_LA) $(AC_LIBS) $(SECURITY_LIBS)
+ UNIX_LINK_LIBS = $(LDAP_LIBLBER_LA) $(AC_LIBS) $(SECURITY_LIBS)
+diff -urN openldap-2.3.43-clean/libraries/librewrite/Makefile.in openldap-2.3.43-pathfinder-tls/libraries/librewrite/Makefile.in
+--- openldap-2.3.43-clean/libraries/librewrite/Makefile.in	2008-02-11 18:24:14.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/libraries/librewrite/Makefile.in	2008-09-15 11:30:03.000000000 -0400
+@@ -30,7 +30,7 @@
+ PROGRAMS	= rewrite
+ XLIBS = $(LIBRARY) $(LDAP_LIBLUTIL_A) \
+ 	$(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-XXLIBS  = $(SECURITY_LIBS) $(LUTIL_LIBS)
++XXLIBS  = $(SECURITY_LIBS) $(LUTIL_LIBS) $(PATHFINDER_LIBS)
+ XXXLIBS = $(LTHREAD_LIBS)
+ 
+ rewrite:	$(XLIBS) rewrite.o parse.o
+diff -urN openldap-2.3.43-clean/servers/slapd/Makefile.in openldap-2.3.43-pathfinder-tls/servers/slapd/Makefile.in
+--- openldap-2.3.43-clean/servers/slapd/Makefile.in	2008-02-11 18:24:14.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/servers/slapd/Makefile.in	2008-09-15 11:30:03.000000000 -0400
+@@ -73,7 +73,7 @@
+ XLDFLAGS = $(MODULES_LDFLAGS)
+ 
+ XLIBS = $(SLAPD_STATIC_DEPENDS) $(SLAPD_L) $(MODULES_LIBS) 
+-XXLIBS = $(SLAPD_LIBS) $(SECURITY_LIBS) $(LUTIL_LIBS)
++XXLIBS = $(SLAPD_LIBS) $(SECURITY_LIBS) $(LUTIL_LIBS) $(PATHFINDER_LIBS)
+ XXXLIBS = $(LTHREAD_LIBS) $(SLAPI_LIBS)
+ 
+ BUILD_OPT = "--enable-slapd"
+diff -urN openldap-2.3.43-clean/servers/slapd/bconfig.c openldap-2.3.43-pathfinder-tls/servers/slapd/bconfig.c
+--- openldap-2.3.43-clean/servers/slapd/bconfig.c	2008-02-11 18:24:15.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/servers/slapd/bconfig.c	2008-09-15 11:30:03.000000000 -0400
+@@ -137,6 +137,8 @@
+ 	CFG_TLS_DH_FILE,
+ 	CFG_TLS_VERIFY,
+ 	CFG_TLS_CRLCHECK,
++        CFG_TLS_PATHFINDER,
++        CFG_TLS_PF_POLICY,
+ 	CFG_CONCUR,
+ 	CFG_THREADS,
+ 	CFG_SALT,
+@@ -599,6 +601,24 @@
+ #endif
+ 		"( OLcfgGlAt:77 NAME 'olcTLSDHParamFile' "
+ 			"SYNTAX OMsDirectoryString SINGLE-VALUE )", NULL, NULL },
++        { "TLSPathfinder", NULL, 0, 0, 0,
++#if defined(HAVE_TLS) && defined(HAVE_PATHFINDER)
++                CFG_TLS_PATHFINDER|ARG_ON_OFF|ARG_MAGIC, &config_tls_option,
++#else
++                ARG_IGNORED, NULL,
++#endif
++                "( OLcfgGlAt:76 NAME 'olcTLSPathfinder' "
++                        "SYNTAX OMsBoolean SINGLE-VALUE )", NULL, NULL }
++,
++        { "TLSPathfinderPolicy", NULL, 0, 0, 0,
++#if defined(HAVE_TLS) && defined(HAVE_PATHFINDER)
++                CFG_TLS_PF_POLICY|ARG_STRING|ARG_MAGIC, &config_tls_option,
++#else
++                ARG_IGNORED, NULL,
++#endif
++                "( OLcfgGlAt:81 NAME 'olcTLSPathfinderPolicy' "
++                        "SYNTAX OMsDirectoryString SINGLE-VALUE )", NULL, NULL }
++,
+ 	{ "tool-threads", "count", 2, 2, 0, ARG_INT|ARG_MAGIC|CFG_TTHREADS,
+ 		&config_generic, "( OLcfgGlAt:80 NAME 'olcToolThreads' "
+ 			"SYNTAX OMsInteger SINGLE-VALUE )", NULL, NULL },
+@@ -661,7 +681,7 @@
+ 		 "olcTLSCACertificatePath $ olcTLSCertificateFile $ "
+ 		 "olcTLSCertificateKeyFile $ olcTLSCipherSuite $ olcTLSCRLCheck $ "
+ 		 "olcTLSRandFile $ olcTLSVerifyClient $ olcTLSDHParamFile $ "
+-		 "olcToolThreads $ "
++		 "olcTLSPathfinder $ olcTLSPathfinderPolicy $ olcToolThreads $ "
+ 		 "olcObjectIdentifier $ olcAttributeTypes $ olcObjectClasses $ "
+ 		 "olcDitContentRules ) )", Cft_Global },
+ 	{ "( OLcfgGlOc:2 "
+@@ -2748,7 +2768,9 @@
+ 	case CFG_TLS_CERT_KEY:	flag = LDAP_OPT_X_TLS_KEYFILE;		break;
+ 	case CFG_TLS_CA_PATH:	flag = LDAP_OPT_X_TLS_CACERTDIR;	break;
+ 	case CFG_TLS_CA_FILE:	flag = LDAP_OPT_X_TLS_CACERTFILE;	break;
+-	case CFG_TLS_DH_FILE:	flag = LDAP_OPT_X_TLS_DHFILE;	break;
++	case CFG_TLS_DH_FILE:	flag = LDAP_OPT_X_TLS_DHFILE;	        break;
++        case CFG_TLS_PATHFINDER:flag = LDAP_OPT_X_TLS_PATHFINDER;       break;
++        case CFG_TLS_PF_POLICY: flag = LDAP_OPT_X_TLS_PF_POLICY;        break;
+ 	default:		Debug(LDAP_DEBUG_ANY, "%s: "
+ 					"unknown tls_option <0x%x>\n",
+ 					c->log, c->type, 0);
+@@ -2759,7 +2781,8 @@
+ 	} else if ( c->op == LDAP_MOD_DELETE ) {
+ 		return ldap_pvt_tls_set_option( NULL, flag, NULL );
+ 	}
+-	ch_free(c->value_string);
++        if (c->type & ARG_STRING)
++            ch_free(c->value_string);
+ 	return(ldap_pvt_tls_set_option(NULL, flag, c->argv[1]));
+ }
+ 
+diff -urN openldap-2.3.43-clean/servers/slurpd/Makefile.in openldap-2.3.43-pathfinder-tls/servers/slurpd/Makefile.in
+--- openldap-2.3.43-clean/servers/slurpd/Makefile.in	2008-02-11 18:24:26.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/servers/slurpd/Makefile.in	2008-09-15 16:44:07.000000000 -0400
+@@ -40,7 +40,7 @@
+ 
+ # $(LTHREAD_LIBS) must be last!
+ XLIBS = $(SLURPD_L)
+-XXLIBS = $(SLURPD_LIBS) $(SECURITY_LIBS) $(LUTIL_LIBS)
++XXLIBS = $(SLURPD_LIBS) $(SECURITY_LIBS) $(LUTIL_LIBS) $(PATHFINDER_LIBS)
+ XXXLIBS = $(LTHREAD_LIBS)
+ 
+ slurpd:	version.o
+diff -urN openldap-2.3.43-clean/tests/progs/Makefile.in openldap-2.3.43-pathfinder-tls/tests/progs/Makefile.in
+--- openldap-2.3.43-clean/tests/progs/Makefile.in	2008-02-11 18:24:28.000000000 -0500
++++ openldap-2.3.43-pathfinder-tls/tests/progs/Makefile.in	2008-09-15 11:30:03.000000000 -0400
+@@ -23,7 +23,7 @@
+ LDAP_LIBDIR= ../../libraries
+ 
+ XLIBS    = $(LDAP_LIBLDAP_LA) $(LDAP_LIBLBER_LA) $(LDAP_LIBLUTIL_A)
+-XXLIBS	= $(SECURITY_LIBS) $(LUTIL_LIBS)
++XXLIBS	= $(SECURITY_LIBS) $(LUTIL_LIBS) $(PATHFINDER_LIBS)
+ 
+ # build-tools: FORCE
+ # $(MAKE) $(MFLAGS) load-tools
