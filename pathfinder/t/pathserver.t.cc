@@ -44,6 +44,43 @@ public:
 };
 
 
+class PathServerTester
+{
+public:
+    TestDBusServer serv;
+    WvDBusConn *conn;
+    UniConfRoot cfg;
+    shared_ptr<WvX509Store> trusted_store;
+    shared_ptr<WvX509Store> intermediate_store;
+    PathServer pathserver;
+
+    PathServerTester() : 
+        cfg("temp:"),
+        trusted_store(new WvX509Store),
+        intermediate_store(new WvX509Store),
+        pathserver(trusted_store, intermediate_store, cfg)
+    {
+    }
+
+    ~PathServerTester() 
+    {
+        WVRELEASE(conn);
+    }
+
+    void init()
+    {
+        conn = new WvDBusConn(serv.moniker);
+        WvIStreamList::globallist.append(conn, false, "dbus connection");
+        conn->request_name("ca.carillon.pathfinder");
+        
+        conn->add_callback(WvDBusConn::PriNormal, 
+                           wv::bind(&PathServer::incoming, pathserver, 
+                                    conn, _1), &pathserver);
+        
+    }
+};
+
+
 static int myreply_count = 0;
 static bool myreply_ok = false;
 
@@ -62,21 +99,8 @@ static bool myreply(WvDBusMsg &msg)
 
 WVTEST_MAIN("pathserver basic")
 {
-    TestDBusServer serv;
-    WvDBusConn conn1(serv.moniker);
-    WvIStreamList::globallist.append(&conn1, false, "dbus connection");
-    
-    conn1.request_name("ca.carillon.pathfinder");
-
-    UniConfRoot cfg("temp:");
-    shared_ptr<WvX509Store> trusted_store(new WvX509Store);
-    shared_ptr<WvX509Store> intermediate_store(new WvX509Store);
-
-    PathServer pathserver(trusted_store, intermediate_store,
-                          cfg);
-    conn1.add_callback(WvDBusConn::PriNormal, 
-                       wv::bind(&PathServer::incoming, pathserver, 
-                                &conn1, _1), &pathserver);
+    PathServerTester tester;
+    tester.init();
 
     WvX509 x509;
     x509.decode(WvX509::CertFileDER, WvString("%s%s", CERTS_PATH, 
@@ -89,7 +113,7 @@ WVTEST_MAIN("pathserver basic")
     msg.append(false);
     msg.append(false);
 
-    conn1.send(msg, myreply);
+    tester.conn->send(msg, myreply);
 
     while (myreply_count < 1)
         WvIStreamList::globallist.runonce();
