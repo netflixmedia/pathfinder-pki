@@ -8,6 +8,7 @@
  */
 
 #include "pathserver.h"
+#include "wvx509policytree.h"
 
 using namespace boost;
 using namespace std;
@@ -45,6 +46,9 @@ bool PathServer::incoming(WvDBusConn *conn, WvDBusMsg &msg)
     WvString initial_policy_set_tcl = args.getnext();
     bool initial_explicit_policy = args.getnext();
     bool initial_policy_mapping_inhibit = args.getnext();
+    // appname is strictly optional, as pathfinder did not always support
+    // the option
+    WvString appname = args.getnext();
     
     shared_ptr<WvX509> cert(new WvX509());
     cert->decode(WvX509::CertHex, certhex);
@@ -71,6 +75,20 @@ bool PathServer::incoming(WvDBusConn *conn, WvDBusMsg &msg)
         flags |= WVX509_INITIAL_EXPLICIT_POLICY;
     if (initial_policy_mapping_inhibit)
         flags |= WVX509_INITIAL_POLICY_MAPPING_INHIBIT;
+
+    // check policy input: if it's anyPolicy, we want to use the default
+    // policy for the "app" (falling back again to ANY_POLICY if there
+    // is nothing specified)
+    WvStringList initial_policy_set;
+    wvtcl_decode(initial_policy_set, initial_policy_set_tcl);
+    if (initial_policy_set.count() == 1 && 
+        initial_policy_set.popstr() == ANY_POLICY_OID &&
+        !!appname)
+    {
+        initial_policy_set_tcl = cfg["policy"].xget(appname, ANY_POLICY_OID);
+        log("Using special policy %s for appname %s.\n", 
+            initial_policy_set_tcl, appname);
+    }
     
     PathValidator::ValidatedCb cb = wv::bind(
         &PathServer::path_validated_cb, this, _1, _2, _3, conn, reply);

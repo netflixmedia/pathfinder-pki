@@ -9,6 +9,7 @@
 
 
 #include "pathvalidator.h"
+#include "wvx509policytree.h"
 
 using namespace boost;
 using namespace std;
