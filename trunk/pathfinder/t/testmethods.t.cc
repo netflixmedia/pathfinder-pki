@@ -22,11 +22,13 @@ Tester::~Tester()
 
 void Tester::add_trusted_cert(WvStringParm certname)
 {
-    shared_ptr<WvX509> x(new WvX509);
-    x->decode(WvX509::CertFileDER, WvString("%s%s", CERTS_PATH, certname));
     trusted_store->add_file(WvString("%s%s", CERTS_PATH, certname));
+    
+    // note: we don't add trusted certificates to the path, whether or not
+    // a trusted certificate has signed the first certificate in the path
+    // is one of the things that determines whether or not the path is valid
+    // see RFC3280 for more details
 }
-
 
 void Tester::add_untrusted_cert(WvStringParm certname)
 {
