@@ -81,10 +81,7 @@ public:
 };
 
 
-static int myreply_count = 0;
-static bool myreply_ok = false;
-
-static bool myreply(WvDBusMsg &msg)
+static bool myreply(WvDBusMsg &msg, int &myreply_count, bool &myreply_ok)
 {
     myreply_count++;
 
@@ -113,7 +110,11 @@ WVTEST_MAIN("pathserver basic")
     msg.append(false);
     msg.append(false);
 
-    tester.conn->send(msg, myreply);
+    int myreply_count = 0;
+    bool myreply_ok = false;
+
+    tester.conn->send(msg, wv::bind(&myreply, _1, wv::ref(myreply_count),
+                                    wv::ref(myreply_ok)));
 
     while (myreply_count < 1)
         WvIStreamList::globallist.runonce();
