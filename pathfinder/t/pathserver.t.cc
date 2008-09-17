@@ -7,8 +7,11 @@
 
 using namespace boost;
 
+// these tests are meant to test that the D-Bus interface to pathfinder
+// are working as expected
 
-// shamelessly copied from wvdbusserver.t.cc in wvstreams
+// the following class is shamelessly copied from wvdbusserver.t.cc in 
+// wvstreams
 class TestDBusServer
 {
 public:
@@ -78,20 +81,46 @@ public:
                                     conn, _1), &pathserver);
         
     }
+
+    bool myreply(WvDBusMsg &msg, int &myreply_count, bool &myreply_ok)
+    {
+        myreply_count++;
+        
+        WvDBusMsg::Iter args(msg);
+        myreply_ok = args.getnext();
+        
+        wvcon->print("got reply: ok %s count %s\n", myreply_ok, myreply_count);
+        
+        return true; 
+    }
+
+    bool test(WvStringParm certname, WvStringParm policy_set_tcl,
+              bool initial_explicit_policy, 
+              bool initial_policy_mapping_inhibit)
+    {
+        WvX509 x509;
+        x509.decode(WvX509::CertFileDER, WvString("%s%s", CERTS_PATH, 
+                                                  certname));
+
+        WvDBusMsg msg("ca.carillon.pathfinder", "/ca/carillon/pathfinder", 
+                      "ca.carillon.pathfinder", "validate");
+        msg.append(x509.encode(WvX509::CertHex));
+        msg.append(policy_set_tcl);
+        msg.append(initial_explicit_policy);
+        msg.append(initial_policy_mapping_inhibit);
+        
+        int myreply_count = 0;
+        bool myreply_ok = false;
+        
+        conn->send(msg, wv::bind(&PathServerTester::myreply, this,
+                                        _1, wv::ref(myreply_count),
+                                        wv::ref(myreply_ok)));
+        while (myreply_count < 1)
+            WvIStreamList::globallist.runonce();
+
+        return myreply_ok;
+    }
 };
-
-
-static bool myreply(WvDBusMsg &msg, int &myreply_count, bool &myreply_ok)
-{
-    myreply_count++;
-
-    WvDBusMsg::Iter args(msg);
-    myreply_ok = args.getnext();
-
-    wvcon->print("got reply: ok %s count %s\n", myreply_ok, myreply_count);
-
-    return true; 
-}
 
 
 WVTEST_MAIN("pathserver basic")
@@ -100,36 +129,16 @@ WVTEST_MAIN("pathserver basic")
     tester.init();
     tester.cfg["verification options"].xsetint("skip crl check", 1);
 
-    WvX509 x509;
-    x509.decode(WvX509::CertFileDER, WvString("%s%s", CERTS_PATH, 
-                                           "GoodCACert.crt"));
-
-    WvDBusMsg msg("ca.carillon.pathfinder", "/ca/carillon/pathfinder", 
-                  "ca.carillon.pathfinder", "validate");
-    msg.append(x509.encode(WvX509::CertHex));
-    msg.append(WvString(ANY_POLICY_OID));
-    msg.append(false);
-    msg.append(false);
-
-    int myreply_count = 0;
-    bool myreply_ok = false;
-
     // first test: don't have signing certificate in trusted store, should
     // fail
-    tester.conn->send(msg, wv::bind(&myreply, _1, wv::ref(myreply_count),
-                                    wv::ref(myreply_ok)));
-    while (myreply_count < 1)
-        WvIStreamList::globallist.runonce();
-    WVFAILEQ(myreply_ok, 1);
+    WVFAIL(tester.test("GoodCACert.crt", ANY_POLICY_OID, false, false));
 
     // second test: DO have signing cert in trusted store, should pass
     // (note that we skip the CRL check in this test, otherwise it would
     // fail because no CRL dp is specified in the certificate)
     tester.trusted_store->add_file(WvString("%s%s", CERTS_PATH, 
                                             "TrustAnchorRootCertificate.crt"));
-    tester.conn->send(msg, wv::bind(&myreply, _1, wv::ref(myreply_count),
-                                    wv::ref(myreply_ok)));
-    while (myreply_count < 2)
-        WvIStreamList::globallist.runonce();
-    WVPASSEQ(myreply_ok, 1);
+    WVPASS(tester.test("GoodCACert.crt", ANY_POLICY_OID, false, false));
 }
+
+
