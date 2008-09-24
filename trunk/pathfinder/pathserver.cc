@@ -16,12 +16,14 @@ using namespace std;
 
 PathServer::PathServer(boost::shared_ptr<WvX509Store> _trusted_store,
                        boost::shared_ptr<WvX509Store> _intermediate_store,
+                       boost::shared_ptr<WvCRLStore> _crlstore,
                        UniConf &_cfg) :
     log("PathFinder"),
     cfg(_cfg)
 {
     trusted_store = _trusted_store;
     intermediate_store = _intermediate_store;
+    crlstore = _crlstore;
 }
 
 
@@ -94,7 +96,7 @@ bool PathServer::incoming(WvDBusConn *conn, WvDBusMsg &msg)
         &PathServer::path_validated_cb, this, _1, _2, _3, conn, reply);
     PathValidator *pv = new PathValidator(cert, initial_policy_set_tcl, 
                                           flags, trusted_store, 
-                                          intermediate_store, cfg, 
+                                          intermediate_store, crlstore, cfg, 
                                           cb);
     shared_ptr<PathValidator> validator(pv);
     validatormap.insert(

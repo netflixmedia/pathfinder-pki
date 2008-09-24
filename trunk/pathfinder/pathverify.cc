@@ -14,11 +14,12 @@
 #include <wvistreamlist.h>
 
 #include "pathvalidator.h"
+#include "wvx509policytree.h" // for ANY_POLICY_OID
 
 using namespace boost;
 
 #define DEFAULT_CONFIG_MONIKER "ini:/etc/pathfinderd.ini"
-#define DEFAULT_POLICY "2.5.29.32.0"
+#define DEFAULT_CRLSTORE_LOCATION "/var/cache/pathfinder/crls/"
 
 
 static WvLog::LogLevel log_level = WvLog::Info;
@@ -62,7 +63,7 @@ int main(int argc, char *argv[])
     WvStringList remaining_args;
     WvString certtype("pem");
     WvString cfgmoniker(DEFAULT_CONFIG_MONIKER);
-    WvString initial_policy_set_tcl(DEFAULT_POLICY);
+    WvString initial_policy_set_tcl(ANY_POLICY_OID);
     bool crl_check = true;
 
     WvArgs args;
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
     args.add_option('t', "type", "Certificate type: der or pem (default: pem)", 
                     "TYPE", certtype);
     args.add_option('p', "policy", "Initial policy set to use for validation, "
-                    "in tcl-encoded form (default: " DEFAULT_POLICY ")",
+                    "in tcl-encoded form (default: " ANY_POLICY_OID ")",
                     "POLICY", initial_policy_set_tcl);
     args.add_option('c', "config", WvString("Config moniker (default: %s)",
                                             DEFAULT_CONFIG_MONIKER),
@@ -81,8 +82,8 @@ int main(int argc, char *argv[])
     args.add_option('v', "verbose",
             "Increase log level (can be used multiple times)",
             WvArgs::NoArgCallback(&inc_log_level));
-    args.add_reset_bool_option('\0', "skip-crl-check", "Skips any CRL checking.",
-                               crl_check);
+    args.add_reset_bool_option('\0', "skip-crl-check", 
+                               "Skips any CRL checking.", crl_check);
 
     if (!args.process(argc, argv, &remaining_args))
     {
@@ -109,6 +110,10 @@ int main(int argc, char *argv[])
             intermediate_store->add_pkcs7(i->getme());
     }
 
+    shared_ptr<WvCRLStore> crlstore = shared_ptr<WvCRLStore>(
+        new WvCRLStore(cfg["general"].xget("crl cache location", 
+                                           DEFAULT_CRLSTORE_LOCATION)));
+
     shared_ptr<WvX509> x509(new WvX509);
 
     if (certtype == "der")
@@ -127,8 +132,9 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    PathValidator p(x509, initial_policy_set_tcl, crl_check ? 0 : WVX509_SKIP_CRL_CHECK, 
-                    trusted_store, intermediate_store,
+    PathValidator p(x509, initial_policy_set_tcl, 
+                    crl_check ? 0 : WVX509_SKIP_CRL_CHECK, 
+                    trusted_store, intermediate_store, crlstore, 
                     cfg, path_validated_cb);
     p.validate();
 

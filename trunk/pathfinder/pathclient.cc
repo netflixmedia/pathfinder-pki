@@ -15,7 +15,7 @@
 #include <wvdbusconn.h>
 #include <wvx509.h>
 
-#include "wvx509policytree.h"
+#include "wvx509policytree.h" // for ANY_POLICY_OID
 
 static WvLog::LogLevel log_level = WvLog::Info;
 static bool done = false;

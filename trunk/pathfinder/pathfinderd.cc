@@ -16,11 +16,13 @@
 #include "pathserver.h"
 #include "version.h"
 #include "wvx509path.h"
+#include "wvcrlstore.h"
 
 using namespace boost;
 
 #define DEFAULT_CONFIG_MONIKER "ini:/etc/pathfinderd.conf"
 #define DEFAULT_DBUS_MONIKER "dbus:system"
+#define DEFAULT_CRLSTORE_LOCATION "/var/cache/pathfinder/crls/"
 
 
 class PathFinderDaemon : public WvStreamsDaemon
@@ -70,6 +72,11 @@ public:
             for (i.rewind(); i.next();)
                 intermediate_store->add_pkcs7(i->getme());
         }
+        
+        crlstore = shared_ptr<WvCRLStore>(
+            new WvCRLStore(cfg["general"].xget("crl cache location", 
+                                               DEFAULT_CRLSTORE_LOCATION)));
+
 	
         // Initialize D-Bus
         dbusconn = new WvDBusConn(dbusmoniker);
@@ -79,7 +86,7 @@ public:
         
         // Initialize pathfinder "server" object
         pathserver = new PathServer(trusted_store, intermediate_store,
-                                    cfg);
+                                    crlstore, cfg);
         dbusconn->add_callback(WvDBusConn::PriNormal, 
                                wv::bind(&PathServer::incoming, pathserver, 
                                         dbusconn, _1), this);
@@ -87,6 +94,7 @@ public:
     
     shared_ptr<WvX509Store> trusted_store;
     shared_ptr<WvX509Store> intermediate_store;
+    shared_ptr<WvCRLStore> crlstore;
     WvDBusConn *dbusconn;
     PathServer *pathserver;
     WvString cfgmoniker;

@@ -17,12 +17,14 @@ using namespace std;
 PathFinder::PathFinder(shared_ptr<WvX509> &_cert, 
                        shared_ptr<WvX509Store> &_trusted_store, 
                        shared_ptr<WvX509Store> &_intermediate_store,
+                       shared_ptr<WvCRLStore> &_crlstore,
                        uint32_t _validation_flags,
                        UniConf &_cfg,
                        PathFoundCb _cb) :
     cert_to_be_validated(_cert),
     trusted_store(_trusted_store),
     intermediate_store(_intermediate_store),
+    crlstore(_crlstore),
     validation_flags(_validation_flags),
     path(new WvX509Path),
     cfg(_cfg),
@@ -311,6 +313,19 @@ bool PathFinder::get_crl(shared_ptr<WvX509> &cert)
         return true;
     }
 
+    WvStringList::Iter i(crl_urls);
+    for (i.rewind(); i.next();)
+    {
+        WvUrl url(i());
+        if (crlstore->exists(url))
+        {
+            log("Found url %s in crlstore, no need to download CRL.\n", url);
+            shared_ptr<WvCRL> crl= crlstore->get(url);
+            path->add_crl(cert->get_ski(), crl);
+            return true;
+        }                
+    }
+
     DownloadFinishedCb cb = wv::bind(&PathFinder::crl_download_finished_cb, 
                                      this, _1, _2, _3, _4, cert);
     return retrieve_object(crl_urls, cb);
@@ -329,12 +344,23 @@ void PathFinder::crl_download_finished_cb(WvStringParm urlstr,
     }
 
     log("Got CRL with mimetype %s.\n", mimetype);
-    
+       
     shared_ptr<WvCRL> crl(new WvCRL);
     if (!strncmp("-----BEGIN", (const char *) buf.peek(0, 10), 10))
         crl->decode(WvCRL::CRLPEM, buf);
     else
         crl->decode(WvCRL::CRLDER, buf);
+
+    if (!crl->isok())
+    {
+        failed(WvString("CRL downloaded from url %s is not ok!", urlstr));
+        return;
+    }
+
+    // crl is ok, (re) add it to our store
+    buf.unget(buf.ungettable());
+    crlstore->add(urlstr, buf);
+
     path->add_crl(cert->get_ski(), crl);
 
     check_done();
@@ -358,7 +384,7 @@ bool PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
         {
             shared_ptr<Downloader> d(new Downloader(url, pool, _cb));
             downloaders.push_back(d);
-            d->download();    
+            d->download();
             return true;
         }
         else

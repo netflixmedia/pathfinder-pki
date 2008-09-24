@@ -5,10 +5,11 @@
  * 
  * This library is covered by the LGPL v2.1 or later, please read LICENSE for details.
  */ 
-#include "wvdiriter.h"
 #include "wvx509store.h"
+
 #include <openssl/pkcs7.h>
 #include <openssl/x509v3.h>
+#include <wvdiriter.h>
 
 using namespace std;
 using namespace boost;
