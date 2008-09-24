@@ -82,7 +82,8 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
     bool ignore_missing_crls = (flags & WVX509_IGNORE_MISSING_CRLS);
     bool check_policy = !(flags & WVX509_SKIP_POLICY_CHECK);
     bool initial_explicit_policy = (flags & WVX509_INITIAL_EXPLICIT_POLICY); 
-    bool initial_inhibit_policy_mapping = (flags & WVX509_INITIAL_POLICY_MAPPING_INHIBIT);
+    bool initial_inhibit_policy_mapping = 
+    (flags & WVX509_INITIAL_POLICY_MAPPING_INHIBIT);
 
     int explicit_policy = 0;
     if (!initial_explicit_policy)
@@ -102,7 +103,8 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
     shared_ptr<WvX509> prev = trusted_store->get(trusted_aki);    
     if (!prev)
     {
-        validate_failed(WvString("Trusted root for path (%s) not in store", trusted_aki), err);
+        validate_failed(WvString("Trusted root for path (%s) not in store", 
+                                 trusted_aki), err);
         return false;
     }
 
@@ -162,18 +164,23 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                 WvString crl_aki = crl->get_aki();
                 if (!crl_aki)
                 {
-                    log(WvLog::Info, "Certificate revocation list for %s has no AKI.\n",
-                        cur->get_subject());
+                    log(WvLog::Info, "Certificate revocation list for %s has "
+                        "no AKI. Can't use.\n", cur->get_subject());
                     continue;
                 }
-                crl_signer = trusted_store->get(crl_aki);
+
+                if (prev->get_ski() == crl_aki)
+                    crl_signer = prev;
+                if (!crl_signer)
+                    crl_signer = trusted_store->get(crl_aki);
                 if (!crl_signer)
                     crl_signer = intermediate_store->get(crl_aki);
+
                 if (!crl_signer)
                 {
-                    log(WvLog::Info, "Can't find CRL signer for %s's CRL in "
-                        "intermediate or trusted store.\n", 
-                        cur->get_subject());
+                    log(WvLog::Info, "CRL signer is not the certificate's "
+                        "signer, nor can we find it in the intermediate or "
+                        "trusted store.\n", cur->get_subject());
                     continue;
                 }
 
