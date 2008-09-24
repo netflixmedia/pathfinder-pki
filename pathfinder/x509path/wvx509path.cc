@@ -171,8 +171,9 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                     crl_signer = intermediate_store->get(crl_aki);
                 if (!crl_signer)
                 {
-                    log(WvLog::Info, "Can't find CRL signer for %s's CRL in intermediate "
-                        "or trusted store.\n", cur->get_subject());
+                    log(WvLog::Info, "Can't find CRL signer for %s's CRL in "
+                        "intermediate or trusted store.\n", 
+                        cur->get_subject());
                     continue;
                 }
 

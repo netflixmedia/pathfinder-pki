@@ -257,10 +257,11 @@ bool PathFinder::create_bridge(shared_ptr<WvX509> &cert)
       log("Creating bridge for certificate %s.\n", cert->get_subject());
 
       // first, attempt to find a cross cert which leads back to a trust anchor
-      for (WvX509Store::WvX509List::iterator i = cross_certs.begin(); i != cross_certs.end();
-           i++)
+      for (WvX509Store::WvX509List::iterator i = cross_certs.begin(); 
+           i != cross_certs.end(); i++)
       {
-          log("Checking cross cert %s (with issuer %s)\n", (*i)->get_subject(), (*i)->get_issuer());
+          log("Checking cross cert %s (with issuer %s)\n", (*i)->get_subject(),
+              (*i)->get_issuer());
 
           if (trusted_store->exists((*i)->get_aki()) || 
               (!!cfg["intermediate CAs"].xget((*i)->get_aki()) && 1))
