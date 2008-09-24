@@ -20,12 +20,14 @@ PathValidator::PathValidator(shared_ptr<WvX509> &_cert,
                              uint32_t _validation_flags,
                              shared_ptr<WvX509Store> &_trusted_store,
                              shared_ptr<WvX509Store> &_intermediate_store,
+                             boost::shared_ptr<WvCRLStore> &_crlstore,
                              UniConf &_cfg, 
                              ValidatedCb _cb) :
     cert_to_be_validated(_cert),
     validation_flags(_validation_flags),
     trusted_store(_trusted_store),
     intermediate_store(_intermediate_store),
+    crlstore(_crlstore),
     cfg(_cfg),
     validated_cb(_cb),
     log("Path Validator")
@@ -41,6 +43,7 @@ void PathValidator::validate()
         new PathFinder(cert_to_be_validated,
                        trusted_store,
                        intermediate_store,
+                       crlstore,
                        validation_flags,
                        cfg, cb));
 

@@ -1,3 +1,6 @@
+[General]
+CRL Cache Location = /var/cache/pathfinder/crls/
+
 [Trusted directories]
 Extra certs = /tmp/trusted
 
