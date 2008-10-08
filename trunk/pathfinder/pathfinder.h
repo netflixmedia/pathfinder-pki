@@ -19,6 +19,7 @@
 #include <wvx509.h>
 
 #include "downloader.h"
+#include "revocationfinder.h"
 #include "wvcrlstore.h"
 #include "wvx509path.h"
 #include "wvx509store.h"
@@ -51,10 +52,8 @@ public:
                                      WvBuf &buf, WvError _err);
     
     bool get_revocation_info(boost::shared_ptr<WvX509> &cert);
-    void crl_download_finished_cb(WvStringParm urlstr, WvStringParm mimetype, 
-                                  WvBuf &buf, WvError _err, 
-                                  boost::shared_ptr<WvX509> &cert);
-    
+    void got_revocation_info(WvError &err, boost::shared_ptr<WvX509> &cert);
+
     bool retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb);
 
 
@@ -76,8 +75,12 @@ public:
     typedef std::vector<boost::shared_ptr<Downloader> > DownloaderList;
     DownloaderList downloaders;
 
+    typedef std::vector<boost::shared_ptr<RevocationFinder> > RevocationFinderList;
+    RevocationFinderList rfs;
+    
     WvHttpPool *pool;
 
+    bool got_cert_path;
     PathFoundCb path_found_cb;
     UniConf cfg;
     WvError err;

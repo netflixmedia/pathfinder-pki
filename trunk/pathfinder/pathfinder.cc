@@ -28,6 +28,7 @@ PathFinder::PathFinder(shared_ptr<WvX509> &_cert,
     validation_flags(_validation_flags),
     path(new WvX509Path),
     cfg(_cfg),
+    got_cert_path(false),
     path_found_cb(_cb),
     log("PathFinder")
 {
@@ -106,8 +107,9 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
     }
     else
     {
-        log("Certificate has no non-self signers (and may be a trust "
+        log("Certificate has no non-self signers (and should be a trust "
             "anchor). Stop, perform path validation.\n");
+        got_cert_path = true;
     }
 
     // otherwise, we've hit a self-signed certificate and are done fetching
@@ -116,7 +118,7 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
     // try to build a bridge if necessary
 
     log("Done building path.\n");
-    check_done(); // currently 100% probable we don't yet have CRLs
+    check_done(); 
 }
 
 
@@ -299,70 +301,29 @@ bool PathFinder::get_revocation_info(shared_ptr<WvX509> &cert)
 {
     if (validation_flags & WVX509_SKIP_CRL_CHECK)
     {
-        log(WvLog::Debug5, "Not attempting to get CRL: checking disabled.\n");
+        log(WvLog::Debug5, "Not attempting to get revocation info: checking "
+            "disabled.\n");
         return true;
     }
 
-    log("Checking for CRL info.\n");
-    WvStringList crl_urls;
-    cert->get_crl_urls(crl_urls);
-
-    if (!crl_urls.count())
-    {
-        log("No CRL urls for certificate %s. Returning and hoping for "
-            "the best.\n", cert->get_subject());
-        return true;
-    }
-
-    WvStringList::Iter i(crl_urls);
-    for (i.rewind(); i.next();)
-    {
-        WvUrl url(i());
-        if (crlstore->exists(url))
-        {
-            log("Found url %s in crlstore, no need to download CRL.\n", url);
-            shared_ptr<WvCRL> crl= crlstore->get(url);
-            path->add_crl(cert->get_ski(), crl);
-            return true;
-        }                
-    }
-
-    DownloadFinishedCb cb = wv::bind(&PathFinder::crl_download_finished_cb, 
-                                     this, _1, _2, _3, _4, cert);
-    return retrieve_object(crl_urls, cb);
+    shared_ptr<RevocationFinder> rf(
+        new RevocationFinder(cert, path, crlstore, 
+                             wv::bind(&PathFinder::got_revocation_info, this,
+                                      _1, cert)));
+    rfs.push_back(rf);
+    rf->find();
+    return true;
 }
 
 
-void PathFinder::crl_download_finished_cb(WvStringParm urlstr, 
-                                          WvStringParm mimetype, WvBuf &buf, 
-                                          WvError _err, 
-                                          shared_ptr<WvX509> &cert)
+void PathFinder::got_revocation_info(WvError &err, shared_ptr<WvX509> &cert)
 {
-    if (_err.geterr())
+    if (err.geterr())
     {
-        failed(WvString("Couldn't download CRL at url %s", urlstr));
+        failed(WvString("Failed to download revocation info for certificate %s", 
+                        cert->get_subject()));
         return;
     }
-
-    log("Got CRL with mimetype %s.\n", mimetype);
-       
-    shared_ptr<WvCRL> crl(new WvCRL);
-    if (!strncmp("-----BEGIN", (const char *) buf.peek(0, 10), 10))
-        crl->decode(WvCRL::CRLPEM, buf);
-    else
-        crl->decode(WvCRL::CRLDER, buf);
-
-    if (!crl->isok())
-    {
-        failed(WvString("CRL downloaded from url %s is not ok!", urlstr));
-        return;
-    }
-
-    // crl is ok, (re) add it to our store
-    buf.unget(buf.ungettable());
-    crlstore->add(urlstr, buf);
-
-    path->add_crl(cert->get_ski(), crl);
 
     check_done();
 }
@@ -399,8 +360,17 @@ bool PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
 
 void PathFinder::check_done()
 {
+    if (!got_cert_path)
+        return;
+
     for (DownloaderList::iterator i = downloaders.begin();
          i != downloaders.end(); i++)
+    {
+        if (!(*i)->is_done())
+            return;
+    }
+
+    for (RevocationFinderList::iterator i = rfs.begin(); i != rfs.end(); i++)
     {
         if (!(*i)->is_done())
             return;
