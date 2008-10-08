@@ -8,15 +8,10 @@
 #include <wvx509.h>
 #include <wvx509store.h>
 
+#include "testdefuns.t.h"
 #include "pathfinder.h"
 #include "wvx509policytree.h" // for ANY_POLICY_OID
 
-#define CERTS_PATH "testdata/certs/"
-#define CRLS_PATH "testdata/crls/"
-#define NIST_TESTPOLICY_1 "2.16.840.1.101.3.2.1.48.1"
-#define NIST_TESTPOLICY_2 "2.16.840.1.101.3.2.1.48.2"
-#define NIST_TESTPOLICY_3 "2.16.840.1.101.3.2.1.48.3"
-#define NIST_TESTPOLICY_6 "2.16.840.1.101.3.2.1.48.6"
 
 class Tester
 {
