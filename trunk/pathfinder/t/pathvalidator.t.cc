@@ -20,6 +20,7 @@ static void validated_cb(boost::shared_ptr<WvX509> &cert, bool valid,
     validated_ok = valid;
 }
 
+
 WVTEST_MAIN("lookup in crlstore")
 {
     const char *CRL_URI = "http://joeyjoejoejuniorshabadoo.fi/mycrl.crl";

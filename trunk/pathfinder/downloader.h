@@ -17,6 +17,7 @@
 #include <wvstream.h>
 #include <xplc/ptr.h>
 
+
 typedef wv::function<void(WvStringParm, WvStringParm, WvBuf&, WvError)> DownloadFinishedCb;
 
 class Downloader

@@ -19,7 +19,7 @@ Downloader::Downloader(WvStringParm _url, WvHttpPool *_pool,
     pool(_pool),
     finished_cb(_cb),
     done(false),
-    log("Pathfinder Download", WvLog::Debug5)
+    log(WvString("Pathfinder Download for url %s", url), WvLog::Debug5)
 {
 }
 
@@ -65,7 +65,7 @@ void Downloader::download_closed_cb(WvStream &s)
 {
     WvError err;    
     WvString mimetype = WvString::null;
-
+    log("closed cb?\n");
     // as of this writing, errors are not properly set on a urlstream
     // when there's a problem, so we have to resort to hacks to validate stuff
 #if WVHTTPPOOLFIXED
