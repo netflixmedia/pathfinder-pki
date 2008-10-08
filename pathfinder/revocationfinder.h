@@ -22,6 +22,9 @@
 
 typedef wv::function<void(WvError)> FoundRevocationInfoCb;
 
+// FIXME: this class has a ton of duplication with PathFinder and Downloader.
+// Need to find a way of factoring out all the commonalities into a seperate 
+// class.
 class RevocationFinder
 {
   public:
@@ -32,6 +35,7 @@ class RevocationFinder
     virtual ~RevocationFinder();
     
     void find();
+    bool is_done() { return done; }
 
   private:
 
@@ -54,6 +58,7 @@ class RevocationFinder
     WvHttpPool *pool;
     typedef std::vector<boost::shared_ptr<Downloader> > DownloaderList;
     DownloaderList downloaders;
+    bool done;
 
     FoundRevocationInfoCb cb;
     WvError err;

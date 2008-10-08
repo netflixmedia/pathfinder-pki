@@ -27,6 +27,7 @@ RevocationFinder::RevocationFinder(shared_ptr<WvX509> &_cert,
     path = _path;
     crlstore = _crlstore;
     cb = _cb;
+    done = false;
 }
 
 
@@ -68,6 +69,8 @@ void RevocationFinder::find()
             log("Found url %s in crlstore, no need to download CRL.\n", url);
             shared_ptr<WvCRL> crl= crlstore->get(url);
             path->add_crl(cert->get_ski(), crl);
+
+            done = true;
             cb(err);
             return; 
         }
@@ -87,6 +90,7 @@ void RevocationFinder::failed(WvStringParm reason)
 
 void RevocationFinder::failed()
 {
+    done = true;
     cb(err);
 }
 
@@ -164,5 +168,6 @@ void RevocationFinder::crl_download_finished_cb(WvStringParm urlstr,
 
     path->add_crl(cert->get_ski(), crl);
 
+    done = true;
     cb(err);
 }
