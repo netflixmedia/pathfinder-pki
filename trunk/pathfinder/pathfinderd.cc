@@ -49,6 +49,8 @@ public:
    
     void cb()
     {
+        WvHttpStream::global_enable_pipelining = false;
+    
         // Mount config moniker
 	cfg.unmount(cfg.whichmount(), true); // just in case
 	cfg.mount(cfgmoniker);
