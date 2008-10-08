@@ -77,14 +77,14 @@ bool Tester::_validate(WvStringParm initial_policy_set_tcl, uint32_t flags,
     WvStringList initial_policy_set;
     wvtcl_decode(initial_policy_set, initial_policy_set_tcl);
 
-    WvX509Path::WvX509List extra_certs;
+    WvX509List extra_certs;
 
     WvError err;
     validated = path.validate(trusted_store, intermediate_store, 
                               initial_policy_set, flags, extra_certs, err);
     log("Initial path validated, certificate is %svalid (reason: %s).\n", 
         validated ? "" : "NOT ", err.errstr());
-    for (WvX509Path::WvX509List::iterator i = extra_certs.begin(); 
+    for (WvX509List::iterator i = extra_certs.begin(); 
          i != extra_certs.end(); i++)
     {
         log("Validating extra path %s\n", (*i)->get_subject());

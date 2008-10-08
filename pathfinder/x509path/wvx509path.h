@@ -10,10 +10,9 @@
 #ifndef __WVX509PATH_H
 #define __WVX509PATH_H
 #include <boost/shared_ptr.hpp>
-#include <list>
 #include <map>
 #include <wvcrl.h>
-#include <wvlinklist.h>
+#include <wvocsp.h>
 #include <wvx509.h>
 #include "wvx509store.h"
 
@@ -30,7 +29,6 @@ class WvX509Path
   public:
     WvX509Path();
     virtual ~WvX509Path();
-    typedef std::list< boost::shared_ptr<WvX509> > WvX509List;
     bool validate(boost::shared_ptr<WvX509Store> &trusted_store, 
                   boost::shared_ptr<WvX509Store> &intermediate_store,
                   WvStringList &initial_policy_set, 
@@ -41,6 +39,9 @@ class WvX509Path
     void prepend_cert(boost::shared_ptr<WvX509> &cert);
     void append_cert(boost::shared_ptr<WvX509> &cert);
     void add_crl(WvStringParm ski, boost::shared_ptr<WvCRL> &crl);
+    void add_ocsp_resp(WvStringParm ski, boost::shared_ptr<WvOCSPResp> &ocsp);
+    WvX509List::iterator begin() { return x509_list.begin(); }
+    WvX509List::iterator end() { return x509_list.end(); }
 
   private:
     // used when validation fails: logs an error message AND sets the error
@@ -55,6 +56,11 @@ class WvX509Path
     typedef std::multimap< std::string, boost::shared_ptr<WvCRL> > CRLMap;
     CRLMap crl_map;
     typedef std::pair< std::string, boost::shared_ptr<WvCRL> > CRLPair;
+
+    // OCSPResp map: same as CRL map, but for OCSP responses
+    typedef std::multimap< std::string, boost::shared_ptr<WvOCSPResp> > OCSPRespMap;
+    OCSPRespMap ocsp_map;
+    typedef std::pair< std::string, boost::shared_ptr<WvOCSPResp> > OCSPRespPair;
 
     WvLog log;
 };

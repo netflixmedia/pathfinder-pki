@@ -23,7 +23,7 @@ static void validated_cb(boost::shared_ptr<WvX509> &cert, bool valid,
 
 WVTEST_MAIN("lookup in crlstore")
 {
-    const char *CRL_URI = "http://joeyjoejoejuniorshabadoo.fi/mycrl.crl";
+    const char *CRL_URI = "http://joeyjoejoejuniorshabadoo.invalid/mycrl.crl";
     WvString CRLSTORE_DIRNAME("/tmp/pathfinder-crlstore-%s", getpid());
     const int DEFAULT_KEYLEN = 512;
 
@@ -71,3 +71,5 @@ WVTEST_MAIN("lookup in crlstore")
 
     rm_rf(CRLSTORE_DIRNAME);
 }
+
+

@@ -173,7 +173,7 @@ bool WvX509Store::exists(WvStringParm ski)
 
 
 void WvX509Store::get_cross_certs(shared_ptr<WvX509> &cert,
-                                  vector< shared_ptr<WvX509> > &certlist)
+                                  WvX509List &certlist)
 {
     for (CertMap::iterator i = certmap.begin();
          i != certmap.end(); i++)

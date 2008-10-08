@@ -90,8 +90,6 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
         log("Certificate (%s) we just got has an issuer (%s). We continue "
             "building the path.\n", cert->get_subject(), cert->get_issuer());
         path->prepend_cert(cert);
-        if (!get_revocation_info(cert))
-            return;
         get_signer(cert);
         return;
     }
@@ -100,7 +98,7 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
         log("Trust anchor for cert not in store. Attempting to build "
             "bridge.\n");
         path->prepend_cert(cert);        
-        if (!create_bridge(cert) || !get_revocation_info(cert))
+        if (!create_bridge(cert))
             return;
         // the process begins again
         return;
@@ -115,10 +113,25 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
     // otherwise, we've hit a self-signed certificate and are done fetching
     // files to build the path remotely... 
 
-    // try to build a bridge if necessary
-
     log("Done building path.\n");
-    check_done(); 
+
+    if (!(validation_flags & WVX509_SKIP_CRL_CHECK))
+    {
+        log("Getting revocation information.\n");
+        shared_ptr<WvX509> prev = *(path->begin());
+        for (WvX509List::iterator i = path->begin(); i != path->end(); i++)
+        {
+            if (!get_revocation_info((*i), prev))
+                return;
+            
+            prev = (*i);
+        }
+    }
+    else
+    {
+        log("Not getting revocation information: checking disabled.\n");
+        check_done(); // we check this in got_revocation_info in std. case
+    }
 }
 
 
@@ -126,19 +139,19 @@ bool PathFinder::get_signer(shared_ptr<WvX509> &cert)
 {
     log("Attempting to get signer.\n");
 
-    WvX509Store::WvX509List certlist;
+    WvX509List certlist;
     trusted_store->get(cert->get_aki(), certlist);
     intermediate_store->get(cert->get_aki(), certlist);
     if (!certlist.empty())
     {
-        log("Certificate may be in intermediate store. Checking.\n");
+        log("Certificate may be in trusted or intermediate store. Checking.\n");
 
         // prefer one that is self-signed if we have more than one...
         // also disallow certificate's whose issuer matches our subject
         // (we don't want to go around in circles!)
         if (certlist.size() > 1)
         {
-            for (WvX509Store::WvX509List::iterator i=certlist.begin();
+            for (WvX509List::iterator i=certlist.begin();
                  i != certlist.end(); i++)
             {
                 if ((*i)->get_issuer() == (*i)->get_subject() &&
@@ -151,17 +164,18 @@ bool PathFinder::get_signer(shared_ptr<WvX509> &cert)
                 }
             }
         }
+
         // ... but if we don't have a self-signed cert, or we only
         // have one, then just take the first on the list. it's the best
         // we can do
         // again, disallow certificate's whose issuer matches our subject
         // (we don't want to go around in circles!)
-
-        if (certlist[0]->get_subject() == cert->get_issuer() && 
-            certlist[0]->get_issuer() != cert->get_subject() &&
-            added_certs.count(certlist[0]->get_subject().cstr()) == 0)
+        shared_ptr<WvX509> first = *certlist.begin();
+        if (first->get_subject() == cert->get_issuer() && 
+            first->get_issuer() != cert->get_subject() &&
+            added_certs.count(first->get_subject().cstr()) == 0)
         {
-            check_cert(certlist[0]);
+            check_cert(first);
             return true;
         }
 
@@ -252,14 +266,14 @@ void PathFinder::signer_download_finished_cb(WvStringParm urlstr,
 
 bool PathFinder::create_bridge(shared_ptr<WvX509> &cert)
 {
-    vector< boost::shared_ptr<WvX509> > cross_certs;
+    WvX509List cross_certs;
     intermediate_store->get_cross_certs(cert, cross_certs);
     if (intermediate_store->count())
     {
       log("Creating bridge for certificate %s.\n", cert->get_subject());
 
       // first, attempt to find a cross cert which leads back to a trust anchor
-      for (WvX509Store::WvX509List::iterator i = cross_certs.begin(); 
+      for (WvX509List::iterator i = cross_certs.begin(); 
            i != cross_certs.end(); i++)
       {
           log("Checking cross cert %s (with issuer %s)\n", (*i)->get_subject(),
@@ -280,9 +294,9 @@ bool PathFinder::create_bridge(shared_ptr<WvX509> &cert)
       // certificate at the moment. We have a check to make sure that 
       // we're not adding the same cross certificate twice.
       if (!cross_certs.empty() && 
-          added_certs.count(cross_certs[0]->get_ski().cstr()) == 0)
+          added_certs.count((*cross_certs.begin())->get_ski().cstr()) == 0)
       {
-          check_cert(cross_certs[0]);
+          check_cert((*cross_certs.begin()));
           return true;
       }
     
@@ -297,21 +311,14 @@ bool PathFinder::create_bridge(shared_ptr<WvX509> &cert)
 }
 
 
-bool PathFinder::get_revocation_info(shared_ptr<WvX509> &cert)
+bool PathFinder::get_revocation_info(shared_ptr<WvX509> &cert, 
+                                     shared_ptr<WvX509> &signer)
 {
-    if (validation_flags & WVX509_SKIP_CRL_CHECK)
-    {
-        log(WvLog::Debug5, "Not attempting to get revocation info: checking "
-            "disabled.\n");
-        return true;
-    }
-
     shared_ptr<RevocationFinder> rf(
-        new RevocationFinder(cert, path, crlstore, 
+        new RevocationFinder(cert, signer, path, crlstore, 
                              wv::bind(&PathFinder::got_revocation_info, this,
                                       _1, cert)));
     rfs.push_back(rf);
-    rf->find();
     return true;
 }
 
@@ -346,7 +353,6 @@ bool PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
         {
             shared_ptr<Downloader> d(new Downloader(url, pool, _cb));
             downloaders.push_back(d);
-            d->download();
             return true;
         }
         else
