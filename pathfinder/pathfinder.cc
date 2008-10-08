@@ -89,7 +89,7 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
         log("Certificate (%s) we just got has an issuer (%s). We continue "
             "building the path.\n", cert->get_subject(), cert->get_issuer());
         path->prepend_cert(cert);
-        if (!get_crl(cert))
+        if (!get_revocation_info(cert))
             return;
         get_signer(cert);
         return;
@@ -99,7 +99,7 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
         log("Trust anchor for cert not in store. Attempting to build "
             "bridge.\n");
         path->prepend_cert(cert);        
-        if (!create_bridge(cert) || !get_crl(cert))
+        if (!create_bridge(cert) || !get_revocation_info(cert))
             return;
         // the process begins again
         return;
@@ -295,7 +295,7 @@ bool PathFinder::create_bridge(shared_ptr<WvX509> &cert)
 }
 
 
-bool PathFinder::get_crl(shared_ptr<WvX509> &cert)
+bool PathFinder::get_revocation_info(shared_ptr<WvX509> &cert)
 {
     if (validation_flags & WVX509_SKIP_CRL_CHECK)
     {
@@ -303,7 +303,7 @@ bool PathFinder::get_crl(shared_ptr<WvX509> &cert)
         return true;
     }
 
-    log("Attempting to get CRL.\n");
+    log("Checking for CRL info.\n");
     WvStringList crl_urls;
     cert->get_crl_urls(crl_urls);
 

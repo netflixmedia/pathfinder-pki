@@ -50,7 +50,7 @@ public:
     void signer_download_finished_cb(WvStringParm urlstr, WvStringParm mimetype, 
                                      WvBuf &buf, WvError _err);
     
-    bool get_crl(boost::shared_ptr<WvX509> &cert);
+    bool get_revocation_info(boost::shared_ptr<WvX509> &cert);
     void crl_download_finished_cb(WvStringParm urlstr, WvStringParm mimetype, 
                                   WvBuf &buf, WvError _err, 
                                   boost::shared_ptr<WvX509> &cert);
