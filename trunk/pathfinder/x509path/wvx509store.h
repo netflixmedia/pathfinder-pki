@@ -15,7 +15,10 @@
 
 #include <boost/shared_ptr.hpp>
 #include <map>
-#include <vector>
+#include <list>
+
+
+typedef std::list< boost::shared_ptr<WvX509> > WvX509List;
 
 
 class WvX509Store : public WvErrorBase
@@ -23,8 +26,6 @@ class WvX509Store : public WvErrorBase
   public:
     WvX509Store();
     virtual ~WvX509Store();
-
-    typedef std::vector< boost::shared_ptr<WvX509> > WvX509List;
 
     /// Returns true if a certificate matches a certificate in the store (by
     // checking for matching SKI's and self-signature).

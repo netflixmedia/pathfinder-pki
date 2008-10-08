@@ -14,13 +14,23 @@
 #include "downloader.h"
 
 Downloader::Downloader(WvStringParm _url, WvHttpPool *_pool, 
-                       DownloadFinishedCb _cb) :
+                       DownloadFinishedCb _cb,
+                       WvStringParm _method,
+                       WvStringParm _headers,
+                       WvStream *_content_source) :
     url(_url),
     pool(_pool),
     finished_cb(_cb),
     done(false),
     log(WvString("Pathfinder Download for url %s", url), WvLog::Debug5)
 {
+    stream = pool->addurl(url, _method, _headers, _content_source);
+    stream->setcallback(wv::bind(&Downloader::download_cb, this, 
+                                 wv::ref(*stream)));
+    stream->setclosecallback(wv::bind(&Downloader::download_closed_cb, this, 
+                                      wv::ref(*stream)));
+    WvIStreamList::globallist.append(stream, true, WvString("download url %s", 
+                                                            url));
 }
 
 
@@ -31,18 +41,6 @@ Downloader::~Downloader()
         stream->setcallback(0);
         stream->setclosecallback(0);
     }
-}
-
-
-void Downloader::download()
-{
-    log("Downloading.\n");
-    stream = pool->addurl(url);
-    stream->setcallback(wv::bind(&Downloader::download_cb, this, wv::ref(*stream)));
-    stream->setclosecallback(wv::bind(&Downloader::download_closed_cb, this, 
-                                      wv::ref(*stream)));
-    WvIStreamList::globallist.append(stream, true, WvString("download url %s", 
-                                                            url));
 }
 
 
@@ -65,7 +63,6 @@ void Downloader::download_closed_cb(WvStream &s)
 {
     WvError err;    
     WvString mimetype = WvString::null;
-    log("closed cb?\n");
     // as of this writing, errors are not properly set on a urlstream
     // when there's a problem, so we have to resort to hacks to validate stuff
 #if WVHTTPPOOLFIXED

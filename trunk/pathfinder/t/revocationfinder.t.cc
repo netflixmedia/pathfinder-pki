@@ -11,7 +11,7 @@
 using namespace boost;
 
 
-static void accept_callback(IWvStream *_conn, WvBuf &stuff)
+static void accept_callback_crl(IWvStream *_conn, WvBuf &stuff)
 {
     WvDynBuf header;
     header.putstr(WvString("HTTP/1.1 200 OK\n"
@@ -37,6 +37,10 @@ WVTEST_MAIN("multiple lookups required")
     srandom(time(NULL));
     WvHttpStream::global_enable_pipelining = false;
 
+    WvString crlstore_dir("/tmp/pathfinder-crlstore-%s", getpid());
+    rm_rf(crlstore_dir);
+    shared_ptr<WvCRLStore> crlstore(new WvCRLStore(crlstore_dir));
+
     // FIXME: dumb assumption that these ports will be free...
     const int portstart = 8000;
 
@@ -51,6 +55,7 @@ WVTEST_MAIN("multiple lookups required")
     shared_ptr<WvX509> cert(new WvX509);
     WvString certpem = ca.signreq(certreq);
     cert->decode(WvX509Mgr::CertPEM, certpem);
+
     WvStringList crl_urls;
     for (int port = portstart; port < portstart + 3; port++)
         crl_urls.append(WvString("http://localhost:%s/foo.crl", port));
@@ -58,25 +63,25 @@ WVTEST_MAIN("multiple lookups required")
     ca.signcert(*cert);
 
     WvTCPListener sock(WvString("localhost:%s", portstart + 2));
-    sock.onaccept(wv::bind(accept_callback, _1, wv::ref(buf)));
+    sock.onaccept(wv::bind(accept_callback_crl, _1, wv::ref(buf)));
     WvIStreamList::globallist.append(&sock, false, "http listener");
-
-    wvcon->print("Listening for crl requests on port %s\n", *sock.src());
+        
+    wvcon->print("Listening for requests on port %s\n", *sock.src());
 
     shared_ptr<WvX509Path> path(new WvX509Path);
-    WvString crlstore_dir("/tmp/pathfinder-crlstore-%s", getpid());
-    rm_rf(crlstore_dir);
-    shared_ptr<WvCRLStore> crlstore(new WvCRLStore(crlstore_dir));
     int found_info_cb_count = 0;
-    RevocationFinder finder(cert, path, crlstore, 
+    shared_ptr<WvX509> cacert(new WvX509(ca));
+    RevocationFinder finder(cert, cacert, path, crlstore, 
                             wv::bind(&found_revocation_info, _1, 
                                      wv::ref(found_info_cb_count)));
-    finder.find();
 
     while (!found_info_cb_count)
         WvIStreamList::globallist.runonce();
-
+        
     WVPASSEQ(path->crl_map.count(cert->get_ski().cstr()), 1);   
-
     WvIStreamList::globallist.zap();
 }
+
+
+// FIXME: would be nice to have some OCSP tests, but setting up a working
+// responder locally is a pain...

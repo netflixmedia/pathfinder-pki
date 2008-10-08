@@ -65,7 +65,7 @@ void PathValidator::path_found_cb(shared_ptr<WvX509Path> &path, WvError err)
         return;
     }
 
-    WvX509Path::WvX509List extra_certs;
+    WvX509List extra_certs;
     bool valid = path->validate(trusted_store, intermediate_store, 
                                 initial_policy_set, validation_flags, 
                                 extra_certs, err);

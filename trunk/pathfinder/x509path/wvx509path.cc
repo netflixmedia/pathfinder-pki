@@ -54,6 +54,12 @@ void WvX509Path::add_crl(WvStringParm ski, shared_ptr<WvCRL> &crl)
 }
 
 
+void WvX509Path::add_ocsp_resp(WvStringParm ski, shared_ptr<WvOCSPResp> &ocsp)
+{
+    ocsp_map.insert(OCSPRespPair(ski.cstr(), ocsp));
+}
+
+
 void validate_crl(WvX509Store *store, shared_ptr<WvX509> &x509)
 {
     WvX509Path crlpath;
@@ -78,7 +84,7 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
     if (x509_list.size() == 0)
         return true;
 
-    bool check_crls = !(flags & WVX509_SKIP_CRL_CHECK);
+    bool check_revocation = !(flags & WVX509_SKIP_CRL_CHECK);
     bool ignore_missing_crls = (flags & WVX509_IGNORE_MISSING_CRLS);
     bool check_policy = !(flags & WVX509_SKIP_POLICY_CHECK);
     bool initial_explicit_policy = (flags & WVX509_INITIAL_EXPLICIT_POLICY); 
@@ -150,7 +156,33 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
             return false;
         }
 
-        if (check_crls)
+        // OCSP validation is pretty simple: look it up in the map, make 
+        // sure it's signed by the previous certificate, and (of course) 
+        // make sure it's not revoked
+        bool validated_ocsp = false;
+        
+        if (check_revocation)
+        {
+            pair<OCSPRespMap::iterator, OCSPRespMap::iterator> iterpair = 
+            ocsp_map.equal_range(cur->get_ski().cstr());
+            if (iterpair.first != iterpair.second)
+            {
+                shared_ptr<WvOCSPResp> resp = (*iterpair.first).second;
+                if (resp->get_status(*cur, *prev) != WvOCSPResp::GOOD)
+                {
+                    validate_failed(WvString("Certificate %s's OCSP response "
+                                             "does not check out.\n", 
+                                             cur->get_subject()), err);
+                    return false;
+                }
+
+                validated_ocsp = true;
+            }
+        }
+            
+        // CRL validation is much more involved... we try to follow what's 
+        // laid out in rfc3280 to the letter
+        if (check_revocation && !validated_ocsp)
         {
             pair<CRLMap::iterator, CRLMap::iterator> iterpair = 
             crl_map.equal_range(cur->get_ski().cstr());

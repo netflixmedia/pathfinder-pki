@@ -29,26 +29,36 @@ class RevocationFinder
 {
   public:
     RevocationFinder(boost::shared_ptr<WvX509> &_cert, 
+                     boost::shared_ptr<WvX509> &_issuer, 
                      boost::shared_ptr<WvX509Path> &_path, 
                      boost::shared_ptr<WvCRLStore> &_crlstore,
                      FoundRevocationInfoCb _cb);
     virtual ~RevocationFinder();
     
-    void find();
     bool is_done() { return done; }
 
   private:
+    void find();
 
     void failed(WvStringParm reason);
     void failed();
     void try_download_next();
-    bool retrieve_object(WvStringParm _url, DownloadFinishedCb _cb);
+    bool retrieve_object(WvStringParm _url, DownloadFinishedCb _cb,
+                         WvStringParm _method = "GET",
+                         WvStringParm _headers = "",
+                         WvStream *content_source = NULL);
     void crl_download_finished_cb(WvStringParm urlstr, 
                                   WvStringParm mimetype, 
                                   WvBuf &buf, 
                                   WvError _err);
+    void ocsp_download_finished_cb(WvStringParm urlstr, 
+                                   WvStringParm mimetype, 
+                                   WvBuf &buf, 
+                                   WvError _err,
+                                   boost::shared_ptr<WvOCSPReq> &req);
 
     boost::shared_ptr<WvX509> cert;
+    boost::shared_ptr<WvX509> issuer;
     boost::shared_ptr<WvCRLStore> crlstore;
     WvStringList ocsp_urls;
     WvStringList crl_urls;
