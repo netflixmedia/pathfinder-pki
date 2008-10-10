@@ -50,9 +50,8 @@ void RevocationFinder::find()
 {
     // first, check to see if we have a CRL explicitly defined for this
     // certificate
-    log("trying %s\n", cfg["CRL Location"][url_encode(cert->get_subject())].key().printable());
-    WvString hardcoded_crl_loc = url_decode(
-        cfg["CRL Location"].xget(url_encode(cert->get_subject())));
+    WvString hardcoded_crl_loc = cfg["CRL Location"].xget(
+        url_encode(cert->get_subject()));
     if (!!hardcoded_crl_loc)
     {
         WvUrl url(hardcoded_crl_loc);

@@ -110,7 +110,7 @@ WVTEST_MAIN("explicit crls")
     WvString certpem = ca.signreq(certreq);
     cert->decode(WvX509Mgr::CertPEM, certpem);
     cfg["CRL Location"].xset(url_encode(cert->get_subject()), 
-                             url_encode(WvString("file://%s", crl_filename)));
+                             WvString("file://%s", crl_filename));
 
     shared_ptr<WvX509Path> path(new WvX509Path);
     int found_info_cb_count = 0;
