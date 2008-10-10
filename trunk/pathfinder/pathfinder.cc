@@ -71,12 +71,6 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
         return;
     }
 
-    if (!cert->get_ski())
-    {
-        failed("Certificate in path lacks an SKI");
-        return;
-    }
-
     log("Checked certificate. Seems to be ok.\n");
 
     // we allow at most one certificate of the same name that is not self
@@ -85,7 +79,8 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
         added_certs[cert->get_subject().cstr()] = true;
 
     // check if we need to get more signers
-    if (!!cert->get_aki() && cert->get_aki() != cert->get_ski())
+    if ((!!cert->get_aki() && cert->get_aki() != cert->get_ski()) || 
+        cert->get_subject() != cert->get_issuer())
     {
         log("Certificate (%s) we just got has an issuer (%s). We continue "
             "building the path.\n", cert->get_subject(), cert->get_issuer());
@@ -245,7 +240,8 @@ void PathFinder::signer_download_finished_cb(WvStringParm urlstr,
 		x = shared_ptr<WvX509>(new WvX509(X509_dup(_x)));
 		log("Extracting cert for %s from bundle.\n", x->get_subject().cstr());
 		if (added_certs[x->get_subject().cstr()] == true)
-		    log("Skipping '%s' because we've already got it in our list\n", x->get_subject());
+		    log("Skipping '%s' because we've already got it in our "
+                        "list\n", x->get_subject());
 		else
 		    check_cert(x);
 	    }
@@ -266,6 +262,13 @@ void PathFinder::signer_download_finished_cb(WvStringParm urlstr,
 
 bool PathFinder::create_bridge(shared_ptr<WvX509> &cert)
 {
+    if (!cert->get_aki())
+    {
+        failed("Can't find route back to trust anchor (last certificate "
+               "lacks AKI needed to build bridge)");
+        return false;
+    }
+
     WvX509List cross_certs;
     intermediate_store->get_cross_certs(cert, cross_certs);
     if (intermediate_store->count())

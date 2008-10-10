@@ -6,6 +6,7 @@
 
 #include "wvx509policytree.h" // for ANY_POLICY_OID
 #include "pathvalidator.h"
+#include "testdefuns.t.h"
 #include "wvcrlstore.h"
 
 using namespace boost;
@@ -25,7 +26,6 @@ WVTEST_MAIN("lookup in crlstore")
 {
     const char *CRL_URI = "http://joeyjoejoejuniorshabadoo.invalid/mycrl.crl";
     WvString CRLSTORE_DIRNAME("/tmp/pathfinder-crlstore-%s", getpid());
-    const int DEFAULT_KEYLEN = 512;
 
     UniConfRoot cfg("temp:");
     shared_ptr<WvX509Store> trusted_store(new WvX509Store);
@@ -73,3 +73,28 @@ WVTEST_MAIN("lookup in crlstore")
 }
 
 
+static void strip_ski_aki(WvX509 &cert)
+{
+    X509 *x509 = cert.get_cert();
+    int idx[2];
+    idx[0] = X509_get_ext_by_NID(x509, NID_subject_key_identifier, -1);
+    idx[1] = X509_get_ext_by_NID(x509, NID_authority_key_identifier, -1);   
+    for (int i=0; i<2; i++)
+    {
+        if (idx[i] >= 0)
+        {
+            wvcon->print("Deleting extension at idx %s\n", idx[i]);
+            
+            X509_EXTENSION *tmpex = X509_delete_ext(x509, idx[i]);
+            X509_EXTENSION_free(tmpex);
+        }
+    }
+}
+
+
+WVTEST_MAIN("no ski/aki")
+{
+    WvX509Mgr ca("CN=test.foo.com,DC=foo,DC=com", DEFAULT_KEYLEN, true);
+    strip_ski_aki(ca);
+    wvcon->print(ca.encode(WvX509::CertPEM));
+}

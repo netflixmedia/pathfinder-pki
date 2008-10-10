@@ -1,9 +1,10 @@
 /* -*- Mode: C++ -*-
  * X.509 certificate path management classes.
  *
- * Copyright (C) 2007, Carillon Information Security Inc.
+ * Copyright (C) 2007-2008, Carillon Information Security Inc.
  * 
- * This library is covered by the LGPL v2.1 or later, please read LICENSE for details.
+ * This library is covered by the LGPL v2.1 or later, please read LICENSE for 
+ * details.
  */ 
 
 #include <wvstrutils.h>
@@ -106,7 +107,13 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
     // first, find the trust anchor associated with the path. if we can't 
     // find one, we can't continue
     WvString trusted_aki = (*(x509_list.begin()))->get_aki();
-    shared_ptr<WvX509> prev = trusted_store->get(trusted_aki);    
+    WvString trusted_issuer = (*(x509_list.begin()))->get_issuer();
+    shared_ptr<WvX509> prev;
+    if (!!trusted_aki) // look up with aki if we can, more reliable
+        prev = trusted_store->get(trusted_aki);    
+    else
+        prev = trusted_store->get(trusted_issuer);
+
     if (!prev)
     {
         validate_failed(WvString("Trusted root for path (%s) not in store", 
@@ -136,7 +143,8 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
 
         if (!cur->validate())
         {
-            validate_failed(WvString("Certificate '%s' not valid", cur->get_subject()), err);
+            validate_failed(WvString("Certificate '%s' not valid", 
+                                     cur->get_subject()), err);
             return false;
         }
 
@@ -159,9 +167,10 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
         // OCSP validation is pretty simple: look it up in the map, make 
         // sure it's signed by the previous certificate, and (of course) 
         // make sure it's not revoked
+        // note: we only support OCSP for certs with valid SKI fields.
         bool validated_ocsp = false;
         
-        if (check_revocation)
+        if (check_revocation && !!cur->get_ski()) 
         {
             pair<OCSPRespMap::iterator, OCSPRespMap::iterator> iterpair = 
             ocsp_map.equal_range(cur->get_ski().cstr());
@@ -185,23 +194,26 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
         if (check_revocation && !validated_ocsp)
         {
             pair<CRLMap::iterator, CRLMap::iterator> iterpair = 
-            crl_map.equal_range(cur->get_ski().cstr());
+            crl_map.equal_range(cur->get_subject().cstr());
 
             bool one_valid_crl = false;
             for (CRLMap::iterator j = iterpair.first; j != iterpair.second; j++)
             {
                 shared_ptr<WvCRL> crl = (*j).second;
 
-                shared_ptr<WvX509> crl_signer;
+                // we need to trim spaces and convert to lower case: 
+                // differences in spacing or case shouldn't make a difference 
+                // for validation
+                WvString crl_issuer = strreplace(crl->get_issuer(), " ", "");
+                strlwr(crl_issuer.edit());
+                WvString cert_issuer = strreplace(cur->get_issuer(), " ", "");
+                strlwr(cert_issuer.edit());
                 WvString crl_aki = crl->get_aki();
-                if (!crl_aki)
-                {
-                    log(WvLog::Info, "Certificate revocation list for %s has "
-                        "no AKI. Can't use.\n", cur->get_subject());
-                    continue;
-                }
 
+                shared_ptr<WvX509> crl_signer;
                 if (prev->get_ski() == crl_aki)
+                    crl_signer = prev;
+                if (!crl_signer && prev->get_subject() == crl_issuer)
                     crl_signer = prev;
                 if (!crl_signer)
                     crl_signer = trusted_store->get(crl_aki);
@@ -218,8 +230,8 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
 
                 if (crl->validate(*(crl_signer.get())) != WvCRL::VALID)
                 {
-                    log(WvLog::Info, "Certificate revocation list for %s is not valid.\n", 
-                        cur->get_subject());
+                    log(WvLog::Info, "Certificate revocation list for %s is "
+                        "not valid.\n", cur->get_subject());
                     continue;
                 }
 
@@ -228,17 +240,11 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                 // issuer's name of the crl should match the issuer name 
                 // of the certificate we are processing.
                 
-                // we need to trim spaces and convert to lower case: differences in
-                // spacing or case shouldn't make a difference for validation
-                WvString crl_issuer = strreplace(crl->get_issuer(), " ", "");
-                strlwr(crl_issuer.edit());
-                WvString cert_issuer = strreplace(cur->get_issuer(), " ", "");
-                strlwr(cert_issuer.edit());
-
                 if (crl_issuer != cert_issuer)
                 {
-                    log(WvLog::Info, "CRL's issuer (%s) does not match certificate's "
-                        "issuer (%s).\n", crl_issuer, cert_issuer);
+                    log(WvLog::Info, "CRL's issuer (%s) does not match "
+                        "certificate's issuer (%s).\n", crl_issuer, 
+                        cert_issuer);
                     continue;
                 }
                 else
@@ -255,8 +261,8 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
 
                 if (crl->isrevoked(*(cur.get())))
                 {
-                    log(WvLog::Error, "Certificate %s is revoked according to CRL.\n", 
-                        cur->get_subject());
+                    log(WvLog::Error, "Certificate %s is revoked according to "
+                        "CRL.\n", cur->get_subject());
                     return false;
                 }
             }

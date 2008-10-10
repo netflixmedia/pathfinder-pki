@@ -21,10 +21,13 @@ public:
     ~Tester();
 
     void add_trusted_cert(WvStringParm certname);
+    void add_trusted_cert(boost::shared_ptr<WvX509> &_cert);
     void add_untrusted_cert(WvStringParm certname);
+    void add_untrusted_cert(boost::shared_ptr<WvX509> &_cert);
     void add_intermediate_cert(WvStringParm certname);
     void add_crl(WvStringParm certname, WvStringParm crlname);
-
+    void add_crl(boost::shared_ptr<WvX509> &_cert, 
+                 boost::shared_ptr<WvCRL> &_crl);
     bool validate();
     bool validate(WvStringParm initial_policy_oids, 
                   uint32_t flags = 0);
@@ -44,5 +47,10 @@ public:
     bool validated;
     WvLog log;
 };
+
+// utility method to strip ski/aki info from certificate, useful for tests 
+// where we want to make sure that path discovery and validation works
+// without them
+void strip_ski_aki(WvX509 &cert);
 
 #endif // __TESTMETHODS_H
