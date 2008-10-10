@@ -146,7 +146,10 @@ void WvX509Store::get(WvStringParm key, WvX509List &certlist)
 
 bool WvX509Store::exists(WvX509 * cert)
 {
-    shared_ptr<WvX509> cacert = get(cert->get_ski());
+    shared_ptr<WvX509> cacert;
+    cacert = get(cert->get_subject());
+    if (!cacert)
+        cacert = get(cert->get_ski());
     if (!cacert)
     {
         log("No certificate corresponding to %s (with ski: %s) in store.\n", 
@@ -164,6 +167,7 @@ bool WvX509Store::exists(WvX509 * cert)
 
     log("Certificate %s seems to exist in store (as %s).\n", cert->get_subject(),
         cacert->get_subject());
+
     return true;
 }
 
