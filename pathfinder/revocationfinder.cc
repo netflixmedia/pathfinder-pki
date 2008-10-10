@@ -9,6 +9,7 @@
 
 #include <wvbufstream.h>
 #include <wvocsp.h>
+#include <wvstrutils.h>
 #include "revocationfinder.h"
 
 using namespace boost;
@@ -18,12 +19,15 @@ RevocationFinder::RevocationFinder(shared_ptr<WvX509> &_cert,
                                    shared_ptr<WvX509> &_issuer, 
                                    shared_ptr<WvX509Path> &_path,
                                    shared_ptr<WvCRLStore> &_crlstore,
+                                   UniConf &_cfg,
                                    FoundRevocationInfoCb _cb) :
+    cfg(_cfg),
     log(WvString("Revocation Finder for %s", _cert->get_subject()), 
         WvLog::Debug1)
 {
     pool = new WvHttpPool();
-    WvIStreamList::globallist.append(pool, false, "revocationfinder http pool");
+    WvIStreamList::globallist.append(pool, false, 
+                                     "revocation finder http pool");
     cert = _cert;
     issuer = _issuer;
     path = _path;
@@ -46,7 +50,43 @@ void RevocationFinder::find()
 {
     // first, check to see if we have a CRL explicitly defined for this
     // certificate
-    // FIXME: todo
+    log("trying %s\n", cfg["CRL Location"][url_encode(cert->get_subject())].key().printable());
+    WvString hardcoded_crl_loc = url_decode(
+        cfg["CRL Location"].xget(url_encode(cert->get_subject())));
+    if (!!hardcoded_crl_loc)
+    {
+        WvUrl url(hardcoded_crl_loc);
+        if (url.getproto() == "http" || url.getproto() == "https")
+        {
+            DownloadFinishedCb cb = wv::bind(
+                &RevocationFinder::crl_download_finished_cb, 
+                this, _1, _2, _3, _4);
+            if (retrieve_object_http(hardcoded_crl_loc, cb))
+                return;
+        }
+        else if (url.getproto() == "file")
+        {
+            WvString crlpath = url.getfile();
+
+            shared_ptr<WvCRL> crl(new WvCRL);
+            crl->decode(WvCRL::CRLFilePEM, crlpath);
+            if (!crl->isok()) 
+                crl->decode(WvCRL::CRLFileDER, crlpath);
+            
+            if (!crl->isok())
+            {
+                failed(WvString("Explicitly defined CRL for certificate (in "
+                                "file %s, but CRL not ok", crlpath));
+                return;
+            }
+                
+            path->add_crl(cert->get_subject(), crl);
+            
+            done = true;
+            cb(err);
+            return;
+        }
+    }
 
     // try to grab both crl and OCSP info
     cert->get_ocsp(ocsp_urls);
@@ -54,7 +94,7 @@ void RevocationFinder::find()
 
     if (!crl_urls.count() && !ocsp_urls.count())
     {
-        log("No revocation info for certificate %s", cert->get_subject());
+        log("No revocation info for certificate %s.\n", cert->get_subject());
         failed("No revocation info");
         return;
     }
@@ -66,7 +106,7 @@ void RevocationFinder::find()
         if (crlstore->exists(url)) // FIXME: and the crl hasn't expired yet...
         {            
             log("Found url %s in crlstore, no need to download CRL.\n", url);
-            shared_ptr<WvCRL> crl= crlstore->get(url);
+            shared_ptr<WvCRL> crl = crlstore->get(url);
             path->add_crl(cert->get_subject(), crl);
 
             done = true;
@@ -114,7 +154,7 @@ void RevocationFinder::try_download_next()
         DownloadFinishedCb cb = wv::bind(
             &RevocationFinder::ocsp_download_finished_cb, 
             this, _1, _2, _3, _4, req);
-        if (retrieve_object(ocsp_urls.popstr(), cb, "POST", 
+        if (retrieve_object_http(ocsp_urls.popstr(), cb, "POST", 
                             "Content-Type: application/ocsp-request\r\n",
                             input_stream))
             return;
@@ -125,7 +165,7 @@ void RevocationFinder::try_download_next()
         DownloadFinishedCb cb = wv::bind(
             &RevocationFinder::crl_download_finished_cb, 
             this, _1, _2, _3, _4);
-        if (retrieve_object(crl_urls.popstr(), cb))
+        if (retrieve_object_http(crl_urls.popstr(), cb))
             return;
     }
 
@@ -133,11 +173,11 @@ void RevocationFinder::try_download_next()
 }
 
 
-bool RevocationFinder::retrieve_object(WvStringParm _url, 
-                                       DownloadFinishedCb _cb,
-                                       WvStringParm _method,
-                                       WvStringParm _headers,
-                                       WvStream *_content_source)
+bool RevocationFinder::retrieve_object_http(WvStringParm _url, 
+                                            DownloadFinishedCb _cb,
+                                            WvStringParm _method,
+                                            WvStringParm _headers,
+                                            WvStream *_content_source)
 {
     log("Attempting to retrieve revocation object at URL %s.\n", _url);
     
@@ -236,7 +276,7 @@ void RevocationFinder::ocsp_download_finished_cb(WvStringParm urlstr,
         return;
     }
 
-    path->add_ocsp_resp(cert->get_ski(), resp);
+    path->add_ocsp_resp(cert->get_subject(), resp);
 
     done = true;
     cb(err);

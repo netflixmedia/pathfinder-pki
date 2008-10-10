@@ -1,5 +1,7 @@
+#include <uniconfroot.h>
 #include <wvfile.h>
 #include <wvfileutils.h>
+#include <wvstrutils.h>
 #include <wvtcplistener.h>
 #include <wvtest.h>
 #include <wvx509mgr.h>
@@ -36,6 +38,7 @@ WVTEST_MAIN("multiple lookups required")
 {
     srandom(time(NULL));
     WvHttpStream::global_enable_pipelining = false;
+    UniConfRoot cfg("temp:");
 
     WvString crlstore_dir("/tmp/pathfinder-crlstore-%s", getpid());
     rm_rf(crlstore_dir);
@@ -71,7 +74,7 @@ WVTEST_MAIN("multiple lookups required")
     shared_ptr<WvX509Path> path(new WvX509Path);
     int found_info_cb_count = 0;
     shared_ptr<WvX509> cacert(new WvX509(ca));
-    RevocationFinder finder(cert, cacert, path, crlstore, 
+    RevocationFinder finder(cert, cacert, path, crlstore, cfg,
                             wv::bind(&found_revocation_info, _1, 
                                      wv::ref(found_info_cb_count)));
 
@@ -80,6 +83,45 @@ WVTEST_MAIN("multiple lookups required")
         
     WVPASSEQ(path->crl_map.count(cert->get_subject().cstr()), 1);   
     WvIStreamList::globallist.zap();
+}
+
+
+WVTEST_MAIN("explicit crls")
+{
+    WvString crlstore_dir("/tmp/pathfinder-crlstore-%s", getpid());
+    rm_rf(crlstore_dir);
+    shared_ptr<WvCRLStore> crlstore(new WvCRLStore(crlstore_dir));
+    UniConfRoot cfg("temp:");
+
+    WvX509Mgr ca("CN=test.foo.com,DC=foo,DC=com", DEFAULT_KEYLEN, true);
+    WvCRL crl(ca);
+    WvString crl_filename = wvtmpfilename("crltest");
+    {
+        WvDynBuf buf;
+        crl.encode(WvCRL::CRLPEM, buf);
+        WvFile f(crl_filename, O_CREAT|O_WRONLY);
+        f.write(buf);
+    }
+
+    WvRSAKey rsakey(DEFAULT_KEYLEN);
+    WvString certreq 
+	= WvX509Mgr::certreq("cn=test.signed.com,dc=signed,dc=com", rsakey);
+    shared_ptr<WvX509> cert(new WvX509);
+    WvString certpem = ca.signreq(certreq);
+    cert->decode(WvX509Mgr::CertPEM, certpem);
+    cfg["CRL Location"].xset(url_encode(cert->get_subject()), 
+                             url_encode(WvString("file://%s", crl_filename)));
+
+    shared_ptr<WvX509Path> path(new WvX509Path);
+    int found_info_cb_count = 0;
+    shared_ptr<WvX509> cacert(new WvX509(ca));
+
+    RevocationFinder finder(cert, cacert, path, crlstore, cfg,
+                            wv::bind(&found_revocation_info, _1, 
+                                     wv::ref(found_info_cb_count)));
+    WVPASSEQ(path->crl_map.count(cert->get_subject().cstr()), 1);   
+
+    ::unlink(crl_filename);
 }
 
 

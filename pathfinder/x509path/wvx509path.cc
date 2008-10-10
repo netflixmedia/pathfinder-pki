@@ -167,13 +167,11 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
         // OCSP validation is pretty simple: look it up in the map, make 
         // sure it's signed by the previous certificate, and (of course) 
         // make sure it's not revoked
-        // note: we only support OCSP for certs with valid SKI fields.
-        bool validated_ocsp = false;
-        
-        if (check_revocation && !!cur->get_ski()) 
+        bool validated_ocsp = false;        
+        if (check_revocation) 
         {
             pair<OCSPRespMap::iterator, OCSPRespMap::iterator> iterpair = 
-            ocsp_map.equal_range(cur->get_ski().cstr());
+            ocsp_map.equal_range(cur->get_subject().cstr());
             if (iterpair.first != iterpair.second)
             {
                 shared_ptr<WvOCSPResp> resp = (*iterpair.first).second;

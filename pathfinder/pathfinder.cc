@@ -318,7 +318,7 @@ bool PathFinder::get_revocation_info(shared_ptr<WvX509> &cert,
                                      shared_ptr<WvX509> &signer)
 {
     shared_ptr<RevocationFinder> rf(
-        new RevocationFinder(cert, signer, path, crlstore, 
+        new RevocationFinder(cert, signer, path, crlstore, cfg,
                              wv::bind(&PathFinder::got_revocation_info, this,
                                       _1, cert)));
     rfs.push_back(rf);

@@ -11,6 +11,7 @@
 #ifndef __REVOCATIONFINDER_H
 #define __REVOCATIONFINDER_H
 #include <boost/shared_ptr.hpp>
+#include <uniconf.h>
 #include <vector>
 #include <wvhttppool.h>
 #include <wvx509.h>
@@ -32,6 +33,7 @@ class RevocationFinder
                      boost::shared_ptr<WvX509> &_issuer, 
                      boost::shared_ptr<WvX509Path> &_path, 
                      boost::shared_ptr<WvCRLStore> &_crlstore,
+                     UniConf &_cfg,
                      FoundRevocationInfoCb _cb);
     virtual ~RevocationFinder();
     
@@ -43,10 +45,10 @@ class RevocationFinder
     void failed(WvStringParm reason);
     void failed();
     void try_download_next();
-    bool retrieve_object(WvStringParm _url, DownloadFinishedCb _cb,
-                         WvStringParm _method = "GET",
-                         WvStringParm _headers = "",
-                         WvStream *content_source = NULL);
+    bool retrieve_object_http(WvStringParm _url, DownloadFinishedCb _cb,
+                              WvStringParm _method = "GET",
+                              WvStringParm _headers = "",
+                              WvStream *content_source = NULL);
     void crl_download_finished_cb(WvStringParm urlstr, 
                                   WvStringParm mimetype, 
                                   WvBuf &buf, 
@@ -69,6 +71,8 @@ class RevocationFinder
     typedef std::vector<boost::shared_ptr<Downloader> > DownloaderList;
     DownloaderList downloaders;
     bool done;
+
+    UniConf cfg;
 
     FoundRevocationInfoCb cb;
     WvError err;
