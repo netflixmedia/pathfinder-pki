@@ -28,16 +28,17 @@ class WvX509Store : public WvErrorBase
     virtual ~WvX509Store();
 
     /// Returns true if a certificate matches a certificate in the store (by
-    // checking for matching SKI's and self-signature).
+    // checking for matching SKI's (or subjects, if no SKI) and 
+    // self-signature).
     bool exists(WvX509 *cert);
-    // Returns true if an SKI matches a certificate in the store
-    bool exists(WvStringParm ski);
-    // Retuns the cert in the store corresponding to SKI (null if none exists)
-    // if there is more than one cert corresponding to the SKI, there are no
+    // Returns true if key matches a certificate in the store
+    bool exists(WvStringParm key);
+    // Retuns the cert in the store corresponding to key (null if none exists)
+    // if there is more than one cert corresponding to the key, there are no
     // guarantees which one you will get...
-    boost::shared_ptr<WvX509> get(WvStringParm ski);
-    // Returns the certificates in the store corresponding to SKI
-    void get(WvStringParm ski, WvX509List &certlist);
+    boost::shared_ptr<WvX509> get(WvStringParm key);
+    // Returns the certificates in the store corresponding to key
+    void get(WvStringParm key, WvX509List &certlist);
     // Returns all certificates that match the subject, but not the ski of
     // a certificate, and which are not self-signed.
     void get_cross_certs(boost::shared_ptr<WvX509> &cert, 

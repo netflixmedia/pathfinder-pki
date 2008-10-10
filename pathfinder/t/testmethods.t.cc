@@ -30,12 +30,26 @@ void Tester::add_trusted_cert(WvStringParm certname)
     // see RFC3280 for more details
 }
 
+
+void Tester::add_trusted_cert(shared_ptr<WvX509> &_cert)
+{
+    trusted_store->add_cert(_cert);
+}
+
+
 void Tester::add_untrusted_cert(WvStringParm certname)
 {
     shared_ptr<WvX509> x(new WvX509);
     x->decode(WvX509::CertFileDER, WvString("%s%s", CERTS_PATH, certname));
     intermediate_store->add_cert(x);
     path.append_cert(x);
+}
+
+
+void Tester::add_untrusted_cert(shared_ptr<WvX509> &_cert)
+{
+    intermediate_store->add_cert(_cert);
+    path.append_cert(_cert);
 }
 
 
@@ -53,8 +67,23 @@ void Tester::add_crl(WvStringParm certname, WvStringParm crlname)
     x.decode(WvX509::CertFileDER, WvString("%s%s", CERTS_PATH, certname));
     shared_ptr<WvCRL> crl(new WvCRL);
     crl->decode(WvCRL::CRLFileDER, WvString("%s%s", CRLS_PATH, crlname));
-    path.add_crl(x.get_ski(), crl);
-    crl_map.insert(CRLPair(x.get_ski().cstr(), crl));
+    path.add_crl(x.get_subject(), crl);
+    crl_map.insert(CRLPair(x.get_subject().cstr(), crl));
+}
+
+
+void Tester::add_crl(shared_ptr<WvX509> &cert, shared_ptr<WvCRL> &crl)
+{
+    if (!!cert->get_ski())
+    {
+        path.add_crl(cert->get_ski(), crl);
+        crl_map.insert(CRLPair(cert->get_ski().cstr(), crl));
+    }
+    else
+    {
+        path.add_crl(cert->get_subject(), crl);
+        crl_map.insert(CRLPair(cert->get_subject().cstr(), crl));
+    }
 }
 
 
@@ -116,4 +145,23 @@ bool Tester::_validate(WvStringParm initial_policy_set_tcl, uint32_t flags,
     }
 
     return validated;
+}
+
+
+void strip_ski_aki(WvX509 &cert)
+{
+    X509 *x509 = cert.get_cert();
+    int idx[2];
+    idx[0] = X509_get_ext_by_NID(x509, NID_subject_key_identifier, -1);
+    idx[1] = X509_get_ext_by_NID(x509, NID_authority_key_identifier, -1);   
+    for (int i=0; i<2; i++)
+    {
+        if (idx[i] >= 0)
+        {
+            wvcon->print("Deleting extension at idx %s\n", idx[i]);
+            
+            X509_EXTENSION *tmpex = X509_delete_ext(x509, idx[i]);
+            X509_EXTENSION_free(tmpex);
+        }
+    }
 }

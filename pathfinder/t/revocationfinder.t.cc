@@ -78,7 +78,7 @@ WVTEST_MAIN("multiple lookups required")
     while (!found_info_cb_count)
         WvIStreamList::globallist.runonce();
         
-    WVPASSEQ(path->crl_map.count(cert->get_ski().cstr()), 1);   
+    WVPASSEQ(path->crl_map.count(cert->get_subject().cstr()), 1);   
     WvIStreamList::globallist.zap();
 }
 

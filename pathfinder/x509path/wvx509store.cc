@@ -3,7 +3,8 @@
  *
  * Copyright (C) 2007, Carillon Information Security Inc.
  * 
- * This library is covered by the LGPL v2.1 or later, please read LICENSE for details.
+ * This library is covered by the LGPL v2.1 or later, please read LICENSE for 
+ * details.
  */ 
 #include "wvx509store.h"
 
@@ -40,7 +41,10 @@ void WvX509Store::load(WvStringParm _dir)
 
 void WvX509Store::add_cert(shared_ptr<WvX509> &x)
 {
-    certmap.insert(CertPair(x->get_ski().cstr(), x));
+    if (!!x->get_ski())
+        certmap.insert(CertPair(x->get_ski().cstr(), x));
+    else
+        certmap.insert(CertPair(x->get_subject().cstr(), x));
 }
 
 
@@ -57,16 +61,8 @@ void WvX509Store::add_file(WvStringParm _fname)
             "but loaded certificate not ok!\n", _fname);
         return;
     }
-    else if (!x->get_ski())
-    {
-        log(WvLog::Warning, "WARNING: Tried to add certificate from file %s, "
-            "but loaded certificate has no ski!\n", _fname);
-        return;
-    }
-    
-    log("Loaded certificate from file %s into store (ski: %s).\n", _fname, 
-        x->get_ski());
-    certmap.insert(CertPair(x->get_ski().cstr(), x));
+
+    add_cert(x);
 }
 
 
@@ -121,24 +117,30 @@ void WvX509Store::add_pkcs7(WvStringParm _fname)
 }
 
 
-shared_ptr<WvX509> WvX509Store::get(WvStringParm ski)
+shared_ptr<WvX509> WvX509Store::get(WvStringParm key)
 {
-    pair<CertMap::iterator, CertMap::iterator> iterpair = 
-    certmap.equal_range(ski.cstr());
+    if (!!key)
+    {        
+        pair<CertMap::iterator, CertMap::iterator> iterpair = 
+        certmap.equal_range(key.cstr());
+        
+        for (CertMap::iterator i = iterpair.first; i != iterpair.second; i++)
+            return((*i).second);
+    }
 
-    for (CertMap::iterator i = iterpair.first; i != iterpair.second; i++)
-        return((*i).second);
-    
     return boost::shared_ptr<WvX509>();
 }
 
-void WvX509Store::get(WvStringParm ski, WvX509List &certlist)
+void WvX509Store::get(WvStringParm key, WvX509List &certlist)
 {
-    pair<CertMap::iterator, CertMap::iterator> iterpair = 
-    certmap.equal_range(ski.cstr());
+    if (!!key)
+    {        
+        pair<CertMap::iterator, CertMap::iterator> iterpair = 
+        certmap.equal_range(key.cstr());
 
-    for (CertMap::iterator i = iterpair.first; i != iterpair.second; i++)
-        certlist.push_back((*i).second);
+        for (CertMap::iterator i = iterpair.first; i != iterpair.second; i++)
+            certlist.push_back((*i).second);
+    }
 }
 
 
@@ -166,9 +168,9 @@ bool WvX509Store::exists(WvX509 * cert)
 }
 
 
-bool WvX509Store::exists(WvStringParm ski)
+bool WvX509Store::exists(WvStringParm key)
 {
-    return (get(ski));
+    return (get(key));
 }
 
 
