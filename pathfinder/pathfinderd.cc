@@ -81,6 +81,10 @@ public:
 
 	
         // Initialize D-Bus
+        // HACK: dbus:system doesn't correspond to anything useful most of the
+        // time, use a hardcoded value instead
+        if (dbusmoniker == "dbus:system")
+            dbusmoniker = "unix:/var/run/dbus/system_bus_socket";
         dbusconn = new WvDBusConn(dbusmoniker);
         dbusconn->request_name("ca.carillon.pathfinder");
         // FIXME: need to check for success of name request
