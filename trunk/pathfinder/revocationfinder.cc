@@ -18,7 +18,7 @@ using namespace boost;
 RevocationFinder::RevocationFinder(shared_ptr<WvX509> &_cert, 
                                    shared_ptr<WvX509> &_issuer, 
                                    shared_ptr<WvX509Path> &_path,
-                                   shared_ptr<WvCRLCache> &_crlstore,
+                                   shared_ptr<WvCRLCache> &_crlcache,
                                    UniConf &_cfg,
                                    FoundRevocationInfoCb _cb) :
     cfg(_cfg),
@@ -31,7 +31,7 @@ RevocationFinder::RevocationFinder(shared_ptr<WvX509> &_cert,
     cert = _cert;
     issuer = _issuer;
     path = _path;
-    crlstore = _crlstore;
+    crlcache = _crlcache;
     cb = _cb;
     done = false;
 
@@ -102,10 +102,10 @@ void RevocationFinder::find()
     for (i.rewind(); i.next();)
     {
         WvUrl url(i());
-        if (crlstore->exists(url)) // FIXME: and the crl hasn't expired yet...
+        if (crlcache->exists(url)) // FIXME: and the crl hasn't expired yet...
         {            
-            log("Found url %s in crlstore, no need to download CRL.\n", url);
-            shared_ptr<WvCRL> crl = crlstore->get(url);
+            log("Found url %s in crlcache, no need to download CRL.\n", url);
+            shared_ptr<WvCRL> crl = crlcache->get(url);
             path->add_crl(cert->get_subject(), crl);
 
             done = true;
@@ -231,7 +231,7 @@ void RevocationFinder::crl_download_finished_cb(WvStringParm urlstr,
 
     // crl is ok, (re) add it to our store
     buf.unget(buf.ungettable());
-    crlstore->add(urlstr, buf);
+    crlcache->add(urlstr, buf);
 
     path->add_crl(cert->get_subject(), crl);
 

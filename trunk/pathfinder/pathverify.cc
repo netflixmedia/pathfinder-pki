@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
             intermediate_store->add_pkcs7(i->getme());
     }
 
-    shared_ptr<WvCRLCache> crlstore = shared_ptr<WvCRLCache>(
+    shared_ptr<WvCRLCache> crlcache = shared_ptr<WvCRLCache>(
         new WvCRLCache(cfg["general"].xget("crl cache location", 
                                            DEFAULT_CRLSTORE_LOCATION)));
 
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 
     PathValidator p(x509, initial_policy_set_tcl, 
                     crl_check ? 0 : WVX509_SKIP_REVOCATION_CHECK, 
-                    trusted_store, intermediate_store, crlstore, 
+                    trusted_store, intermediate_store, crlcache, 
                     cfg, path_validated_cb);
     p.validate();
 

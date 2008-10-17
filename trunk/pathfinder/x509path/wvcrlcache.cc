@@ -60,7 +60,7 @@ void WvCRLCache::add(WvStringParm url, WvBuf &buf)
 
     //  FIXME: blocking operation
 
-    log("Writing %s (uri: %s) to crlstore.\n", path, url);
+    log("Writing %s (uri: %s) to crlcache.\n", path, url);
     WvFile f(path, O_CREAT|O_WRONLY);
     f.write(buf);
 }

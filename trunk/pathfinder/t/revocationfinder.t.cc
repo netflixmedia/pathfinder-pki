@@ -40,9 +40,9 @@ WVTEST_MAIN("multiple lookups required")
     WvHttpStream::global_enable_pipelining = false;
     UniConfRoot cfg("temp:");
 
-    WvString crlstore_dir("/tmp/pathfinder-crlstore-%s", getpid());
-    rm_rf(crlstore_dir);
-    shared_ptr<WvCRLCache> crlstore(new WvCRLCache(crlstore_dir));
+    WvString crlcache_dir("/tmp/pathfinder-crlcache-%s", getpid());
+    rm_rf(crlcache_dir);
+    shared_ptr<WvCRLCache> crlcache(new WvCRLCache(crlcache_dir));
 
     // FIXME: dumb assumption that these ports will be free...
     const int portstart = 8000;
@@ -74,7 +74,7 @@ WVTEST_MAIN("multiple lookups required")
     shared_ptr<WvX509Path> path(new WvX509Path);
     int found_info_cb_count = 0;
     shared_ptr<WvX509> cacert(new WvX509(ca));
-    RevocationFinder finder(cert, cacert, path, crlstore, cfg,
+    RevocationFinder finder(cert, cacert, path, crlcache, cfg,
                             wv::bind(&found_revocation_info, _1, 
                                      wv::ref(found_info_cb_count)));
 
@@ -88,9 +88,9 @@ WVTEST_MAIN("multiple lookups required")
 
 WVTEST_MAIN("explicit crls")
 {
-    WvString crlstore_dir("/tmp/pathfinder-crlstore-%s", getpid());
-    rm_rf(crlstore_dir);
-    shared_ptr<WvCRLCache> crlstore(new WvCRLCache(crlstore_dir));
+    WvString crlcache_dir("/tmp/pathfinder-crlcache-%s", getpid());
+    rm_rf(crlcache_dir);
+    shared_ptr<WvCRLCache> crlcache(new WvCRLCache(crlcache_dir));
     UniConfRoot cfg("temp:");
 
     WvX509Mgr ca("CN=test.foo.com,DC=foo,DC=com", DEFAULT_KEYLEN, true);
@@ -116,7 +116,7 @@ WVTEST_MAIN("explicit crls")
     int found_info_cb_count = 0;
     shared_ptr<WvX509> cacert(new WvX509(ca));
 
-    RevocationFinder finder(cert, cacert, path, crlstore, cfg,
+    RevocationFinder finder(cert, cacert, path, crlcache, cfg,
                             wv::bind(&found_revocation_info, _1, 
                                      wv::ref(found_info_cb_count)));
     WVPASSEQ(path->crl_map.count(cert->get_subject().cstr()), 1);   

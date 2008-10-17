@@ -17,14 +17,14 @@ using namespace std;
 PathFinder::PathFinder(shared_ptr<WvX509> &_cert, 
                        shared_ptr<WvX509Store> &_trusted_store, 
                        shared_ptr<WvX509Store> &_intermediate_store,
-                       shared_ptr<WvCRLCache> &_crlstore,
+                       shared_ptr<WvCRLCache> &_crlcache,
                        uint32_t _validation_flags,
                        UniConf &_cfg,
                        PathFoundCb _cb) :
     cert_to_be_validated(_cert),
     trusted_store(_trusted_store),
     intermediate_store(_intermediate_store),
-    crlstore(_crlstore),
+    crlcache(_crlcache),
     validation_flags(_validation_flags),
     path(new WvX509Path),
     cfg(_cfg),
@@ -318,7 +318,7 @@ bool PathFinder::get_revocation_info(shared_ptr<WvX509> &cert,
                                      shared_ptr<WvX509> &signer)
 {
     shared_ptr<RevocationFinder> rf(
-        new RevocationFinder(cert, signer, path, crlstore, cfg,
+        new RevocationFinder(cert, signer, path, crlcache, cfg,
                              wv::bind(&PathFinder::got_revocation_info, this,
                                       _1, cert)));
     rfs.push_back(rf);

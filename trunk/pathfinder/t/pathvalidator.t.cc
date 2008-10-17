@@ -22,15 +22,15 @@ static void validated_cb(shared_ptr<WvX509> &cert, bool valid,
 }
 
 
-WVTEST_MAIN("lookup in crlstore")
+WVTEST_MAIN("lookup in crlcache")
 {
     const char *CRL_URI = "http://joeyjoejoejuniorshabadoo.invalid/mycrl.crl";
-    WvString CRLSTORE_DIRNAME("/tmp/pathfinder-crlstore-%s", getpid());
+    WvString CRLSTORE_DIRNAME("/tmp/pathfinder-crlcache-%s", getpid());
 
     UniConfRoot cfg("temp:");
     shared_ptr<WvX509Store> trusted_store(new WvX509Store);
     shared_ptr<WvX509Store> intermediate_store(new WvX509Store);
-    shared_ptr<WvCRLCache> crlstore(new WvCRLCache(CRLSTORE_DIRNAME));
+    shared_ptr<WvCRLCache> crlcache(new WvCRLCache(CRLSTORE_DIRNAME));
 
     WvX509Mgr ca("CN=test.foo.com,DC=foo,DC=com", DEFAULT_KEYLEN, true);
     shared_ptr<WvX509> cacert(new WvX509(ca));
@@ -47,18 +47,18 @@ WVTEST_MAIN("lookup in crlstore")
     cert->set_crl_urls(crl_urls);
     ca.signcert(*cert);
 
-    // create the crl, add it to the crlstore
+    // create the crl, add it to the crlcache
     mkdirp(CRLSTORE_DIRNAME);
     WvCRL crl(ca);
     WvString s = crl.encode(WvCRL::CRLPEM);
     WvConstStringBuffer buf(s);
-    crlstore->add(CRL_URI, buf);
+    crlcache->add(CRL_URI, buf);
 
     int validated_count = 0;
     bool validated_ok = false;
 
     PathValidator p(cert, ANY_POLICY_OID, 0, trusted_store, 
-                    intermediate_store, crlstore, cfg, 
+                    intermediate_store, crlcache, cfg, 
                     wv::bind(&validated_cb, _1, _2, _3, 
                              wv::ref(validated_count),
                              wv::ref(validated_ok)));
