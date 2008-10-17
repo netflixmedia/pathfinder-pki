@@ -7,9 +7,8 @@
  * please read LICENSE for details.
  */
 #include <wvstrutils.h>
-
-
 #include "pathfinder.h"
+#include "util.h"
 
 
 using namespace boost;
@@ -144,42 +143,28 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
     // in revocationfinder)
 
     WvString hardcoded_loc = cfg["CA Location"].xget(
-        url_encode(cert->get_issuer()));
+        escape_slashes(cert->get_issuer()));
     if (!!hardcoded_loc)
     {
-        WvUrl url(hardcoded_loc);
-        if (url.getproto() == "http" || url.getproto() == "https")
+        shared_ptr<WvX509> cacert(new WvX509);
+        cacert->decode(WvX509::CertFilePEM, hardcoded_loc);
+        if (!cacert->isok()) 
+            cacert->decode(WvX509::CertFileDER, hardcoded_loc);
+        
+        if (!cacert->isok())
         {
-            WvStringList urls; urls.append(hardcoded_loc);
-            DownloadFinishedCb cb = wv::bind(
-                &PathFinder::signer_download_finished_cb, 
-                this, _1, _2, _3, _4);            
-            retrieve_object(urls, cb);
+            failed(WvString("Explicitly defined CA for certificate %s (in "
+                            "file %s, but certificate not ok", 
+                            cert->get_subject(), hardcoded_loc));
             return;
         }
-        else if (url.getproto() == "file")
-        {
-            WvString capath = url.getfile();
 
-            shared_ptr<WvX509> cacert(new WvX509);
-            cacert->decode(WvX509::CertFilePEM, capath);
-            if (!cacert->isok()) 
-                cacert->decode(WvX509::CertFileDER, capath);
-            
-            if (!cacert->isok())
-            {
-                failed(WvString("Explicitly defined CA for certificate %s (in "
-                                "file %s, but CRL not ok", 
-                                cert->get_subject(), capath));
-                return;
-            }
-
-            check_cert(cacert);
-            return;
-        }
+        check_cert(cacert);
+        return;
     }
 
-
+    // next, check to see if the certificate is in the intermediate or trusted
+    // store
     WvX509List certlist;
     trusted_store->get(cert->get_aki(), certlist);
     intermediate_store->get(cert->get_aki(), certlist);

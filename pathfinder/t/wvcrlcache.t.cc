@@ -20,10 +20,13 @@ WVTEST_MAIN("crlcache basic")
 
     WvCRLCache store(dirname);
 
-    WVPASS(store.get("http://foohost/Trust.crl"));
-    WVFAIL(store.get("http://foohost/Trust2.crl"));
-    
-    WVPASSEQ(store.get("http://foohost/Trust.crl")->get_aki(),
+    WVPASS(store.get_url("http://foohost/Trust.crl"));
+    WVFAIL(store.get_url("http://foohost/Trust2.crl"));
+    WVPASS(store.get_file(crlloc));
+    WVFAIL(store.get_file(WvString("/%s/my-imaginary-non-existent-file", 
+                                   dirname)));
+
+    WVPASSEQ(store.get_url("http://foohost/Trust.crl")->get_aki(),
              "FB:6C:D4:2D:81:9E:CA:27:7A:9E:0D:B0:3C:EA:9A:BC:87:FF:49:EA");
 
     // replace the crl with something completely different
@@ -35,14 +38,18 @@ WVTEST_MAIN("crlcache basic")
     buf.modtime = real_new_file_time;
     utime(crlloc, &buf);
 
-    WVPASSEQ(store.get("http://foohost/Trust.crl")->get_aki(),
+    WVPASSEQ(store.get_url("http://foohost/Trust.crl")->get_aki(),
+             "B7:2E:A6:82:CB:C2:C8:BC:A8:7B:27:44:D7:35:33:DF:9A:15:94:C7");
+    WVPASSEQ(store.get_file(crlloc)->get_aki(),
              "B7:2E:A6:82:CB:C2:C8:BC:A8:7B:27:44:D7:35:33:DF:9A:15:94:C7");
 
     // set the crl back to what it was, but make sure the modtime is the same:
     // wvcrlcache should use the previous version
     fcopy(CRLS_PATH "TrustAnchorRootCRL.crl", crlloc);
     utime(crlloc, &buf);
-    WVPASSEQ(store.get("http://foohost/Trust.crl")->get_aki(),
+    WVPASSEQ(store.get_url("http://foohost/Trust.crl")->get_aki(),
+             "B7:2E:A6:82:CB:C2:C8:BC:A8:7B:27:44:D7:35:33:DF:9A:15:94:C7");
+    WVPASSEQ(store.get_file(crlloc)->get_aki(),
              "B7:2E:A6:82:CB:C2:C8:BC:A8:7B:27:44:D7:35:33:DF:9A:15:94:C7");
 
     rm_rf(dirname);

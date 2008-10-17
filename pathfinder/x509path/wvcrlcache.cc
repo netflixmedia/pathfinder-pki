@@ -15,30 +15,43 @@ WvCRLCache::WvCRLCache(WvStringParm _dir) :
     dir = _dir;
 }
 
+shared_ptr<WvCRL> WvCRLCache::get_file(WvStringParm fname) 
+{
+    return get(fname);
+}
 
-shared_ptr<WvCRL> WvCRLCache::get(WvStringParm crldp) 
+
+shared_ptr<WvCRL> WvCRLCache::get_url(WvStringParm crldp) 
 {
     WvString path("%s/%s", dir, url_encode(crldp));
+
+    return get(path);
+}
+
+
+shared_ptr<WvCRL> WvCRLCache::get(WvStringParm rawpath)
+{
     struct stat st;
-    if (stat(path, &st) != 0 || !S_ISREG(st.st_mode))
+    if (stat(rawpath, &st) != 0 || !S_ISREG(st.st_mode))
         return shared_ptr<WvCRL>();
 
-    if (crlmap.count(crldp.cstr()) && crlmap[crldp.cstr()].mtime == st.st_mtime)
-        return crlmap[crldp.cstr()].crl;
+    if (crlmap.count(rawpath.cstr()) && 
+        crlmap[rawpath.cstr()].mtime == st.st_mtime)
+        return crlmap[rawpath.cstr()].crl;
 
     shared_ptr<WvCRL> crl(new WvCRL);
-    crl->decode(WvCRL::CRLFilePEM, path);
+    crl->decode(WvCRL::CRLFilePEM, rawpath);
     if (!crl->isok()) 
-        crl->decode(WvCRL::CRLFileDER, path);
+        crl->decode(WvCRL::CRLFileDER, rawpath);
     
     if (!crl->isok())
     {
         log(WvLog::Warning, "WARNING: Tried to add CRL from file %s, "
-            "but loaded CRL not ok!\n", path);
+            "but loaded CRL not ok!\n", rawpath);
         return shared_ptr<WvCRL>();
     }
         
-    crlmap[crldp.cstr()] = CRLCacheEntry(st.st_mtime, crl);
+    crlmap[rawpath.cstr()] = CRLCacheEntry(st.st_mtime, crl);
     return crl;
 }
 

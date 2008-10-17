@@ -23,10 +23,13 @@ class WvCRLCache
 {
   public:
     WvCRLCache(WvStringParm _dir);
-    boost::shared_ptr<WvCRL> get(WvStringParm crldp);
+    boost::shared_ptr<WvCRL> get_url(WvStringParm crldp);
+    boost::shared_ptr<WvCRL> get_file(WvStringParm fname);
+    
     void add(WvStringParm uri, WvBuf &buf);
     
   private:
+    boost::shared_ptr<WvCRL> get(WvStringParm rawpath);
 
     struct CRLCacheEntry
     {
