@@ -85,7 +85,7 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
     if (x509_list.size() == 0)
         return true;
 
-    bool check_revocation = !(flags & WVX509_SKIP_CRL_CHECK);
+    bool check_revocation = !(flags & WVX509_SKIP_REVOCATION_CHECK);
     bool ignore_missing_crls = (flags & WVX509_IGNORE_MISSING_CRLS);
     bool check_policy = !(flags & WVX509_SKIP_POLICY_CHECK);
     bool initial_explicit_policy = (flags & WVX509_INITIAL_EXPLICIT_POLICY); 
