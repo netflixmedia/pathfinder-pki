@@ -47,7 +47,7 @@ public:
     void failed(WvStringParm reason);
     void failed();
     
-    bool get_signer(boost::shared_ptr<WvX509> &cert);
+    void get_signer(boost::shared_ptr<WvX509> &cert);
     void signer_download_finished_cb(WvStringParm urlstr, WvStringParm mimetype, 
                                      WvBuf &buf, WvError _err);
     

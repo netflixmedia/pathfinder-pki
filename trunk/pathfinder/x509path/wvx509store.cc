@@ -43,8 +43,8 @@ void WvX509Store::add_cert(shared_ptr<WvX509> &x)
 {
     if (!!x->get_ski())
         certmap.insert(CertPair(x->get_ski().cstr(), x));
-    else
-        certmap.insert(CertPair(x->get_subject().cstr(), x));
+    
+    certmap.insert(CertPair(x->get_subject().cstr(), x));
 }
 
 
