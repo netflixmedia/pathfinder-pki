@@ -55,7 +55,7 @@ WVTEST_MAIN("ocsp checking")
 
     int found_count = 0;
     PathFinder p(cert, trusted_store, 
-                 intermediate_store, crlcache, 0, cfg, 
+                 intermediate_store, crlcache, 0, true, cfg, 
                  wv::bind(&path_found_cb_ocsp, _1, _2,
                           wv::ref(cert),
                           wv::ref(found_count)));
@@ -66,37 +66,3 @@ WVTEST_MAIN("ocsp checking")
 
     WVPASSEQ(found_count, 1);
 }
-#endif
-
-#if 0
-
-WVTEST_MAIN("no ski/aki")
-{
-    WvString crlcache_dir("/tmp/pathfinder-crlcache-%s", getpid());
-    rm_rf(crlcache_dir);
-    shared_ptr<WvCRLCache> crlcache(new WvCRLCache(crlcache_dir));
-    UniConfRoot cfg("temp:");
-
-    WvX509Mgr ca("CN=test.foo.com,DC=foo,DC=com", DEFAULT_KEYLEN, true);
-    strip_ski_aki(ca);
-    ca.signcert(ca);
-    WvCRL crl(ca);
-    WvString crl_filename = wvtmpfilename("crltest");
-    {
-        WvDynBuf buf;
-        crl.encode(WvCRL::CRLPEM, buf);
-        WvFile f(crl_filename, O_CREAT|O_WRONLY);
-        f.write(buf);
-    }
-
-    WvRSAKey rsakey(DEFAULT_KEYLEN);
-    WvString certreq 
-	= WvX509Mgr::certreq("cn=test.signed.com,dc=signed,dc=com", rsakey);
-    shared_ptr<WvX509> cert(new WvX509);
-    WvString certpem = ca.signreq(certreq);
-    cert->decode(WvX509Mgr::CertPEM, certpem);
-    strip_ski_aki(ca);
-
-}
-
-#endif
