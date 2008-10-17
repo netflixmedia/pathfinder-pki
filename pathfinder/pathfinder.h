@@ -32,7 +32,7 @@ public:
     PathFinder(boost::shared_ptr<WvX509> &_cert,
                boost::shared_ptr<WvX509Store> &_trusted_store,
                boost::shared_ptr<WvX509Store> &_intermediate_store,
-               boost::shared_ptr<WvCRLCache> &_crlstore,
+               boost::shared_ptr<WvCRLCache> &_crlcache,
                uint32_t _validation_flags,
                UniConf &_cfg, 
                PathFoundCb _cb);
@@ -65,7 +65,7 @@ public:
     boost::shared_ptr<WvX509> cert_to_be_validated;
     boost::shared_ptr<WvX509Store> trusted_store;
     boost::shared_ptr<WvX509Store> intermediate_store;
-    boost::shared_ptr<WvCRLCache> crlstore;
+    boost::shared_ptr<WvCRLCache> crlcache;
 
     uint32_t validation_flags;
 

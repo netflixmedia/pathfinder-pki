@@ -9,9 +9,9 @@
 using namespace boost;
 
 
-WVTEST_MAIN("crlstore basic")
+WVTEST_MAIN("crlcache basic")
 {
-    WvString dirname("/tmp/pathfinder-crlstore-%s", getpid());
+    WvString dirname("/tmp/pathfinder-crlcache-%s", getpid());
     mkdirp(dirname);
     fcopy(CRLS_PATH "TrustAnchorRootCRL.crl", 
           WvString("%s/%s", dirname,

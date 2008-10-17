@@ -32,7 +32,7 @@ class RevocationFinder
     RevocationFinder(boost::shared_ptr<WvX509> &_cert, 
                      boost::shared_ptr<WvX509> &_issuer, 
                      boost::shared_ptr<WvX509Path> &_path, 
-                     boost::shared_ptr<WvCRLCache> &_crlstore,
+                     boost::shared_ptr<WvCRLCache> &_crlcache,
                      UniConf &_cfg,
                      FoundRevocationInfoCb _cb);
     virtual ~RevocationFinder();
@@ -61,7 +61,7 @@ class RevocationFinder
 
     boost::shared_ptr<WvX509> cert;
     boost::shared_ptr<WvX509> issuer;
-    boost::shared_ptr<WvCRLCache> crlstore;
+    boost::shared_ptr<WvCRLCache> crlcache;
     WvStringList ocsp_urls;
     WvStringList crl_urls;
 
