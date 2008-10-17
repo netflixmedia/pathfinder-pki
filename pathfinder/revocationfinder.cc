@@ -106,20 +106,14 @@ void RevocationFinder::find()
     for (i.rewind(); i.next();)
     {
         WvUrl url(i());
-        if (crlcache->exists(url))
-        {            
-            log("Found URI %s in crlcache, checking to see if it's ok.\n", 
-                url);
-            shared_ptr<WvCRL> crl = crlcache->get(url);
-            if (crl && !crl->expired())
-            {
-                path->add_crl(cert->get_subject(), crl);
-                done = true;
-                cb(err);
-                return;
-            }
-            else
-                log("URI %s in crlcache is either bad or has expired.\n");
+
+        shared_ptr<WvCRL> crl = crlcache->get(url);
+        if (crl && !crl->expired())
+        {
+            path->add_crl(cert->get_subject(), crl);
+            done = true;
+            cb(err);
+            return;
         }
     }
 
