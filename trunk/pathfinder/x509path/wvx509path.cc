@@ -167,9 +167,9 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
         // OCSP validation is pretty simple: look it up in the map, make 
         // sure our current certificate is not revoked, then add the OCSP
         // responder certificate to our list of extra certificates to be 
-        // validated
+        // validated. note that we also need aki info to make it work.
         bool validated_ocsp = false;        
-        if (check_revocation) 
+        if (check_revocation && cur->get_aki()) 
         {
             pair<OCSPRespMap::iterator, OCSPRespMap::iterator> iterpair = 
             ocsp_map.equal_range(cur->get_subject().cstr());
@@ -201,7 +201,7 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                 {
                     validate_failed(WvString("Certificate %s's OCSP response "
                                              "is not properly signed by OCSP "
-                                             "response signer.",
+                                             "response signer",
                                              cur->get_subject()), err);
                     return false;
                 }
@@ -222,8 +222,28 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                 {
                     validate_failed(WvString("Certificate %s's OCSP responder "
                                              "does not have OCSP Signing in "
-                                             "its extended key usage!",
+                                             "its extended key usage",
                                              cur->get_subject()), err);
+                    return false;
+                }
+                
+                if (resp_signer->get_aki() == cur->get_ski())
+                {
+                    // this is somewhat questionable, but allow it for now:
+                    // some certificates in the wild are the signer of their
+                    // own OCSP responder
+                    log(WvLog::Warning, "Certificate %s's OCSP responder's "
+                        "AKI matches the current certificate's SKI. This "
+                        "is somewhat questionable.\n");
+                }
+                else if (resp_signer->get_aki() != cur->get_aki())
+                {
+                    validate_failed(WvString("Certificate %s's OCSP "
+                                             "responder's AKI (%s) does not "
+                                             "match own (%s)",
+                                             cur->get_subject(), 
+                                             resp_signer->get_aki(),
+                                             cur->get_aki()), err);
                     return false;
                 }
 
