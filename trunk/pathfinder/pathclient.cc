@@ -118,7 +118,12 @@ int main(int argc, char *argv[])
         wverr->print("Certificate is NOT ok. Not doing path validation.\n");
         return -1;
     }
-    
+
+    // HACK: dbus:system doesn't correspond to anything useful most of the
+    // time, use a hardcoded value instead that should be valid for most
+    // systems
+    if (moniker == "dbus:system")
+        moniker = "unix:/var/run/dbus/system_bus_socket";
     WvDBusConn conn(moniker);
     WvIStreamList::globallist.append(&conn, false, "wvdbus conn");
 
