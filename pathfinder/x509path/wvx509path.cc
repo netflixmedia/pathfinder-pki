@@ -116,8 +116,8 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
 
     if (!prev)
     {
-        validate_failed(WvString("Trusted root for path (%s) not in store", 
-                                 trusted_aki), err);
+        validate_failed(WvString("Trusted root for path (%s/%s) not in store", 
+                                 trusted_aki, trusted_issuer), err);
         return false;
     }
 
@@ -178,7 +178,7 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                 if (resp->get_status(*cur, *prev) != WvOCSPResp::GOOD)
                 {
                     validate_failed(WvString("Certificate %s's OCSP response "
-                                             "does not check out.\n", 
+                                             "does not check out.", 
                                              cur->get_subject()), err);
                     return false;
                 }

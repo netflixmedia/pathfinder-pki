@@ -130,9 +130,50 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
 }
 
 
-bool PathFinder::get_signer(shared_ptr<WvX509> &cert) 
+void PathFinder::get_signer(shared_ptr<WvX509> &cert) 
 {
     log("Attempting to get signer.\n");
+
+    // first, check if we don't have the certificate explicitly defined
+    // somewhere (FIXME: tons of duplication between this and similar code
+    // in revocationfinder)
+
+    WvString hardcoded_loc = cfg["CA Location"].xget(
+        url_encode(cert->get_issuer()));
+    if (!!hardcoded_loc)
+    {
+        WvUrl url(hardcoded_loc);
+        if (url.getproto() == "http" || url.getproto() == "https")
+        {
+            WvStringList urls; urls.append(hardcoded_loc);
+            DownloadFinishedCb cb = wv::bind(
+                &PathFinder::signer_download_finished_cb, 
+                this, _1, _2, _3, _4);            
+            retrieve_object(urls, cb);
+            return;
+        }
+        else if (url.getproto() == "file")
+        {
+            WvString capath = url.getfile();
+
+            shared_ptr<WvX509> cacert(new WvX509);
+            cacert->decode(WvX509::CertFilePEM, capath);
+            if (!cacert->isok()) 
+                cacert->decode(WvX509::CertFileDER, capath);
+            
+            if (!cacert->isok())
+            {
+                failed(WvString("Explicitly defined CA for certificate %s (in "
+                                "file %s, but CRL not ok", 
+                                cert->get_subject(), capath));
+                return;
+            }
+
+            check_cert(cacert);
+            return;
+        }
+    }
+
 
     WvX509List certlist;
     trusted_store->get(cert->get_aki(), certlist);
@@ -155,7 +196,7 @@ bool PathFinder::get_signer(shared_ptr<WvX509> &cert)
                     added_certs.count((*i)->get_subject().cstr()) == 0)
                 {
                     check_cert((*i));
-                    return true;
+                    return;
                 }
             }
         }
@@ -171,7 +212,7 @@ bool PathFinder::get_signer(shared_ptr<WvX509> &cert)
             added_certs.count(first->get_subject().cstr()) == 0)
         {
             check_cert(first);
-            return true;
+            return;
         }
 
         log("Could not find certificate in intermediate store matching "
@@ -184,7 +225,7 @@ bool PathFinder::get_signer(shared_ptr<WvX509> &cert)
     DownloadFinishedCb cb = wv::bind(&PathFinder::signer_download_finished_cb, 
                                      this, _1, _2, _3, _4);
 
-    return retrieve_object(ca_urls, cb);
+    retrieve_object(ca_urls, cb);
 }
 
 
@@ -346,8 +387,6 @@ bool PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
         failed("No urls to download object needed to perform validation");
         return false;
     }
-
-    log("%s urls to choose from.\n", _urls.count());
 
     while (_urls.count())
     {
