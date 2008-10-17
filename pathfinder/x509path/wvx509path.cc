@@ -35,7 +35,7 @@ WvString WvX509Path::get_end_entity_ski()
 }
 
 
-void WvX509Path::prepend_cert(boost::shared_ptr<WvX509> &x509)
+void WvX509Path::prepend_cert(shared_ptr<WvX509> &x509)
 {
     log("Prepending cert %s to path.\n", x509->get_subject());
     x509_list.push_front(x509);

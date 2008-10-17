@@ -128,7 +128,7 @@ shared_ptr<WvX509> WvX509Store::get(WvStringParm key)
             return((*i).second);
     }
 
-    return boost::shared_ptr<WvX509>();
+    return shared_ptr<WvX509>();
 }
 
 void WvX509Store::get(WvStringParm key, WvX509List &certlist)
