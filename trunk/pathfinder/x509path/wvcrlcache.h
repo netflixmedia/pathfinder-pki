@@ -13,20 +13,38 @@
 #ifndef __WVCRLSTORE_H
 #define __WVCRLSTORE_H
 
+#include <boost/shared_ptr.hpp>
+#include <map>
 #include <wvbuf.h>
 #include <wvcrl.h>
-#include <boost/shared_ptr.hpp>
 
 
 class WvCRLCache
 {
   public:
     WvCRLCache(WvStringParm _dir);
-    bool exists(WvStringParm crldp);
     boost::shared_ptr<WvCRL> get(WvStringParm crldp);
     void add(WvStringParm uri, WvBuf &buf);
     
   private:
+
+    struct CRLCacheEntry
+    {
+        CRLCacheEntry(time_t _mtime, boost::shared_ptr<WvCRL> _crl)
+        {
+            mtime = _mtime;
+            crl = _crl;
+        } 
+        CRLCacheEntry()
+        {
+            mtime = 0;
+        }
+        time_t mtime;
+        boost::shared_ptr<WvCRL> crl;
+    };
+    typedef std::map< std::string, CRLCacheEntry > CRLMap;
+    CRLMap crlmap;
+
     WvString dir;
     WvLog log;
 };
