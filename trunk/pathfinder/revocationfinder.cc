@@ -11,6 +11,7 @@
 #include <wvocsp.h>
 #include <wvstrutils.h>
 #include "revocationfinder.h"
+#include "util.h"
 
 using namespace boost;
 
@@ -51,38 +52,15 @@ RevocationFinder::~RevocationFinder()
 void RevocationFinder::find()
 {
     // first, check to see if we have a CRL explicitly defined for this
-    // certificate
+    // certificate's issuer
     WvString hardcoded_crl_loc = cfg["CRL Location"].xget(
-        url_encode(cert->get_subject()));
+        escape_slashes(cert->get_issuer()));
     if (!!hardcoded_crl_loc)
     {
-        WvUrl url(hardcoded_crl_loc);
-        if (url.getproto() == "http" || url.getproto() == "https")
+        shared_ptr<WvCRL> crl = crlcache->get_file(hardcoded_crl_loc);
+        if (crl && !crl->expired())
         {
-            DownloadFinishedCb cb = wv::bind(
-                &RevocationFinder::crl_download_finished_cb, 
-                this, _1, _2, _3, _4);
-            if (retrieve_object_http(hardcoded_crl_loc, cb))
-                return;
-        }
-        else if (url.getproto() == "file")
-        {
-            WvString crlpath = url.getfile();
-
-            shared_ptr<WvCRL> crl(new WvCRL);
-            crl->decode(WvCRL::CRLFilePEM, crlpath);
-            if (!crl->isok()) 
-                crl->decode(WvCRL::CRLFileDER, crlpath);
-            
-            if (!crl->isok())
-            {
-                failed(WvString("Explicitly defined CRL for certificate (in "
-                                "file %s, but CRL not ok", crlpath));
-                return;
-            }
-                
             path->add_crl(cert->get_subject(), crl);
-            
             done = true;
             cb(err);
             return;
@@ -107,7 +85,7 @@ void RevocationFinder::find()
     {
         WvUrl url(i());
 
-        shared_ptr<WvCRL> crl = crlcache->get(url);
+        shared_ptr<WvCRL> crl = crlcache->get_url(url);
         if (crl && !crl->expired())
         {
             path->add_crl(cert->get_subject(), crl);

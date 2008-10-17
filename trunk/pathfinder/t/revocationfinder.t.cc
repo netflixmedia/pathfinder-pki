@@ -1,12 +1,12 @@
 #include <uniconfroot.h>
 #include <wvfile.h>
 #include <wvfileutils.h>
-#include <wvstrutils.h>
 #include <wvtcplistener.h>
 #include <wvtest.h>
 #include <wvx509mgr.h>
 
 #include "testdefuns.t.h"
+#include "util.h"
 #define private public
 #include "revocationfinder.h" 
 #undef private
@@ -109,8 +109,8 @@ WVTEST_MAIN("explicit crls")
     shared_ptr<WvX509> cert(new WvX509);
     WvString certpem = ca.signreq(certreq);
     cert->decode(WvX509Mgr::CertPEM, certpem);
-    cfg["CRL Location"].xset(url_encode(cert->get_subject()), 
-                             WvString("file://%s", crl_filename));
+    cfg["CRL Location"].xset(escape_slashes(cert->get_issuer()), 
+                             crl_filename);
 
     shared_ptr<WvX509Path> path(new WvX509Path);
     int found_info_cb_count = 0;
