@@ -42,7 +42,7 @@ static bool inc_log_level(void *)
 }
 
 
-static void path_validated_cb(boost::shared_ptr<WvX509> &cert, bool valid, 
+static void path_validated_cb(shared_ptr<WvX509> &cert, bool valid, 
                               WvError err)
 {
     done = true;

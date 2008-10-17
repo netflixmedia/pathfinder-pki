@@ -14,9 +14,9 @@ using namespace boost;
 using namespace std;
 
 
-PathServer::PathServer(boost::shared_ptr<WvX509Store> _trusted_store,
-                       boost::shared_ptr<WvX509Store> _intermediate_store,
-                       boost::shared_ptr<WvCRLCache> _crlcache,
+PathServer::PathServer(shared_ptr<WvX509Store> _trusted_store,
+                       shared_ptr<WvX509Store> _intermediate_store,
+                       shared_ptr<WvCRLCache> _crlcache,
                        UniConf &_cfg) :
     log("PathFinder"),
     cfg(_cfg)
@@ -107,7 +107,7 @@ bool PathServer::incoming(WvDBusConn *conn, WvDBusMsg &msg)
 }
 
 
-void PathServer::path_validated_cb(boost::shared_ptr<WvX509> &cert, bool valid, 
+void PathServer::path_validated_cb(shared_ptr<WvX509> &cert, bool valid, 
                                    WvError err, WvDBusConn *conn, 
                                    WvDBusMsg *reply)
 {
