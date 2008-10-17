@@ -7,7 +7,7 @@
 #include "wvx509policytree.h" // for ANY_POLICY_OID
 #include "pathvalidator.h"
 #include "testdefuns.t.h"
-#include "wvcrlstore.h"
+#include "wvcrlcache.h"
 
 using namespace boost;
 
@@ -30,7 +30,7 @@ WVTEST_MAIN("lookup in crlstore")
     UniConfRoot cfg("temp:");
     shared_ptr<WvX509Store> trusted_store(new WvX509Store);
     shared_ptr<WvX509Store> intermediate_store(new WvX509Store);
-    shared_ptr<WvCRLStore> crlstore(new WvCRLStore(CRLSTORE_DIRNAME));
+    shared_ptr<WvCRLCache> crlstore(new WvCRLCache(CRLSTORE_DIRNAME));
 
     WvX509Mgr ca("CN=test.foo.com,DC=foo,DC=com", DEFAULT_KEYLEN, true);
     shared_ptr<WvX509> cacert(new WvX509(ca));

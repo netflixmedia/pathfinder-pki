@@ -42,7 +42,7 @@ WVTEST_MAIN("multiple lookups required")
 
     WvString crlstore_dir("/tmp/pathfinder-crlstore-%s", getpid());
     rm_rf(crlstore_dir);
-    shared_ptr<WvCRLStore> crlstore(new WvCRLStore(crlstore_dir));
+    shared_ptr<WvCRLCache> crlstore(new WvCRLCache(crlstore_dir));
 
     // FIXME: dumb assumption that these ports will be free...
     const int portstart = 8000;
@@ -90,7 +90,7 @@ WVTEST_MAIN("explicit crls")
 {
     WvString crlstore_dir("/tmp/pathfinder-crlstore-%s", getpid());
     rm_rf(crlstore_dir);
-    shared_ptr<WvCRLStore> crlstore(new WvCRLStore(crlstore_dir));
+    shared_ptr<WvCRLCache> crlstore(new WvCRLCache(crlstore_dir));
     UniConfRoot cfg("temp:");
 
     WvX509Mgr ca("CN=test.foo.com,DC=foo,DC=com", DEFAULT_KEYLEN, true);

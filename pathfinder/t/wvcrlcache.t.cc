@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <wvfileutils.h>
 #include <wvtest.h>
-#include "wvcrlstore.h"
+#include "wvcrlcache.h"
 #include "wvstrutils.h"
 #include "testmethods.t.h"
 
@@ -17,7 +17,7 @@ WVTEST_MAIN("crlstore basic")
           WvString("%s/%s", dirname,
                    url_encode("http://foohost/TrustAnchorRootCRL.crl")));
 
-    WvCRLStore store(dirname);
+    WvCRLCache store(dirname);
 
     WVPASS(store.exists("http://foohost/TrustAnchorRootCRL.crl"));
     WVFAIL(store.exists("http://foohost/TrustAnchorRootCRL2.crl"));

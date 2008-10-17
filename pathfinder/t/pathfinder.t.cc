@@ -43,7 +43,7 @@ WVTEST_MAIN("ocsp checking")
     UniConfRoot cfg("temp:");
     shared_ptr<WvX509Store> trusted_store(new WvX509Store);
     shared_ptr<WvX509Store> intermediate_store(new WvX509Store);
-    shared_ptr<WvCRLStore> crlstore(new WvCRLStore("/tmp/does-not-exist-no"));
+    shared_ptr<WvCRLCache> crlstore(new WvCRLCache("/tmp/does-not-exist-no"));
 
     shared_ptr<WvX509> cert(new WvX509);
     cert->decode(WvX509::CertFilePEM, WvString("%s%s", CERTS_PATH, 

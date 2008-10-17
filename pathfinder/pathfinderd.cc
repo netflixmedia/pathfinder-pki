@@ -16,7 +16,7 @@
 #include "pathserver.h"
 #include "version.h"
 #include "wvx509path.h"
-#include "wvcrlstore.h"
+#include "wvcrlcache.h"
 
 using namespace boost;
 
@@ -75,8 +75,8 @@ public:
                 intermediate_store->add_pkcs7(i->getme());
         }
         
-        crlstore = shared_ptr<WvCRLStore>(
-            new WvCRLStore(cfg["general"].xget("crl cache location", 
+        crlstore = shared_ptr<WvCRLCache>(
+            new WvCRLCache(cfg["general"].xget("crl cache location", 
                                                DEFAULT_CRLSTORE_LOCATION)));
 
 	
@@ -96,7 +96,7 @@ public:
     
     shared_ptr<WvX509Store> trusted_store;
     shared_ptr<WvX509Store> intermediate_store;
-    shared_ptr<WvCRLStore> crlstore;
+    shared_ptr<WvCRLCache> crlstore;
     WvDBusConn *dbusconn;
     PathServer *pathserver;
     WvString cfgmoniker;

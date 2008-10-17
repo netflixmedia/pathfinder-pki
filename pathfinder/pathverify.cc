@@ -110,8 +110,8 @@ int main(int argc, char *argv[])
             intermediate_store->add_pkcs7(i->getme());
     }
 
-    shared_ptr<WvCRLStore> crlstore = shared_ptr<WvCRLStore>(
-        new WvCRLStore(cfg["general"].xget("crl cache location", 
+    shared_ptr<WvCRLCache> crlstore = shared_ptr<WvCRLCache>(
+        new WvCRLCache(cfg["general"].xget("crl cache location", 
                                            DEFAULT_CRLSTORE_LOCATION)));
 
     shared_ptr<WvX509> x509(new WvX509);

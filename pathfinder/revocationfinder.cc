@@ -18,7 +18,7 @@ using namespace boost;
 RevocationFinder::RevocationFinder(shared_ptr<WvX509> &_cert, 
                                    shared_ptr<WvX509> &_issuer, 
                                    shared_ptr<WvX509Path> &_path,
-                                   shared_ptr<WvCRLStore> &_crlstore,
+                                   shared_ptr<WvCRLCache> &_crlstore,
                                    UniConf &_cfg,
                                    FoundRevocationInfoCb _cb) :
     cfg(_cfg),

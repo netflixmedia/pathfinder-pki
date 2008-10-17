@@ -16,7 +16,7 @@ using namespace std;
 
 PathServer::PathServer(boost::shared_ptr<WvX509Store> _trusted_store,
                        boost::shared_ptr<WvX509Store> _intermediate_store,
-                       boost::shared_ptr<WvCRLStore> _crlstore,
+                       boost::shared_ptr<WvCRLCache> _crlstore,
                        UniConf &_cfg) :
     log("PathFinder"),
     cfg(_cfg)

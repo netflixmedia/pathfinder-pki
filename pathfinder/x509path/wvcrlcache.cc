@@ -1,4 +1,4 @@
-#include "wvcrlstore.h"
+#include "wvcrlcache.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -9,14 +9,14 @@
 using namespace boost;
 
 
-WvCRLStore::WvCRLStore(WvStringParm _dir) :
-    log("WvCRLStore", WvLog::Debug5)
+WvCRLCache::WvCRLCache(WvStringParm _dir) :
+    log("CRL Cache", WvLog::Debug5)
 {
     dir = _dir;
 }
 
 
-bool WvCRLStore::exists(WvStringParm crldp)
+bool WvCRLCache::exists(WvStringParm crldp)
 {
     WvString path("%s/%s", dir, url_encode(crldp));
 
@@ -29,7 +29,7 @@ bool WvCRLStore::exists(WvStringParm crldp)
 }
 
 
-shared_ptr<WvCRL> WvCRLStore::get(WvStringParm crldp) 
+shared_ptr<WvCRL> WvCRLCache::get(WvStringParm crldp) 
 {
     if (exists(crldp))
     {
@@ -54,7 +54,7 @@ shared_ptr<WvCRL> WvCRLStore::get(WvStringParm crldp)
 }
 
 
-void WvCRLStore::add(WvStringParm url, WvBuf &buf)
+void WvCRLCache::add(WvStringParm url, WvBuf &buf)
 {
     WvString path("%s/%s", dir, url_encode(url));
 

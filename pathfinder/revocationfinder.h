@@ -18,7 +18,7 @@
 
 #include "downloader.h"
 #include "wvx509path.h"
-#include "wvcrlstore.h"
+#include "wvcrlcache.h"
 
 
 typedef wv::function<void(WvError)> FoundRevocationInfoCb;
@@ -32,7 +32,7 @@ class RevocationFinder
     RevocationFinder(boost::shared_ptr<WvX509> &_cert, 
                      boost::shared_ptr<WvX509> &_issuer, 
                      boost::shared_ptr<WvX509Path> &_path, 
-                     boost::shared_ptr<WvCRLStore> &_crlstore,
+                     boost::shared_ptr<WvCRLCache> &_crlstore,
                      UniConf &_cfg,
                      FoundRevocationInfoCb _cb);
     virtual ~RevocationFinder();
@@ -61,7 +61,7 @@ class RevocationFinder
 
     boost::shared_ptr<WvX509> cert;
     boost::shared_ptr<WvX509> issuer;
-    boost::shared_ptr<WvCRLStore> crlstore;
+    boost::shared_ptr<WvCRLCache> crlstore;
     WvStringList ocsp_urls;
     WvStringList crl_urls;
 
