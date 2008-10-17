@@ -74,7 +74,7 @@ WVTEST_MAIN("multiple lookups required")
     shared_ptr<WvX509Path> path(new WvX509Path);
     int found_info_cb_count = 0;
     shared_ptr<WvX509> cacert(new WvX509(ca));
-    RevocationFinder finder(cert, cacert, path, crlcache, cfg,
+    RevocationFinder finder(cert, cacert, path, crlcache, false, cfg, 
                             wv::bind(&found_revocation_info, _1, 
                                      wv::ref(found_info_cb_count)));
 
@@ -116,7 +116,7 @@ WVTEST_MAIN("explicit crls")
     int found_info_cb_count = 0;
     shared_ptr<WvX509> cacert(new WvX509(ca));
 
-    RevocationFinder finder(cert, cacert, path, crlcache, cfg,
+    RevocationFinder finder(cert, cacert, path, crlcache, false, cfg,
                             wv::bind(&found_revocation_info, _1, 
                                      wv::ref(found_info_cb_count)));
     WVPASSEQ(path->crl_map.count(cert->get_subject().cstr()), 1);   

@@ -92,10 +92,10 @@ int main(int argc, char *argv[])
     }
 
     WvLogConsole console_log(1, log_level);
-
     UniConfRoot cfg(cfgmoniker);
-
+    WvHttpStream::global_enable_pipelining = false;
     WvString certname = remaining_args.popstr();
+
 
     shared_ptr<WvX509Store> trusted_store(new WvX509Store);
     {

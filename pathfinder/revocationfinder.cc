@@ -19,8 +19,10 @@ RevocationFinder::RevocationFinder(shared_ptr<WvX509> &_cert,
                                    shared_ptr<WvX509> &_issuer, 
                                    shared_ptr<WvX509Path> &_path,
                                    shared_ptr<WvCRLCache> &_crlcache,
+                                   bool _check_ocsp,
                                    UniConf &_cfg,
                                    FoundRevocationInfoCb _cb) :
+    check_ocsp(_check_ocsp),
     cfg(_cfg),
     log(WvString("Revocation Finder for %s", _cert->get_subject()), 
         WvLog::Debug1)
@@ -87,8 +89,10 @@ void RevocationFinder::find()
         }
     }
 
-    // try to grab both crl and OCSP info
-    cert->get_ocsp(ocsp_urls);
+    // try to grab both crl and OCSP info (the latter only if we're checking 
+    // ocsp)
+    if (check_ocsp)
+        cert->get_ocsp(ocsp_urls);
     cert->get_crl_urls(crl_urls);
 
     if (!crl_urls.count() && !ocsp_urls.count())

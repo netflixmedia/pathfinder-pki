@@ -165,8 +165,9 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
         }
 
         // OCSP validation is pretty simple: look it up in the map, make 
-        // sure it's signed by the previous certificate, and (of course) 
-        // make sure it's not revoked
+        // sure our current certificate is not revoked, then add the OCSP
+        // responder certificate to our list of extra certificates to be 
+        // validated
         bool validated_ocsp = false;        
         if (check_revocation) 
         {
@@ -175,14 +176,58 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
             if (iterpair.first != iterpair.second)
             {
                 shared_ptr<WvOCSPResp> resp = (*iterpair.first).second;
-                if (resp->get_status(*cur, *prev) != WvOCSPResp::GOOD)
+                shared_ptr<WvX509> resp_signer(resp->get_signing_cert());
+
+                if (resp->get_status(*cur, *prev) != WvOCSPResp::Good)
                 {
                     validate_failed(WvString("Certificate %s's OCSP response "
-                                             "does not check out.", 
+                                             "does not check out (status: %s)", 
+                                             cur->get_subject(), 
+                                             resp->get_status(*cur, *prev)), 
+                                    err);
+                    return false;
+                }
+                
+                if (!resp_signer)
+                {
+                    validate_failed(WvString("Certificate %s's OCSP response "
+                                             "does not have a signing "
+                                             "certificate", 
                                              cur->get_subject()), err);
                     return false;
                 }
 
+                if (!resp->signedbycert(*resp_signer))
+                {
+                    validate_failed(WvString("Certificate %s's OCSP response "
+                                             "is not properly signed by OCSP "
+                                             "response signer.",
+                                             cur->get_subject()), err);
+                    return false;
+                }
+
+                bool responder_has_ocsp_signing_key_usage = false;
+                WvStringList ext_key_usage;
+                ext_key_usage.split(resp_signer->get_ext_key_usage(), ";\n");
+                WvStringList::Iter i(ext_key_usage);
+                for (i.rewind(); i.next();)
+                {
+                    if (i() == "OCSP Signing")
+                    {
+                        responder_has_ocsp_signing_key_usage = true;
+                        break;
+                    }
+                }
+                if (!responder_has_ocsp_signing_key_usage)
+                {
+                    validate_failed(WvString("Certificate %s's OCSP responder "
+                                             "does not have OCSP Signing in "
+                                             "its extended key usage!",
+                                             cur->get_subject()), err);
+                    return false;
+                }
+
+                extra_certs_to_be_validated.push_back(resp_signer);
                 validated_ocsp = true;
             }
         }
@@ -207,22 +252,29 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                 WvString cert_issuer = strreplace(cur->get_issuer(), " ", "");
                 strlwr(cert_issuer.edit());
                 WvString crl_aki = crl->get_aki();
+                bool crl_signer_untrusted = false;
 
                 shared_ptr<WvX509> crl_signer;
                 if (prev->get_ski() == crl_aki)
                     crl_signer = prev;
                 if (!crl_signer && prev->get_subject() == crl_issuer)
                     crl_signer = prev;
+                if (!crl_signer)                
+                    crl_signer = trusted_store->get(crl_aki);                
+                // as a last resort, search in the intermediate store for a 
+                // crl signer. this crl signer will need to be validated
+                // seperately
                 if (!crl_signer)
-                    crl_signer = trusted_store->get(crl_aki);
-                if (!crl_signer)
+                {
                     crl_signer = intermediate_store->get(crl_aki);
+                    crl_signer_untrusted = true;
+                }
 
                 if (!crl_signer)
                 {
                     log(WvLog::Info, "CRL signer is not the certificate's "
-                        "signer, nor can we find it in the intermediate or "
-                        "trusted store.\n", cur->get_subject());
+                        "signer, nor can we find it in the trusted store.\n", 
+                        cur->get_subject());
                     continue;
                 }
 
@@ -245,17 +297,12 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                         cert_issuer);
                     continue;
                 }
-                else
-                {
-                    one_valid_crl = true;
 
-                    // if the aki of the crl issuer does not match that of the
-                    // previous certificate, it will need validation in order 
-                    // for this path to be validated
-                    if (crl_signer->get_ski() != prev->get_ski())
-                        extra_certs_to_be_validated.push_back(crl_signer);
-
-                }
+                // if we got this far, our CRL is valid. however, we may need
+                // to validate our CRL signer if it's untrusted
+                one_valid_crl = true;
+                if (crl_signer_untrusted)
+                    extra_certs_to_be_validated.push_back(crl_signer);
 
                 if (crl->isrevoked(*(cur.get())))
                 {

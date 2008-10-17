@@ -34,6 +34,7 @@ public:
                boost::shared_ptr<WvX509Store> &_intermediate_store,
                boost::shared_ptr<WvCRLCache> &_crlcache,
                uint32_t _validation_flags,
+               bool _check_ocsp,
                UniConf &_cfg, 
                PathFoundCb _cb);
     
@@ -83,6 +84,7 @@ public:
 
     bool got_cert_path;
     PathFoundCb path_found_cb;
+    bool check_ocsp;
     UniConf cfg;
     WvError err;
     WvLog log;

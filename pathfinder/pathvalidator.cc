@@ -30,20 +30,26 @@ PathValidator::PathValidator(shared_ptr<WvX509> &_cert,
     crlcache(_crlcache),
     cfg(_cfg),
     validated_cb(_cb),
-    log("Path Validator")
+    log(WvString("Path validator for certificate %s", _cert->get_subject()))
 {
     wvtcl_decode(initial_policy_set, _initial_policy_set_tcl);
+    certs_to_be_validated.push_back(_cert);
 }
 
 
-void PathValidator::validate()
+void PathValidator::validate(bool check_ocsp)
 {
-    PathFoundCb cb = wv::bind(&PathValidator::path_found_cb, this, _1, _2);
-    shared_ptr<PathFinder> pathfinder(new PathFinder(cert_to_be_validated,
+    shared_ptr<WvX509> cert(certs_to_be_validated.front());
+    certs_to_be_validated.pop_front();
+    
+    PathFoundCb cb = wv::bind(&PathValidator::path_found_cb, this, _1, _2, 
+                              cert);
+    shared_ptr<PathFinder> pathfinder(new PathFinder(cert,
                                                      trusted_store,
                                                      intermediate_store,
                                                      crlcache,
                                                      validation_flags,
+                                                     check_ocsp,
                                                      cfg, cb));
     pathfinder_list.push_front(pathfinder); // just to keep a reference to it
 
@@ -51,7 +57,8 @@ void PathValidator::validate()
 }
 
 
-void PathValidator::path_found_cb(shared_ptr<WvX509Path> &path, WvError err)
+void PathValidator::path_found_cb(shared_ptr<WvX509Path> &path, WvError err, 
+                                  shared_ptr<WvX509> &cert)
 {
     if (!err.isok())
     {
@@ -66,15 +73,20 @@ void PathValidator::path_found_cb(shared_ptr<WvX509Path> &path, WvError err)
     bool valid = path->validate(trusted_store, intermediate_store, 
                                 initial_policy_set, validation_flags, 
                                 extra_certs, err);
-    log("Initial path validated, certificate is %svalid.\n", 
-        valid ? "" : "NOT ");
+    log("Path validated for certificate %s, certificate is %svalid.\n", 
+        cert->get_subject(), valid ? "" : "NOT ");
    
     if (!extra_certs.empty())
     {
-        log(WvLog::Warning, "There are %s extra certificates to be processed "
-            "before the path can be said to be valid. This is not yet "
-            "supported.\n", extra_certs.size());
-        valid = false;
+        log("Additional certificates must be validated before the path can "
+            "be said to be valid.\n");
+        while (!extra_certs.empty())
+        {
+            certs_to_be_validated.push_back(extra_certs.front());
+            extra_certs.pop_front();
+        }
+        validate(false); // not checking OCSP, as that can get circular
+        return;
     }
 
     validated_cb(cert_to_be_validated, valid, err);
