@@ -6,9 +6,11 @@
  * This program and accompanying library is covered by the LGPL v2.1 or later, 
  * please read LICENSE for details.
  */
+#include <wvstrutils.h>
 
 
 #include "pathfinder.h"
+
 
 using namespace boost;
 using namespace std;
@@ -19,6 +21,7 @@ PathFinder::PathFinder(shared_ptr<WvX509> &_cert,
                        shared_ptr<WvX509Store> &_intermediate_store,
                        shared_ptr<WvCRLCache> &_crlcache,
                        uint32_t _validation_flags,
+                       bool _check_ocsp,
                        UniConf &_cfg,
                        PathFoundCb _cb) :
     cert_to_be_validated(_cert),
@@ -27,6 +30,7 @@ PathFinder::PathFinder(shared_ptr<WvX509> &_cert,
     crlcache(_crlcache),
     validation_flags(_validation_flags),
     path(new WvX509Path),
+    check_ocsp(_check_ocsp),
     cfg(_cfg),
     got_cert_path(false),
     path_found_cb(_cb),
@@ -113,7 +117,8 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
     if (!(validation_flags & WVX509_SKIP_REVOCATION_CHECK))
     {
         log("Getting revocation information.\n");
-        shared_ptr<WvX509> prev = *(path->begin());
+        shared_ptr<WvX509> prev = cert;
+        
         for (WvX509List::iterator i = path->begin(); i != path->end(); i++)
         {
             if (!get_revocation_info((*i), prev))
@@ -359,7 +364,7 @@ bool PathFinder::get_revocation_info(shared_ptr<WvX509> &cert,
                                      shared_ptr<WvX509> &signer)
 {
     shared_ptr<RevocationFinder> rf(
-        new RevocationFinder(cert, signer, path, crlcache, cfg,
+        new RevocationFinder(cert, signer, path, crlcache, check_ocsp, cfg,
                              wv::bind(&PathFinder::got_revocation_info, this,
                                       _1, cert)));
     rfs.push_back(rf);

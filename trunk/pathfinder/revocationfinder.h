@@ -33,6 +33,7 @@ class RevocationFinder
                      boost::shared_ptr<WvX509> &_issuer, 
                      boost::shared_ptr<WvX509Path> &_path, 
                      boost::shared_ptr<WvCRLCache> &_crlcache,
+                     bool _check_ocsp,
                      UniConf &_cfg,
                      FoundRevocationInfoCb _cb);
     virtual ~RevocationFinder();
@@ -72,6 +73,7 @@ class RevocationFinder
     DownloaderList downloaders;
     bool done;
 
+    bool check_ocsp;
     UniConf cfg;
 
     FoundRevocationInfoCb cb;

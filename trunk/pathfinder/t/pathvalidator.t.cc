@@ -72,13 +72,4 @@ WVTEST_MAIN("lookup in crlcache")
     rm_rf(CRLSTORE_DIRNAME);
 }
 
-#if 0
 
-WVTEST_MAIN("no ski/aki")
-{
-    WvX509Mgr ca("CN=test.foo.com,DC=foo,DC=com", DEFAULT_KEYLEN, true);
-    strip_ski_aki(ca);
-    wvcon->print(ca.encode(WvX509::CertPEM));
-}
-
-#endif

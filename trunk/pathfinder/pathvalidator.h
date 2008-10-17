@@ -27,16 +27,18 @@ class PathValidator
                   UniConf &_cfg, 
                   ValidatedCb _cb);
     
-    void validate();
+    void validate(bool check_ocsp = true);
 
   private:
-    void path_found_cb(boost::shared_ptr<WvX509Path> &path, WvError err);
+    void path_found_cb(boost::shared_ptr<WvX509Path> &path, WvError err,
+                       boost::shared_ptr<WvX509> &cert);
 
     boost::shared_ptr<WvX509> cert_to_be_validated;
+    WvX509List certs_to_be_validated;
     WvStringList initial_policy_set;
     uint32_t validation_flags;
 
-    // keep a list of pathfinder objects we create, for record keeping
+    // keep a list of pathfinder objects we create, for reference counting
     // purposes
     std::list<boost::shared_ptr<PathFinder> > pathfinder_list;
 
