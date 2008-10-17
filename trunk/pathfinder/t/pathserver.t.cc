@@ -55,14 +55,14 @@ public:
     UniConfRoot cfg;
     shared_ptr<WvX509Store> trusted_store;
     shared_ptr<WvX509Store> intermediate_store;
-    shared_ptr<WvCRLStore> crlstore;
+    shared_ptr<WvCRLCache> crlstore;
     PathServer pathserver;
 
     PathServerTester() : 
         cfg("temp:"),
         trusted_store(new WvX509Store),
         intermediate_store(new WvX509Store),
-        crlstore(new WvCRLStore("/tmp/crlstore")),
+        crlstore(new WvCRLCache("/tmp/crlstore")),
         pathserver(trusted_store, intermediate_store, crlstore, cfg)
     {
     }

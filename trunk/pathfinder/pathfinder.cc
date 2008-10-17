@@ -17,7 +17,7 @@ using namespace std;
 PathFinder::PathFinder(shared_ptr<WvX509> &_cert, 
                        shared_ptr<WvX509Store> &_trusted_store, 
                        shared_ptr<WvX509Store> &_intermediate_store,
-                       shared_ptr<WvCRLStore> &_crlstore,
+                       shared_ptr<WvCRLCache> &_crlstore,
                        uint32_t _validation_flags,
                        UniConf &_cfg,
                        PathFoundCb _cb) :

@@ -18,10 +18,10 @@
 #include <boost/shared_ptr.hpp>
 
 
-class WvCRLStore
+class WvCRLCache
 {
   public:
-    WvCRLStore(WvStringParm _dir);
+    WvCRLCache(WvStringParm _dir);
     bool exists(WvStringParm crldp);
     boost::shared_ptr<WvCRL> get(WvStringParm crldp);
     void add(WvStringParm uri, WvBuf &buf);

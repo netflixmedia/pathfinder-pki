@@ -20,7 +20,7 @@
 
 #include "downloader.h"
 #include "revocationfinder.h"
-#include "wvcrlstore.h"
+#include "wvcrlcache.h"
 #include "wvx509path.h"
 #include "wvx509store.h"
 
@@ -32,7 +32,7 @@ public:
     PathFinder(boost::shared_ptr<WvX509> &_cert,
                boost::shared_ptr<WvX509Store> &_trusted_store,
                boost::shared_ptr<WvX509Store> &_intermediate_store,
-               boost::shared_ptr<WvCRLStore> &_crlstore,
+               boost::shared_ptr<WvCRLCache> &_crlstore,
                uint32_t _validation_flags,
                UniConf &_cfg, 
                PathFoundCb _cb);
@@ -65,7 +65,7 @@ public:
     boost::shared_ptr<WvX509> cert_to_be_validated;
     boost::shared_ptr<WvX509Store> trusted_store;
     boost::shared_ptr<WvX509Store> intermediate_store;
-    boost::shared_ptr<WvCRLStore> crlstore;
+    boost::shared_ptr<WvCRLCache> crlstore;
 
     uint32_t validation_flags;
 
