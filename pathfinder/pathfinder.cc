@@ -110,7 +110,7 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
 
     log("Done building path.\n");
 
-    if (!(validation_flags & WVX509_SKIP_CRL_CHECK))
+    if (!(validation_flags & WVX509_SKIP_REVOCATION_CHECK))
     {
         log("Getting revocation information.\n");
         shared_ptr<WvX509> prev = *(path->begin());

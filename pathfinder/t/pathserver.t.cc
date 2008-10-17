@@ -140,7 +140,7 @@ WVTEST_MAIN("pathserver basic")
 {
     PathServerTester tester;
     tester.init();
-    tester.cfg["verification options"].xsetint("skip crl check", 1);
+    tester.cfg["verification options"].xsetint("skip revocation check", 1);
 
     // first test: don't have signing certificate in trusted store, should
     // fail
@@ -161,7 +161,7 @@ WVTEST_MAIN("pathserver policies and appnames")
 
     PathServerTester tester;
     tester.init();
-    tester.cfg["verification options"].xsetint("skip crl check", 1);
+    tester.cfg["verification options"].xsetint("skip revocation check", 1);
 
     tester.add_trusted_cert("TrustAnchorRootCertificate.crt");
     tester.add_untrusted_cert("GoodCACert.crt");

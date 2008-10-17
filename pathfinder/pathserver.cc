@@ -68,10 +68,10 @@ bool PathServer::incoming(WvDBusConn *conn, WvDBusMsg &msg)
     WvDBusMsg *reply = new WvDBusMsg(msg.reply());
     
     uint32_t flags = 0;
-    if (cfg["verification options"].xgetint("skip crl check", 0))
+    if (cfg["verification options"].xgetint("skip revocation check", 0))
     {
-        log("Skipping CRL checking as specified in configuration.\n");
-        flags |= WVX509_SKIP_CRL_CHECK;
+        log("Skipping revocation checking as specified in configuration.\n");
+        flags |= WVX509_SKIP_REVOCATION_CHECK;
     }
     if (initial_explicit_policy)
         flags |= WVX509_INITIAL_EXPLICIT_POLICY;

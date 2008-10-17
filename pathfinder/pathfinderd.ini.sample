@@ -5,7 +5,7 @@ CRL Cache Location = /var/cache/pathfinder/crls/
 Extra certs = /tmp/trusted
 
 [Verification options]
-skip crl check = 1
+skip revocation check = 1
 
 [bridges]
 My bridge = /tmp/mybridge.p7c
@@ -14,4 +14,4 @@ My bridge = /tmp/mybridge.p7c
 E0:26:A2:10:00:7D:D5:96:95:14:0C:F2:2E:54:63:F1:65:66:D9:0E = 1
 
 [CRL Location]
-CN=CAcert WoT User%2femailAddress=pg@futureware.at = file:///path/to/file
+CN=CAcert WoT User%2femailAddress=pg@futureware.at = file:///var/pathfinder/crls/
