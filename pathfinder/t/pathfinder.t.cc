@@ -66,3 +66,5 @@ WVTEST_MAIN("ocsp checking")
 
     WVPASSEQ(found_count, 1);
 }
+
+#endif
