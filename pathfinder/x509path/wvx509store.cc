@@ -7,6 +7,7 @@
  * details.
  */ 
 #include "wvx509store.h"
+#include "util.h"
 
 #include <openssl/pkcs7.h>
 #include <openssl/x509v3.h>
@@ -51,9 +52,8 @@ void WvX509Store::add_cert(shared_ptr<WvX509> &x)
 void WvX509Store::add_file(WvStringParm _fname)
 {
     shared_ptr<WvX509> x(new WvX509);
-    x->decode(WvX509::CertFilePEM, _fname);
-    if (!x->isok()) 
-        x->decode(WvX509::CertFileDER, _fname);
+
+    x->decode(guess_encoding(_fname), _fname);
     
     if (!x->isok())
     {

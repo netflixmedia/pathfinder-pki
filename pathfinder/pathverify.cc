@@ -14,6 +14,7 @@
 #include <wvistreamlist.h>
 
 #include "pathvalidator.h"
+#include "util.h"
 #include "wvx509policytree.h" // for ANY_POLICY_OID
 
 using namespace boost;
@@ -61,15 +62,15 @@ int main(int argc, char *argv[])
     wvcrash_setup(argv[0]);
     
     WvStringList remaining_args;
-    WvString certtype("pem");
+    WvString certtype;
     WvString cfgmoniker(DEFAULT_CONFIG_MONIKER);
     WvString initial_policy_set_tcl(ANY_POLICY_OID);
     bool crl_check = true;
 
     WvArgs args;
     args.add_required_arg("CERTIFICATE");
-    args.add_option('t', "type", "Certificate type: der or pem (default: pem)", 
-                    "TYPE", certtype);
+    args.add_option('t', "type", "Certificate type: der or pem "
+                    "(default: autodetect)", "TYPE", certtype);
     args.add_option('p', "policy", "Initial policy set to use for validation, "
                     "in tcl-encoded form (default: " ANY_POLICY_OID ")",
                     "POLICY", initial_policy_set_tcl);
@@ -120,6 +121,8 @@ int main(int argc, char *argv[])
         x509->decode(WvX509::CertFileDER, certname);   
     else if (certtype == "pem")
         x509->decode(WvX509::CertFilePEM, certname);
+    else if (!certtype)
+        x509->decode(guess_encoding(certname), certname);
     else
     {
         wverr->print("Invalid certificate type '%s'\n", certtype);

@@ -16,6 +16,7 @@
 #include <wvx509.h>
 
 #include "wvx509policytree.h" // for ANY_POLICY_OID
+#include "util.h"
 
 static WvLog::LogLevel log_level = WvLog::Info;
 static bool done = false;
@@ -68,7 +69,7 @@ int main(int argc, char *argv[])
     wvcrash_setup(argv[0]);
     
     WvStringList remaining_args;
-    WvString certtype = "pem";
+    WvString certtype;
     WvString moniker("dbus:system");
     bool initial_explicit_policy = false;
     bool initial_policy_mapping_inhibit = false;
@@ -77,7 +78,8 @@ int main(int argc, char *argv[])
     args.add_required_arg("CERTIFICATE");
     args.add_option('m', "moniker", "Specify the dbus moniker to use "
                     "(default: dbus:system)", "MONIKER", moniker);
-    args.add_option('t', "type", "Certificate type: der or pem (default: pem)", 
+    args.add_option('t', "type", "Certificate type: der or pem "
+                    "(default: autodetect)", 
                     "type", certtype);
     args.add_set_bool_option('e', "initial-explicit-policy", "Set initial "
                              "explicit policy when validating", 
@@ -107,6 +109,8 @@ int main(int argc, char *argv[])
         x509.decode(WvX509::CertFileDER, certname);   
     else if (certtype == "pem")
         x509.decode(WvX509::CertFilePEM, certname);
+    else if (!certtype)
+        x509.decode(guess_encoding(certname), certname);
     else
     {
         wverr->print("Invalid certificate type '%s'\n", certtype);
