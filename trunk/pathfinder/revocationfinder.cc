@@ -54,7 +54,7 @@ void RevocationFinder::find()
     // first, check to see if we have a CRL explicitly defined for this
     // certificate's issuer
     WvString hardcoded_crl_loc = cfg["CRL Location"].xget(
-        escape_slashes(cert->get_issuer()));
+        url_encode(cert->get_issuer(), "[/]"));
     if (!!hardcoded_crl_loc)
     {
         shared_ptr<WvCRL> crl = crlcache->get_file(hardcoded_crl_loc);
