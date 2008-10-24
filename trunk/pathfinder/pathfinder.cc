@@ -282,7 +282,7 @@ void PathFinder::signer_download_finished_cb(WvStringParm urlstr,
     }
 
     shared_ptr<WvX509> cert(new WvX509);
-    if (!strncmp("-----BEGIN", (const char *) buf.peek(0, 10), 10))
+    if (guess_encoding(buf) == WvX509::CertPEM)
         cert->decode(WvX509::CertPEM, buf);
     else
         cert->decode(WvX509::CertDER, buf); 

@@ -193,7 +193,7 @@ void RevocationFinder::crl_download_finished_cb(WvStringParm urlstr,
     log("Got CRL with mimetype %s.\n", mimetype);
        
     shared_ptr<WvCRL> crl(new WvCRL);
-    if (!strncmp("-----BEGIN", (const char *) buf.peek(0, 10), 10))
+    if (guess_encoding(buf) == WvX509::CertPEM)
         crl->decode(WvCRL::CRLPEM, buf);
     else
         crl->decode(WvCRL::CRLDER, buf);
