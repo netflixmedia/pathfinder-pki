@@ -176,14 +176,15 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
             if (iterpair.first != iterpair.second)
             {
                 shared_ptr<WvOCSPResp> resp = (*iterpair.first).second;
-                shared_ptr<WvX509> resp_signer(resp->get_signing_cert());
-
-                if (resp->get_status(*cur, *prev) != WvOCSPResp::Good)
+                WvX509 resp_signer = resp->get_signing_cert();
+                
+                WvOCSPResp::Status status = resp->get_status(*cur, *prev);
+                if (status != WvOCSPResp::Good)
                 {
                     validate_failed(WvString("Certificate %s's OCSP response "
-                                             "does not check out (status: %s)", 
+                                             "does not check out (status: %s)",
                                              cur->get_subject(), 
-                                             resp->get_status(*cur, *prev)), 
+                                             WvOCSPResp::status_str(status)),
                                     err);
                     return false;
                 }
@@ -197,7 +198,7 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                     return false;
                 }
 
-                if (!resp->signedbycert(*resp_signer))
+                if (!resp->signedbycert(resp_signer))
                 {
                     validate_failed(WvString("Certificate %s's OCSP response "
                                              "is not properly signed by OCSP "
@@ -208,7 +209,7 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
 
                 bool responder_has_ocsp_signing_key_usage = false;
                 WvStringList ext_key_usage;
-                ext_key_usage.split(resp_signer->get_ext_key_usage(), ";\n");
+                ext_key_usage.split(resp_signer.get_ext_key_usage(), ";\n");
                 WvStringList::Iter i(ext_key_usage);
                 for (i.rewind(); i.next();)
                 {
@@ -227,7 +228,7 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                     return false;
                 }
                 
-                if (resp_signer->get_aki() == cur->get_ski())
+                if (resp_signer.get_aki() == cur->get_ski())
                 {
                     // this is somewhat questionable, but allow it for now:
                     // some certificates in the wild are the signer of their
@@ -236,18 +237,19 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                         "AKI matches the current certificate's SKI. This "
                         "is somewhat questionable.\n");
                 }
-                else if (resp_signer->get_aki() != cur->get_aki())
+                else if (resp_signer.get_aki() != cur->get_aki())
                 {
                     validate_failed(WvString("Certificate %s's OCSP "
                                              "responder's AKI (%s) does not "
                                              "match own (%s)",
                                              cur->get_subject(), 
-                                             resp_signer->get_aki(),
+                                             resp_signer.get_aki(),
                                              cur->get_aki()), err);
                     return false;
                 }
 
-                extra_certs_to_be_validated.push_back(resp_signer);
+                extra_certs_to_be_validated.push_back(
+                    shared_ptr<WvX509>(new WvX509(resp_signer)));
                 validated_ocsp = true;
             }
         }
