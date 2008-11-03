@@ -4,8 +4,11 @@ CRL Cache Location = /var/cache/pathfinder/crls/
 [Trusted directories]
 Extra certs = /tmp/trusted
 
+[Policy]
+apache = 1.2.3.4
+
 [Verification options]
-skip revocation check = 1
+skip revocation check = 0
 
 [bridges]
 My bridge = /tmp/mybridge.p7c

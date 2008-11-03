@@ -3,9 +3,9 @@
 Pathfinder is designed to provide a mechanism for any program to perform 
 RFC3280-compliant path validation of X509 certificates, even when some of 
 the intermediate certificates are not present on the local machine. It will
-automatically download any such certificates (and their CRLs) from the Internet
-as needed using the AIA and CRL distribution point extensions of the 
-certificates it is processing.
+automatically download any such certificates (and their CRLs or OCSP 
+information) from the Internet as needed using the AIA and CRL distribution 
+point extensions of the certificates it is processing.
 
 === Building Pathfinder ===
 
@@ -116,7 +116,7 @@ contains one method "validate".
 Interface name: ca.carillon.pathfinder
 Object name: /ca/carillon/pathfinder
 Method name: validate
-Method parameters: String, String, Bool, Bool
+Method parameters: String, String, Bool, Bool, (String)
  - String1: The certificate, in hexified der-encoded format. 
  - String2: The set of policies that you wish to enforce, in tcl-list format. 
    Examples: "2.5.29.32.0" (the anyPolicy OID), "{ 1.2.3.4 1.2.3.5 }" (two 
@@ -129,6 +129,11 @@ Method parameters: String, String, Bool, Bool
    at the very beginning of the validation process. Except in the case that 
    very strict validation is desired, it is recommended to set this value to 
    'false'.
+ - String3 (optional): If present, this will tell the pathfinder daemon to use
+   a security policy associated with a particular application or name, if it is
+   specified in the configuration file. For example, you might specify a 
+   particular policy with "apache". You can specify these security policies in 
+   the main configuration file under the section "policy". 
 
 For the convenience of those using OpenSSL or NSS (Netscape Security Services),
 two libraries containing a callback suitable for use with an SSL connection are
