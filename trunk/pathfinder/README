@@ -57,7 +57,6 @@ Please report any failures to:
 
 http://code.google.com/p/pathfinder-pki/issues/list
 
-
 === Using Pathfinder ===
 
 The heart of Pathfinder is a central daemon, "pathfinderd". This is the program
@@ -107,6 +106,56 @@ pathfinder daemon via D-Bus and attempt to validate the client certificate:
 If everything is set up correctly, you should receive a message stating the
 certificate is valid.
 
+=== Configuring Pathfinder ===
+
+The pathfinder configuration file is in ini-style format with the following
+sections and keys.
+
+[General]: This section contains keys that pertain to the general operation
+of pathfinder.
+- CRL Cache Location: This specifies where CRLs previously downloaded from
+ the internet will be stored for later retrieval. 
+ - Example: CRL Cache Location = /var/cache/pathfinder/crls/
+
+[Trusted directories]: This section is used to specify directories containing
+trusted certificates, in format "identifier" = "value"
+ - Example: Trusted certs = /tmp/trusted
+
+[Policy]: This section is used to specify policies to use for application
+names sent to the pathfinder daemon in a validate request (see below).
+ - Example: apache = 1.2.3.4
+
+[Verification Options]: This section is used to specify options for altering
+the way that pathfinder verifies certificates. This is intended primarily
+for debugging and troubleshooting purposes, and in general users shouldn't
+try to modify it.
+ - Skip Revocation Check: If not set to 0 (or blank), disable revocation 
+ checking for the pathfinder daemon.
+  - Example: Skip Revocation Check = 0
+
+[Bridges]: Specifies bundles that can be used to bridge trust between anchors
+(from an untrusted anchor to a trusted one). Specify one bundle per line.
+ - Example: My bridge = /var/pathfinder/bridges/mybridge.p7c
+
+[Intermediate CAs]: Specifies the AKIs of intermediate CA that may function 
+as a bridge. Pathfinder will use these AKIs to lookup potential bridges
+when examining bridge bundles, above. For this section, the AKI is the key, 
+the value should simply be 1.
+ - Example: oE0:26:A2:10:00:7D:D5:96:95:14:0C:F2:2E:54:63:F1:65:66:D9:0E = 1
+
+[CRL Location]: Specifies a location on disk which should be used to find
+a CRL associated with a particular CA. For client certificates of this CA,
+this CRL will simply be loaded off of disk, instead of going over the network
+for download. Note that the keys for the specified CA names should have slashes
+escaped as %2f.
+ - Example: CN=CAcert WoT User%2femailAddress=pg@futureware.at = file:///var/pathfinder/crls/mycrl.crl
+
+[CA Location]: Specifies a location on disk which should be used to find
+a specific CA (instead of looking in the AIA extension of the client 
+certicate). Note that the keys for the specified CA names should have slashes
+escaped as %2f.
+ - Example: O=Root CA, OU=http:%2f%2fwww.cacert.org, CN=CA Cert Signing Authority%2femailAddress=support@cacert.org = file:///var/pathfinder/cas/myca.ca
+
 === Adding support for Pathfinder to your program ===
 
 Pathfinder provides a D-Bus interface that allows you to contact the pathfinder 
@@ -133,7 +182,7 @@ Method parameters: String, String, Bool, Bool, (String)
    a security policy associated with a particular application or name, if it is
    specified in the configuration file. For example, you might specify a 
    particular policy with "apache". You can specify these security policies in 
-   the main configuration file under the section "policy". 
+   the main configuration file, see above.
 
 For the convenience of those using OpenSSL or NSS (Netscape Security Services),
 two libraries containing a callback suitable for use with an SSL connection are
