@@ -1,4 +1,6 @@
 INCLUDE(UsePkgConfig)
+cmake_minimum_required(VERSION 2.5)
+
 
 PROJECT(PATHFINDER)
 SET(PACKAGE_VERSION 0.2.6)
@@ -89,6 +91,6 @@ SET(CPACK_PACKAGE_NAME "pathfinder")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "pathfinder")
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
 SET(CPACK_PACKAGE_VERSION_MINOR "2")
-SET(CPACK_PACKAGE_VERSION_PATCH "5")
+SET(CPACK_PACKAGE_VERSION_PATCH "6")
 SET(CPACK_SOURCE_IGNORE_FILES "/.git/;.gitignore;.*~;/.svn/;CMakeFiles/;CMakeCache.txt;/Testing/;DartTestfile.txt;.pc$;.cmake;/_CPack_Packages/;version.h$;.tar.gz;.tar.Z;.*#.*";/pathviewer-0.1.0-Source/;Makefile)
 INCLUDE(CPack)
