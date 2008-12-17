@@ -33,7 +33,8 @@ public:
                         wv::bind(&PathFinderDaemon::cb, this)),
         dbusconn(NULL),
         cfgmoniker(DEFAULT_CONFIG_MONIKER),
-        dbusmoniker(DEFAULT_DBUS_MONIKER)
+        dbusmoniker(DEFAULT_DBUS_MONIKER),
+        fips_mode(false)
     {
         trusted_store = shared_ptr<WvX509Store>(new WvX509Store);
         intermediate_store = shared_ptr<WvX509Store>(new WvX509Store);
@@ -45,12 +46,30 @@ public:
                         WvString("Specify the D-Bus moniker to use (default: "
                                  "%s)", DEFAULT_DBUS_MONIKER), 
                         "MONIKER", dbusmoniker);
+#ifdef OPENSSL_FIPS
+        args.set_bool_option('f', "fips", WvString("Enable FIPS mode crypto "
+                                              "(default: OFF)"), fips_mode);
+#endif
     }
    
     void cb()
     {
         WvHttpStream::global_enable_pipelining = false;
     
+#ifdef OPENSSL_FIPS        
+        if (fips_mode)
+        {
+          // do something here that enables fips.
+          if (!FIPS_mode_set(1))
+          {
+            log(WvLog::Error, "FIPS mode requested, but not enabled!\n");
+          }
+          else
+          {
+            log(WvLog::Info, "FIPS mode is enabled.\n");
+          }
+        }
+#endif
         // Mount config moniker
 	cfg.unmount(cfg.whichmount(), true); // just in case
 	cfg.mount(cfgmoniker);
@@ -105,6 +124,7 @@ public:
     PathServer *pathserver;
     WvString cfgmoniker;
     WvString dbusmoniker;
+    bool fips_mode;
 
     UniConfRoot cfg;
 };
