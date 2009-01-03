@@ -12,11 +12,18 @@ PKGCONFIG(nss NSS_INCLUDEDIR NSS_LIBDIR NSS_LINKFLAGS NSS_CFLAGS)
 
 IF (NOT DBUS_CFLAGS)
 	MESSAGE(FATAL_ERROR, "You need to have DBUS Development packages
-installed to build Pathfinder")
+installed to build Pathfinder.")
 ENDIF(NOT DBUS_CFLAGS)
 
+IF (NOT WVDBUS_CFLAGS)
+	MESSAGE(FATAL_ERROR, "You must have the WvStreams DBus Development
+packages installed to build Pathfinder.")
+ENDIF (NOT WVDBUS_CFLAGS)
+
 # wvdiriter in wvstreams will assert if we don't have these set... since this is how wvstreams 
-# is normally compiled. can't we do something simpler?
+# is normally compiled. can't we do something simpler? Also, take advantage
+# of this silliness to add in an Apple specific compiler flag. We should
+# find out the RIGHT way to do this, but for now, this works.
 if(APPLE)
 SET(EXTRA_CFLAGS "${WVDBUS_CFLAGS} -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -g -DAPPLE -I/sw/include")
 else(APPLE)
