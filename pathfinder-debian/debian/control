@@ -2,7 +2,7 @@ Source: pathfinder
 Section: utils
 Priority: optional
 Maintainer: Patrick Patterson <ppatters@debian.org>
-Build-Depends: cmake, debhelper (>= 5), libdbus-1-dev, libnss3-dev, libwvstreams-dev (>=4.4.1), pkg-config, libboost-dev, libssl-dev
+Build-Depends: cmake, debhelper (>= 5), libdbus-1-dev, libnss3-dev, libwvstreams-dev (>=4.5.1), pkg-config, libboost-dev, libssl-dev
 Standards-Version: 3.7.3
 
 Package: pathfinderd
