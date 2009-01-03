@@ -1,5 +1,10 @@
 #include <wvfile.h>
+#include <openssl/objects.h>
+#include <openssl/x509.h>
+#include <assert.h>
 #include "util.h"
+
+using namespace boost;
 
 WvX509::DumpMode guess_encoding(WvBuf &buf)
 {
@@ -26,3 +31,15 @@ WvX509::DumpMode guess_encoding(WvStringParm fname)
     return WvX509::CertFileDER;
 }
 
+bool is_md(shared_ptr<WvX509> &x509)
+{	
+    assert(x509 == NULL);
+    
+    X509 *cert = x509->get_cert();
+    int alg = OBJ_obj2nid(cert->sig_alg->algorithm);
+    
+    if (alg == NID_md5WithRSAEncryption || alg == NID_md2WithRSAEncryption)
+        return true;
+      
+    return false;
+}

@@ -7,13 +7,12 @@
  * please read LICENSE for details.
  */
 #include <wvstrutils.h>
+#include <openssl/opensslv.h>
 #include "pathfinder.h"
 #include "util.h"
 
-
 using namespace boost;
 using namespace std;
-
 
 PathFinder::PathFinder(shared_ptr<WvX509> &_cert, 
                        shared_ptr<WvX509Store> &_trusted_store, 
@@ -76,6 +75,17 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
 
     log("Checked certificate. Seems to be ok.\n");
 
+    log("Is this certificate signed with MD5 or MD2? ");
+    bool md = is_md(cert);
+    log(md ? "Yes\n" : "No\n");
+    
+    if (md && cfg["Defaults/Allow MD5"].xgetint(0) == 0)
+    {
+        log("Certificate signed using a disallowed Hash algorithm.\n");
+        failed("Certificate signed using a disallowed Hash algorithm");
+        return;
+    }
+    
     // we allow at most one certificate of the same name that is not self
     // signed in the path
     if (cert->get_subject() != cert->get_issuer())
@@ -241,7 +251,12 @@ void PathFinder::signer_download_finished_cb(WvStringParm urlstr,
 	STACK_OF(X509) *certs = NULL;
 	int i,j;
 	int len = buf.used();
+#if OPENSSL_VERSION_NUMBER >= 0x0090800fL
 	const unsigned char *p = buf.get(buf.used());
+#else
+        const unsigned char *q = buf.get(buf.used());
+        unsigned char *p = const_cast<unsigned char *>(q);
+#endif
 	pkcs7 = d2i_PKCS7(NULL, &p, len);
 	
 	// If this isn't a valid PKCS7 object... don't return anything
