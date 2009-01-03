@@ -12,4 +12,5 @@ The goals of Pathfinder are to enable:
  * Certificate Policy mapping and validation
  * Full Authority Info Access certificate fetching
  * Dynamic CRL fetching
+ * OCSP support for revocation checking, using the responder specified in the Authority Info Access extension.
  * Easy Integration into both the OpenSSL and Netscape LibNSS frameworks.
