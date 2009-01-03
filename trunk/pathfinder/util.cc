@@ -33,8 +33,6 @@ WvX509::DumpMode guess_encoding(WvStringParm fname)
 
 bool is_md(shared_ptr<WvX509> &x509)
 {	
-    assert(x509 == NULL);
-    
     X509 *cert = x509->get_cert();
     int alg = OBJ_obj2nid(cert->sig_alg->algorithm);
     

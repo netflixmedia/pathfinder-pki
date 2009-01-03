@@ -6,7 +6,6 @@
 #include "testmethods.t.h"
 #include "util.h"
 
-
 WVTEST_MAIN("guess encoding")
 {
     WvX509Mgr ca("CN=test.foo.com,DC=foo,DC=com", DEFAULT_KEYLEN, true);
@@ -107,7 +106,7 @@ WVTEST_MAIN("check MD5 or not")
     "9Xgn2uf3ZkPznoM+IKrDNWCRzg==\n"
     "-----END CERTIFICATE-----";
     
-    boost::shared_ptr<WvX509> cert;
+    boost::shared_ptr<WvX509> cert(new WvX509());
     cert->decode(WvX509::CertPEM, md2cert);
     WVPASSEQ(is_md(cert), true);
 
@@ -115,6 +114,5 @@ WVTEST_MAIN("check MD5 or not")
     WVPASSEQ(is_md(cert), true);
 
     cert->decode(WvX509::CertPEM, sha1cert);
-    
-    WVPASSEQ(is_md(cert), true);
+    WVPASSEQ(is_md(cert), false);
 }
