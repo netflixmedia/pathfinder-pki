@@ -11,10 +11,13 @@
 #include <wvbuf.h>
 #include <wvstring.h>
 #include <wvx509.h>
+#include <boost/shared_ptr.hpp>
 
 // various little utility functions which are useful for pathfinder
 
 WvX509::DumpMode guess_encoding(WvBuf &buf);
 WvX509::DumpMode guess_encoding(WvStringParm fname);
+
+bool is_md(boost::shared_ptr<WvX509> &x509);
 
 #endif // __UTIL_H

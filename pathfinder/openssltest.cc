@@ -20,6 +20,10 @@
 #include <openssl/x509v3.h>
 #include <assert.h>
 
+#ifdef APPLE
+#include <strings.h>
+#endif
+
 #include "libpathfinder-openssl.h"
 
 
