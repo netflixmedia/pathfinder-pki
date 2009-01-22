@@ -38,6 +38,9 @@ public:
     {
         trusted_store = shared_ptr<WvX509Store>(new WvX509Store);
         intermediate_store = shared_ptr<WvX509Store>(new WvX509Store);
+        args.add_option(0, "pid-file",
+                        "Specify the .pid file to use (only applies with --daemonize)", "filename",
+                        pid_file);
 
         args.add_option('c', "config", WvString("Config moniker (default: %s)",
                                                 DEFAULT_CONFIG_MONIKER),
