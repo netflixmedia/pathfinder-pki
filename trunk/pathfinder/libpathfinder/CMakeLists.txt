@@ -1,6 +1,6 @@
 IF (NSS_CFLAGS)
 ADD_LIBRARY(pathfinder-nss-1 SHARED libpathfinder.cc libpathfinder-nss.cc)
-ADD_LIBRARY(pathfinder-nss-1-static STATIC libpathfinder.cc libpathfinder-openssl.cc)
+ADD_LIBRARY(pathfinder-nss-1-static STATIC libpathfinder.cc libpathfinder-nss.cc)
 ENDIF (NSS_CFLAGS)
 
 ADD_LIBRARY(pathfinder-openssl-1 SHARED libpathfinder.cc libpathfinder-openssl.cc)
