@@ -47,7 +47,8 @@ endif(LDAP_INCLUDEDIR AND LDAP_LIBS)
 if(LDAP_FOUND)
     # One of these days, properly parse out what may be an alternate -L
     # linker directive. Until then, hacky hacky.
-    set(LDAP_LINKFLAGS "-lldap -lber")
+    message(STATUS "${LDAP_LIBS}")
+    set(LDAP_LINKFLAGS "-lldap")
     if(${LDAP_INCLUDEDIR} STREQUAL "/usr/include")
 	set(LDAP_CFLAGS "")
     else(${LDAP_INCLUDEDIR} STREQUAL "/usr/include")
@@ -68,7 +69,7 @@ else(APPLE)
 SET(EXTRA_CFLAGS "${WVDBUS_CFLAGS} -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -g")
 endif(APPLE)
 
-SET(EXTRA_LINKFLAGS "${WVDBUS_LINKFLAGS}")
+SET(EXTRA_LINKFLAGS "${WVDBUS_LINKFLAGS} ${LDAP_LINKFLAGS}")
 
 INCLUDE_DIRECTORIES(${PATHFINDER_SOURCE_DIR} 
                     ${PATHFINDER_SOURCE_DIR}/x509path 
