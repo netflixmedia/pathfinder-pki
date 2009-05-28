@@ -416,21 +416,21 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
                 LDAP *ldap = NULL;
                 WvDynBuf buf;
                 WvError err;
-                int retval = ldap_initialize(&ldap, url);
+                int retval = ldap_initialize(&ldap, WvString(url));
                 if (retval == LDAP_SUCCESS)
                 {
                     log("LDAP initialized..\n");
                     LDAPURLDesc *lurl = NULL;
-                    retval = ldap_url_parse(url, &lurl);
+                    retval = ldap_url_parse(WvString(url), &lurl);
                     if (retval == LDAP_SUCCESS)
                     {
                         LDAPMessage *res = NULL;
-                        retval = ldap_search_ext_s(ld, lurl->lud_dn, 
-                                                       lurl->lud_scope, 
-                                                       lurl->lud_filter, 
-                                                       lurl->lud_attrs, 
-                                                       0, NULL, NULL, &res);
-                        if (retval = LDAP_SUCCESS)
+                        retval = ldap_search_ext_s(ldap, lurl->lud_dn, 
+                                                         lurl->lud_scope, 
+                                                         lurl->lud_filter, 
+                                                         lurl->lud_attrs, 
+                                                         0, NULL, NULL, NULL, 0, &res);
+                        if (retval == LDAP_SUCCESS)
                         {
                             retval = ldap_count_messages(ldap, res);
                             if (retval == 1)
@@ -438,23 +438,23 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
                                 // Something about ldap_get_values() here and calling the callback... :)
                                 // make sure to free everything...
                                 WvString attr(lurl->lud_attrs[0]);
-                                struct berval *val = NULL;
-                                if (attr == "cACertificate;binary" || attr = "certificateRevocationList;binary")
+                                struct berval **val = NULL;
+                                if (attr == "cACertificate;binary" || attr == "certificateRevocationList;binary")
                                 {
                                     val = ldap_get_values_len(ldap, res, attr);                                
-                                    buf.put(val->bv_val, val->bv_len);
+                                    buf.put(val[0]->bv_val, val[0]->bv_len);
                                 }
                                 else 
                                 {
                                     ldap_msgfree(res);
-                                    ldap_free_url_desc(lurl);
+                                    ldap_free_urldesc(lurl);
                                     ldap_unbind_ext(ldap, NULL, NULL);
-                                    failed("I don't know how to process the attribute: %s\n", attr);
+                                    failed(WvString("I don't know how to process the attribute: %s\n", attr));
                                     return;
                                 }
                                 ldap_value_free_len(val);
                                 ldap_msgfree(res);
-                                ldap_free_url_desc(lurl);
+                                ldap_free_urldesc(lurl);
                                 ldap_unbind_ext(ldap, NULL, NULL);
                                 _cb(url, "none/none", buf, err);
                                 return;
@@ -462,7 +462,7 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
                             else
                             {
                                 ldap_msgfree(res);
-                                ldap_free_url_desc(lurl);
+                                ldap_free_urldesc(lurl);
                                 ldap_unbind_ext(ldap, NULL, NULL);
                                 failed("LDAP Search returned more than one value, which is not permitted.\n");
                                 return;
@@ -471,15 +471,15 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
                         else
                         {
                             ldap_msgfree(res);
-                            ldap_free_url_desc(lurl);
+                            ldap_free_urldesc(lurl);
                             ldap_unbind_ext(ldap, NULL, NULL);
-                            failed("LDAP Search failed: %s\n", ldaperr2string(retval));
+                            failed(WvString("LDAP Search failed: %s\n", ldap_err2string(retval)));
                             return;
                         } 
                     }
                     else
                     {
-                        ldap_free_url_desc(lurl);
+                        ldap_free_urldesc(lurl);
                         ldap_unbind_ext(ldap, NULL, NULL);
                         failed("LDAP URL could not be parsed.\n");
                         return;
@@ -488,7 +488,7 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
                 else
                 {
                     ldap_unbind_ext(ldap, NULL, NULL);
-                    failed("LDAP could not initialize: %s\n", ldaperr2string(retval));
+                    failed(WvString("LDAP could not initialize: %s\n", ldap_err2string(retval)));
                     return;
                 }                
             }
