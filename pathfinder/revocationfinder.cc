@@ -162,7 +162,10 @@ bool RevocationFinder::retrieve_object_http(WvStringParm _url,
     log("Attempting to retrieve revocation object at URL %s.\n", _url);
     
     WvUrl url(_url);
-    if (url.getproto() == "http" || url.getproto() == "https")
+    if (url.getproto() == "http" || 
+        url.getproto() == "https" ||
+        url.getproto() == "ldap" ||
+        url.getproto() == "ldaps")
     {
         shared_ptr<Downloader> d(new Downloader(url, pool, _cb, _method, 
                                                 _headers, _content_source));

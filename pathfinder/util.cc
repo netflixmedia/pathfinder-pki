@@ -41,3 +41,4 @@ bool is_md(shared_ptr<WvX509> &x509)
       
     return false;
 }
+
