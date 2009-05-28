@@ -35,7 +35,8 @@ class Downloader
     WvDynBuf downloadbuf;
     void download_cb(WvStream &s);
     void download_closed_cb(WvStream &s);
-
+    void download_ldap();
+    
     WvString url;
     WvHttpPool *pool;
     xplc_ptr<WvBufUrlStream> stream;
