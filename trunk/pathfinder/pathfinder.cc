@@ -8,6 +8,7 @@
  */
 #include <wvstrutils.h>
 #include <openssl/opensslv.h>
+#include <ldap.h>
 #include "pathfinder.h"
 #include "util.h"
 
@@ -385,12 +386,12 @@ void PathFinder::got_revocation_info(WvError &err, shared_ptr<WvX509> &cert)
 }
 
 
-bool PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
+void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
 {
     if (!_urls.count())
     {
         failed("No urls to download object needed to perform validation");
-        return false;
+        return;
     }
 
     while (_urls.count())
@@ -400,14 +401,104 @@ bool PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
         {
             shared_ptr<Downloader> d(new Downloader(url, pool, _cb));
             downloaders.push_back(d);
-            return true;
+            return;
+        }
+        else if (url.getproto() == "ldap" || url.getproto() == "ldaps")
+        {
+            log("Found an LDAP URI: %s\n", url);
+            if (url.getproto() == "ldaps")
+            {
+                failed("Sorry, don't know how to handle LDAP over SSL yet.\n");
+                return;
+            }
+            else
+            {
+                LDAP *ldap = NULL;
+                WvDynBuf buf;
+                WvError err;
+                int retval = ldap_initialize(&ldap, url);
+                if (retval == LDAP_SUCCESS)
+                {
+                    log("LDAP initialized..\n");
+                    LDAPURLDesc *lurl = NULL;
+                    retval = ldap_url_parse(url, &lurl);
+                    if (retval == LDAP_SUCCESS)
+                    {
+                        LDAPMessage *res = NULL;
+                        retval = ldap_search_ext_s(ld, lurl->lud_dn, 
+                                                       lurl->lud_scope, 
+                                                       lurl->lud_filter, 
+                                                       lurl->lud_attrs, 
+                                                       0, NULL, NULL, &res);
+                        if (retval = LDAP_SUCCESS)
+                        {
+                            retval = ldap_count_messages(ldap, res);
+                            if (retval == 1)
+                            {
+                                // Something about ldap_get_values() here and calling the callback... :)
+                                // make sure to free everything...
+                                WvString attr(lurl->lud_attrs[0]);
+                                struct berval *val = NULL;
+                                if (attr == "cACertificate;binary" || attr = "certificateRevocationList;binary")
+                                {
+                                    val = ldap_get_values_len(ldap, res, attr);                                
+                                    buf.put(val->bv_val, val->bv_len);
+                                }
+                                else 
+                                {
+                                    ldap_msgfree(res);
+                                    ldap_free_url_desc(lurl);
+                                    ldap_unbind_ext(ldap, NULL, NULL);
+                                    failed("I don't know how to process the attribute: %s\n", attr);
+                                    return;
+                                }
+                                ldap_value_free_len(val);
+                                ldap_msgfree(res);
+                                ldap_free_url_desc(lurl);
+                                ldap_unbind_ext(ldap, NULL, NULL);
+                                _cb(url, "none/none", buf, err);
+                                return;
+                            }
+                            else
+                            {
+                                ldap_msgfree(res);
+                                ldap_free_url_desc(lurl);
+                                ldap_unbind_ext(ldap, NULL, NULL);
+                                failed("LDAP Search returned more than one value, which is not permitted.\n");
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            ldap_msgfree(res);
+                            ldap_free_url_desc(lurl);
+                            ldap_unbind_ext(ldap, NULL, NULL);
+                            failed("LDAP Search failed: %s\n", ldaperr2string(retval));
+                            return;
+                        } 
+                    }
+                    else
+                    {
+                        ldap_free_url_desc(lurl);
+                        ldap_unbind_ext(ldap, NULL, NULL);
+                        failed("LDAP URL could not be parsed.\n");
+                        return;
+                    }
+                }
+                else
+                {
+                    ldap_unbind_ext(ldap, NULL, NULL);
+                    failed("LDAP could not initialize: %s\n", ldaperr2string(retval));
+                    return;
+                }                
+            }
         }
         else
             log("Protocol %s not supported for getting object.\n", url.getproto());
     }
 
     failed("Couldn't find valid URI to get object needed to perform validation");
-    return false;
+    return;
 }
 
 
