@@ -56,7 +56,7 @@ public:
                              boost::shared_ptr<WvX509> &signer);
     void got_revocation_info(WvError &err, boost::shared_ptr<WvX509> &cert);
 
-    bool retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb);
+    void retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb);
 
 
     bool create_bridge(boost::shared_ptr<WvX509> &cert);

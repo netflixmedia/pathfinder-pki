@@ -1,10 +1,14 @@
 INCLUDE(UsePkgConfig)
+find_package(PkgConfig)
 cmake_minimum_required(VERSION 2.5)
 
 PROJECT(PATHFINDER)
 SET(PACKAGE_VERSION 1.0.0)
 
-PKGCONFIG(libuniconf UNICONF_INCLUDEDIR UNICONF_LIBDIR UNICONF_LINKFLAGS UNICONF_CFLAGS)
+pkg_check_modules(UNICONF libuniconf)
+
+
+#PKGCONFIG(libuniconf UNICONF_INCLUDEDIR UNICONF_LIBDIR UNICONF_LINKFLAGS UNICONF_CFLAGS)
 PKGCONFIG(libwvdbus WVDBUS_INCLUDEDIR WVDBUS_LIBDIR WVDBUS_LINKFLAGS WVDBUS_CFLAGS)
 PKGCONFIG(dbus-1 DBUS_INCLUDEDIR DBUS_LIBDIR DBUS_LINKFLAGS DBUS_CFLAGS)
 PKGCONFIG(openssl OPENSSL_INCLUDEDIR OPENSSL_LIBDIR OPENSSL_LINKFLAGS OPENSSL_CFLAGS)
@@ -19,6 +23,40 @@ IF (NOT WVDBUS_CFLAGS)
 	MESSAGE(FATAL_ERROR, "You must have the WvStreams DBus Development
 packages installed to build Pathfinder.")
 ENDIF (NOT WVDBUS_CFLAGS)
+
+FIND_PATH(LDAP_INCLUDEDIR ldap.h)
+
+if(APPLE)
+   FIND_LIBRARY(LDAP_LIBS NAMES LDAP
+        PATHS
+        /System/Library/Frameworks
+        /Library/Frameworks
+   )
+else(APPLE)
+   FIND_LIBRARY(LDAP_LIBS NAMES ldap)
+   FIND_LIBRARY(LBER_LIBS NAMES lber)
+endif(APPLE)
+
+if(LDAP_INCLUDEDIR AND LDAP_LIBS)
+   if(LBER_LIBS)
+     set(LDAP_FOUND TRUE)
+     set(LDAP_LIBRARIES ${LDAP_LIBS} ${LBER_LIBS})
+   endif(LBER_LIBS)
+endif(LDAP_INCLUDEDIR AND LDAP_LIBS)
+
+if(LDAP_FOUND)
+    # One of these days, properly parse out what may be an alternate -L
+    # linker directive. Until then, hacky hacky.
+    set(LDAP_LINKFLAGS "-lldap -lber")
+    if(${LDAP_INCLUDEDIR} STREQUAL "/usr/include")
+	set(LDAP_CFLAGS "")
+    else(${LDAP_INCLUDEDIR} STREQUAL "/usr/include")
+	set(LDAP_CFLAGS "-I${LDAP_INCLUDEDIR}")
+    endif(${LDAP_INCLUDEDIR} STREQUAL "/usr/include")
+else(LDAP_FOUND)
+    message(FATAL_ERROR "You need to have the LDAP Development packages
+install to build Pathfinder.")
+endif(LDAP_FOUND)
 
 # wvdiriter in wvstreams will assert if we don't have these set... since this is how wvstreams 
 # is normally compiled. can't we do something simpler? Also, take advantage
