@@ -62,7 +62,7 @@ private:
     void retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb);
 
 
-    bool create_bridge(boost::shared_ptr<WvX509> &cert);
+    WvString storename() const;
 
     void check_done();
 
@@ -88,6 +88,7 @@ private:
     bool got_cert_path;
     PathFoundCb path_found_cb;
     bool check_ocsp;
+    bool check_bridges;
     UniConf cfg;
     WvError err;
     WvLog log;
