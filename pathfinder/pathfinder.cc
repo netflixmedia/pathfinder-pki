@@ -30,6 +30,7 @@ PathFinder::PathFinder(shared_ptr<WvX509> &_cert,
     validation_flags(_validation_flags),
     path(new WvX509Path),
     check_ocsp(_check_ocsp),
+    check_bridges(false),
     cfg(_cfg),
     got_cert_path(false),
     path_found_cb(_cb),
@@ -56,12 +57,41 @@ void PathFinder::wouldfail(WvStringParm str)
 
 void PathFinder::find()
 {
+    check_bridges = false;  // go for direct trust first...
     check_cert(cert_to_be_validated);
     if (!got_cert_path)
     {
-        if (!err.geterr())
-            err.seterr("Couldn't build path.  Check the logs to find out why.");
-        path_found_cb(path, err);
+        if (intermediate_store->count() == 0)
+        {
+            log("Trust anchor for cert not found in store, and no bridges "
+                "defined.  Giving up.\n");
+            if (!err.geterr())
+                err.seterr("Couldn't build path.  "
+                           "Check the logs to find out why.");
+            path_found_cb(path, err);
+            return;
+        }
+
+        log("Trust anchor for cert not in store. Starting over, but looking "
+            "for bridges this time.\n");
+        while (path->pathsize() > 0)
+        {
+            log("Popping off %s\n", path->subject_at_front());
+            added_certs.erase(path->subject_at_front().cstr());
+            path->pop_front();
+        }
+        check_bridges = true;   // go for bridged trust this time...
+        check_cert(cert_to_be_validated);
+
+        if (!got_cert_path)
+        {
+            log("Trust anchor for cert not in store, and couldn't build "
+                "a bridge either.  Giving up.\n");
+            if (!err.geterr())
+                err.seterr("Couldn't build path.  "
+                           "Check the logs to find out why.");
+            path_found_cb(path, err);
+        }
     }
 }
 
@@ -103,12 +133,7 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
     }
     else if (!trusted_store->exists(cert.get()))
     {
-        log("Trust anchor for cert not in store. Attempting to build "
-            "bridge.\n");
-        path->prepend_cert(cert);        
-        if (!create_bridge(cert))
-            return;
-        // the process begins again
+        log("Got a self-signed root that I don't trust.\n");
         return;
     }
     else
@@ -147,6 +172,15 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
 }
 
 
+WvString PathFinder::storename() const
+{
+    if (check_bridges)
+        return "trusted or intermediate store";
+    else
+        return "trusted store";
+}
+
+
 void PathFinder::get_signer(shared_ptr<WvX509> &cert) 
 {
     log("Attempting to get signer.\n");
@@ -176,16 +210,17 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
         return;
     }
 
-    // next, check to see if the certificate is in the intermediate or trusted
-    // store
+    // next, check to see if the certificate is in the trusted store, and
+    // (if we're checking for bridges) the intermediate store.
     WvX509List certlist;
     trusted_store->get(cert->get_aki(), certlist);
-    intermediate_store->get(cert->get_aki(), certlist);
+    if (check_bridges)
+        intermediate_store->get(cert->get_aki(), certlist);
     if (!certlist.empty())
     {
-        log("Evaluating %s: Issuer's Certificate (%s) may be in trusted "
-            "or intermediate store %s times. Checking.\n",
-            cert->get_ski(), cert->get_aki(), certlist.size());
+        log("Evaluating %s: Issuer's Certificate (%s) may be in %s "
+            "%s times. Checking.\n",
+            cert->get_ski(), cert->get_aki(), storename(), certlist.size());
 
         // prefer one that is self-signed if we have more than one...
         // also disallow certificates whose issuer matches our subject
@@ -228,8 +263,9 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
                 return; // done!
         }
 
-        log("Could not find certificate in trusted or intermediate store "
-            "matching issuer name that may not have been previously added.\n");
+        log("Could not find certificate in %s "
+            "matching issuer name that may not have been previously added.\n",
+            storename());
     }
 
     WvStringList ca_urls;
@@ -359,60 +395,6 @@ void PathFinder::signer_download_finished_cb(shared_ptr<WvX509> &cert,
         cert2->decode(WvX509::CertDER, buf); 
 
     check_cert(cert2);
-}
-
-
-bool PathFinder::create_bridge(shared_ptr<WvX509> &cert)
-{
-    if (!cert->get_aki())
-    {
-        wouldfail("Can't find route back to trust anchor (last certificate "
-                "lacks AKI needed to build bridge)");
-        return false;
-    }
-
-    WvX509List cross_certs;
-    intermediate_store->get_cross_certs(cert, cross_certs);
-    if (intermediate_store->count())
-    {
-      log("Creating bridge for certificate %s.\n", cert->get_subject());
-
-      // first, attempt to find a cross cert which leads back to a trust anchor
-      for (WvX509List::iterator i = cross_certs.begin(); 
-           i != cross_certs.end(); i++)
-      {
-          log("Checking cross cert %s (with issuer %s)\n", (*i)->get_subject(),
-              (*i)->get_issuer());
-
-          if (trusted_store->exists((*i)->get_aki()) || 
-              (!!cfg["intermediate CAs"].xget((*i)->get_aki()) && 1))
-          {
-              log("Found a cross certificate which leads back to a trust "
-                "anchor. Choosing it.\n");
-              check_cert((*i));
-              return true;
-          }
-      }
-    
-      // otherwise, just follow the first one (if it exists) and hope for the
-      // best. I don't think we need to support multiple paths to a bridge 
-      // certificate at the moment. We have a check to make sure that 
-      // we're not adding the same cross certificate twice.
-      if (!cross_certs.empty() && 
-          added_certs.count((*cross_certs.begin())->get_ski().cstr()) == 0)
-      {
-          check_cert((*cross_certs.begin()));
-          return true;
-      }
-    
-      wouldfail("Couldn't find bridge which leads back to trust anchor");
-      return false;
-    }
-    else
-    {
-      wouldfail("No bridges defined");
-      return false;
-    }
 }
 
 
