@@ -36,12 +36,18 @@ class WvX509Path
                   WvX509List &extra_certs_to_be_validated,
                   WvError &err);
     WvString get_end_entity_ski();
+    WvString subject_at_front() const
+        { return x509_list.front()->get_subject(); }
+    void pop_front()
+        { x509_list.pop_front(); }
     void prepend_cert(boost::shared_ptr<WvX509> &cert);
     void append_cert(boost::shared_ptr<WvX509> &cert);
     void add_crl(WvStringParm ski, boost::shared_ptr<WvCRL> &crl);
     void add_ocsp_resp(WvStringParm ski, boost::shared_ptr<WvOCSPResp> &ocsp);
     WvX509List::iterator begin() { return x509_list.begin(); }
     WvX509List::iterator end() { return x509_list.end(); }
+    size_t pathsize() const
+        { return x509_list.size(); }
 
   private:
     // used when validation fails: logs an error message AND sets the error

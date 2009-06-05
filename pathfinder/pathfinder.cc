@@ -8,7 +8,7 @@
  */
 #include <wvstrutils.h>
 #include <openssl/opensslv.h>
-#include <ldap.h>
+#include <openssl/pem.h>
 #include "pathfinder.h"
 #include "util.h"
 
@@ -47,22 +47,22 @@ PathFinder::~PathFinder()
 }
 
 
+void PathFinder::wouldfail(WvStringParm str)
+{
+    log("%s\n", str);
+    //err.seterr(str);
+}
+
+
 void PathFinder::find()
 {
     check_cert(cert_to_be_validated);
-}
-
-
-void PathFinder::failed(WvStringParm reason)
-{
-    err.seterr(reason);
-    failed();
-}
-
-
-void PathFinder::failed()
-{
-    path_found_cb(path, err);
+    if (!got_cert_path)
+    {
+        if (!err.geterr())
+            err.seterr("Couldn't build path.  Check the logs to find out why.");
+        path_found_cb(path, err);
+    }
 }
 
 
@@ -70,11 +70,11 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
 {
     if (!cert->isok())
     {
-        failed("Certificate not valid");
+        wouldfail(WvString("Certificate not valid (%s).", cert->get_subject()));
         return;
     }
 
-    log("Checked certificate. Seems to be ok.\n");
+    log("Checked certificate (%s). Seems to be ok.\n", cert->get_subject());
 
     log("Is this certificate signed with MD5 or MD2? ");
     bool md = is_md(cert);
@@ -82,8 +82,7 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
     
     if (md && cfg["Defaults/Allow MD5"].xgetint(0) == 0)
     {
-        log("Certificate signed using a disallowed Hash algorithm.\n");
-        failed("Certificate signed using a disallowed Hash algorithm");
+        wouldfail("Certificate signed using a disallowed Hash algorithm.");
         return;
     }
     
@@ -126,15 +125,18 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
 
     if (!(validation_flags & WVX509_SKIP_REVOCATION_CHECK))
     {
-        log("Getting revocation information.\n");
+        log("Getting revocation information for path of length %s.\n", path->pathsize());
         shared_ptr<WvX509> prev = cert;
         
         for (WvX509List::iterator i = path->begin(); i != path->end(); i++)
         {
-            if (!get_revocation_info((*i), prev))
-                return;
-            
+            get_revocation_info((*i), prev);    // populates rfs
             prev = (*i);
+        }
+        for (RevocationFinderList::iterator i = rfs.begin();
+             i != rfs.end(); i++)
+        {
+            (*i)->find();
         }
     }
     else
@@ -164,9 +166,9 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
         
         if (!cacert->isok())
         {
-            failed(WvString("Explicitly defined CA for certificate %s (in "
-                            "file %s, but certificate not ok", 
-                            cert->get_subject(), hardcoded_loc));
+            wouldfail(WvString("Explicitly defined CA for certificate %s (in "
+                        "file %s, but certificate not ok", 
+                        cert->get_subject(), hardcoded_loc));
             return;
         }
 
@@ -181,21 +183,29 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
     intermediate_store->get(cert->get_aki(), certlist);
     if (!certlist.empty())
     {
-        log("Certificate may be in trusted or intermediate store. Checking.\n");
+        log("Evaluating %s: Issuer's Certificate (%s) may be in trusted "
+            "or intermediate store %s times. Checking.\n",
+            cert->get_ski(), cert->get_aki(), certlist.size());
 
         // prefer one that is self-signed if we have more than one...
-        // also disallow certificate's whose issuer matches our subject
+        // also disallow certificates whose issuer matches our subject
         // (we don't want to go around in circles!)
         if (certlist.size() > 1)
         {
             for (WvX509List::iterator i=certlist.begin();
                  i != certlist.end(); i++)
             {
+                //log("Taking a look at %s issued by %s\n",
+                //    (*i)->get_subject(), (*i)->get_issuer());
                 if ((*i)->get_issuer() == (*i)->get_subject() &&
                     (*i)->get_subject() == cert->get_issuer() && 
                     (*i)->get_issuer() != cert->get_subject() &&
                     added_certs.count((*i)->get_subject().cstr()) == 0)
                 {
+                    //log("Found a self-signed cert!  subj=%s, issuer=%s, "
+                    //    "ski=%s, aki=%s\n",
+                    //    (*i)->get_subject(), (*i)->get_issuer(),
+                    //    (*i)->get_ski(), (*i)->get_aki());
                     check_cert((*i));
                     return;
                 }
@@ -203,40 +213,71 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
         }
 
         // ... but if we don't have a self-signed cert, or we only
-        // have one, then just take the first on the list. it's the best
-        // we can do
-        // again, disallow certificate's whose issuer matches our subject
+        // have one, then loop through anything that matches.  If it turns
+        // out we've taken a wrong branch, pop back down to a saved state
+        // and take the next branch.
+        // again, disallow certificates whose issuer matches our subject
         // (we don't want to go around in circles!)
-        shared_ptr<WvX509> first = *certlist.begin();
-        if (first->get_subject() == cert->get_issuer() && 
-            first->get_issuer() != cert->get_subject() &&
-            added_certs.count(first->get_subject().cstr()) == 0)
+        for (WvX509List::iterator i=certlist.begin();
+             i != certlist.end(); i++)
         {
-            check_cert(first);
-            return;
+            //log("Taking a look (2) at %s issued by %s\n",
+            //    (*i)->get_subject(), (*i)->get_issuer());
+            examine_signer((*i), cert);
+            if (got_cert_path)
+                return; // done!
         }
 
-        log("Could not find certificate in intermediate store matching "
-            "issuer name that may not have been previously added.\n");
+        log("Could not find certificate in trusted or intermediate store "
+            "matching issuer name that may not have been previously added.\n");
     }
 
     WvStringList ca_urls;
     cert->get_ca_urls(ca_urls);
 
     DownloadFinishedCb cb = wv::bind(&PathFinder::signer_download_finished_cb, 
-                                     this, _1, _2, _3, _4);
+                                     this, cert, _1, _2, _3, _4);
 
     retrieve_object(ca_urls, cb);
 }
 
 
-void PathFinder::signer_download_finished_cb(WvStringParm urlstr, 
+// examines a potential certificate 'i' to see if it is a valid issuer of
+// 'cert'.  If it is, and we haven't used it before, then try building a
+// path through it.  If that fails, pop back down to the same place and
+// return.
+void PathFinder::examine_signer(shared_ptr<WvX509> &i, shared_ptr<WvX509> &cert)
+{
+    if (i->get_subject() == cert->get_issuer() &&
+        i->get_issuer() != cert->get_subject() &&
+        added_certs.count(i->get_subject().cstr()) == 0)
+    {
+        //log("Found a cert!  subj=%s, issuer=%s, ski=%s, aki=%s\n",
+        //    i->get_subject(), i->get_issuer(), i->get_ski(), i->get_aki());
+        WvString curfront = path->subject_at_front();
+        check_cert(i);
+        if (!got_cert_path)
+        {
+            log("Path discovery hit a dead end.\n");
+            while (path->subject_at_front() != curfront)
+            {
+                log("Popping off %s\n", path->subject_at_front());
+                added_certs.erase(path->subject_at_front().cstr());
+                path->pop_front();
+            }
+        }
+    }
+}
+
+
+void PathFinder::signer_download_finished_cb(shared_ptr<WvX509> &cert, 
+                                             WvStringParm urlstr, 
                                              WvStringParm mimetype, WvBuf &buf, 
                                              WvError _err)
 {
     if (_err.geterr())
     {
-        failed(WvString("Couldn't download certificate signer at url %s", 
+        wouldfail(WvString("Couldn't download certificate signer at url %s", 
                         urlstr));
         return;
     }
@@ -252,18 +293,31 @@ void PathFinder::signer_download_finished_cb(WvStringParm urlstr,
 	STACK_OF(X509) *certs = NULL;
 	int i,j;
 	int len = buf.used();
+
+        if (guess_encoding(buf) == WvX509::CertPEM)
+        {
+            log("PKCS7 file appears to be in PEM format, but is probably "
+                "not supposed to be.  Decoding anyway.\n");
+            BIO *membuf = BIO_new(BIO_s_mem());
+            BIO_write(membuf, buf.get(buf.used()), buf.used());
+            pkcs7 = PEM_read_bio_PKCS7(membuf, NULL, NULL, NULL);
+            BIO_free_all(membuf);
+        }
+        else
+        {
 #if OPENSSL_VERSION_NUMBER >= 0x0090800fL
-	const unsigned char *p = buf.get(buf.used());
+            const unsigned char *p = buf.get(buf.used());
 #else
-        const unsigned char *q = buf.get(buf.used());
-        unsigned char *p = const_cast<unsigned char *>(q);
+            const unsigned char *q = buf.get(buf.used());
+            unsigned char *p = const_cast<unsigned char *>(q);
 #endif
-	pkcs7 = d2i_PKCS7(NULL, &p, len);
+            pkcs7 = d2i_PKCS7(NULL, &p, len);
+        }
 	
 	// If this isn't a valid PKCS7 object... don't return anything
 	if (!pkcs7)
 	{
-	    failed(WvString("%s is not a valid pkcs7 object!", urlstr)); 
+	    wouldfail(WvString("%s is not a valid pkcs7 object!", urlstr)); 
 	    return;
 	}
 	
@@ -274,7 +328,7 @@ void PathFinder::signer_download_finished_cb(WvStringParm urlstr,
 	    certs = pkcs7->d.signed_and_enveloped->cert;
 	else
 	{
-	    failed("The PKCS7 bundle does not appear to have any certificates!");
+	    wouldfail("The PKCS7 bundle does not appear to have any certificates!");
 	    return;
 	}
 	
@@ -285,25 +339,26 @@ void PathFinder::signer_download_finished_cb(WvStringParm urlstr,
 		shared_ptr<WvX509> x;
 		X509 *_x = sk_X509_value(certs, j);
 		x = shared_ptr<WvX509>(new WvX509(X509_dup(_x)));
-		log("Extracting cert for %s from bundle.\n", x->get_subject().cstr());
-		if (added_certs[x->get_subject().cstr()] == true)
-		    log("Skipping '%s' because we've already got it in our "
-                        "list\n", x->get_subject());
-		else
-		    check_cert(x);
+                //log("Taking a look (3) at %s issued by %s\n",
+                //    x->get_subject(), x->get_issuer());
+		log("Extracting cert for %s from bundle.\n",
+                    x->get_subject().cstr());
+                examine_signer(x, cert);
+                if (got_cert_path)
+                    return; // done!
 	    }
 	}
 
         return;
     }
 
-    shared_ptr<WvX509> cert(new WvX509);
+    shared_ptr<WvX509> cert2(new WvX509);
     if (guess_encoding(buf) == WvX509::CertPEM)
-        cert->decode(WvX509::CertPEM, buf);
+        cert2->decode(WvX509::CertPEM, buf);
     else
-        cert->decode(WvX509::CertDER, buf); 
+        cert2->decode(WvX509::CertDER, buf); 
 
-    check_cert(cert);
+    check_cert(cert2);
 }
 
 
@@ -311,8 +366,8 @@ bool PathFinder::create_bridge(shared_ptr<WvX509> &cert)
 {
     if (!cert->get_aki())
     {
-        failed("Can't find route back to trust anchor (last certificate "
-               "lacks AKI needed to build bridge)");
+        wouldfail("Can't find route back to trust anchor (last certificate "
+                "lacks AKI needed to build bridge)");
         return false;
     }
 
@@ -350,18 +405,18 @@ bool PathFinder::create_bridge(shared_ptr<WvX509> &cert)
           return true;
       }
     
-      failed("Couldn't find bridge which leads back to trust anchor");
+      wouldfail("Couldn't find bridge which leads back to trust anchor");
       return false;
     }
     else
     {
-      failed("No bridges defined");
+      wouldfail("No bridges defined");
       return false;
     }
 }
 
 
-bool PathFinder::get_revocation_info(shared_ptr<WvX509> &cert, 
+void PathFinder::get_revocation_info(shared_ptr<WvX509> &cert, 
                                      shared_ptr<WvX509> &signer)
 {
     shared_ptr<RevocationFinder> rf(
@@ -369,7 +424,7 @@ bool PathFinder::get_revocation_info(shared_ptr<WvX509> &cert,
                              wv::bind(&PathFinder::got_revocation_info, this,
                                       _1, cert)));
     rfs.push_back(rf);
-    return true;
+    return;
 }
 
 
@@ -377,9 +432,8 @@ void PathFinder::got_revocation_info(WvError &err, shared_ptr<WvX509> &cert)
 {
     if (err.geterr())
     {
-        failed(WvString("Failed to download revocation info for certificate %s", 
+        wouldfail(WvString("Failed to download revocation info for certificate %s", 
                         cert->get_subject()));
-        return;
     }
 
     check_done();
@@ -390,7 +444,7 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
 {
     if (!_urls.count())
     {
-        failed("No urls to download object needed to perform validation");
+        wouldfail("No urls to download object needed to perform validation");
         return;
     }
 
@@ -404,13 +458,22 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
         {
             shared_ptr<Downloader> d(new Downloader(url, pool, _cb));
             downloaders.push_back(d);
-            return;
+
+            // do NOT return until our downloader is done and the callback
+            // has been run, or else a get_signer() somewhere farther up
+            // the stack can proceed to validate other paths before we know
+            // if this one is any good!
+            while (!d->is_done() && WvIStreamList::globallist.isok())
+                WvIStreamList::globallist.runonce();
+
+            if (got_cert_path)
+                return;
         }
         else
             log("Protocol %s not supported for getting object.\n", url.getproto());
     }
 
-    failed("Couldn't find valid URI to get object needed to perform validation");
+    wouldfail("Couldn't find valid URI to get object needed to perform validation");
     return;
 }
 

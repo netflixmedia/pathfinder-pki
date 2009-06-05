@@ -43,16 +43,19 @@ public:
 
     void find();
 
-  private:
+private:
     void check_cert(boost::shared_ptr<WvX509> &cert);
-    void failed(WvStringParm reason);
-    void failed();
+    void wouldfail(WvStringParm str);
     
     void get_signer(boost::shared_ptr<WvX509> &cert);
-    void signer_download_finished_cb(WvStringParm urlstr, WvStringParm mimetype, 
+    void examine_signer(boost::shared_ptr<WvX509> &i,
+                        boost::shared_ptr<WvX509> &cert);
+    void signer_download_finished_cb(boost::shared_ptr<WvX509> &cert,
+                                     WvStringParm urlstr,
+                                     WvStringParm mimetype, 
                                      WvBuf &buf, WvError _err);
     
-    bool get_revocation_info(boost::shared_ptr<WvX509> &cert, 
+    void get_revocation_info(boost::shared_ptr<WvX509> &cert, 
                              boost::shared_ptr<WvX509> &signer);
     void got_revocation_info(WvError &err, boost::shared_ptr<WvX509> &cert);
 

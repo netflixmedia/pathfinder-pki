@@ -28,7 +28,7 @@ typedef wv::function<void(WvError)> FoundRevocationInfoCb;
 // class.
 class RevocationFinder
 {
-  public:
+public:
     RevocationFinder(boost::shared_ptr<WvX509> &_cert, 
                      boost::shared_ptr<WvX509> &_issuer, 
                      boost::shared_ptr<WvX509Path> &_path, 
@@ -37,12 +37,12 @@ class RevocationFinder
                      UniConf &_cfg,
                      FoundRevocationInfoCb _cb);
     virtual ~RevocationFinder();
-    
+
     bool is_done() { return done; }
 
-  private:
     void find();
 
+private:
     void failed(WvStringParm reason);
     void failed();
     void try_download_next();
