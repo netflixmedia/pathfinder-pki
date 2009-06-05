@@ -78,6 +78,7 @@ WVTEST_MAIN("multiple lookups required")
     RevocationFinder finder(cert, cacert, path, crlcache, false, cfg, 
                             wv::bind(&found_revocation_info, _1, 
                                      wv::ref(found_info_cb_count)));
+    finder.find();
 
     while (!found_info_cb_count)
         WvIStreamList::globallist.runonce();
@@ -120,6 +121,8 @@ WVTEST_MAIN("explicit crls")
     RevocationFinder finder(cert, cacert, path, crlcache, false, cfg,
                             wv::bind(&found_revocation_info, _1, 
                                      wv::ref(found_info_cb_count)));
+    finder.find();
+
     WVPASSEQ(path->crl_map.count(cert->get_subject().cstr()), 1);   
 
     ::unlink(crl_filename);

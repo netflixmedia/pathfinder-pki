@@ -38,7 +38,7 @@ RevocationFinder::RevocationFinder(shared_ptr<WvX509> &_cert,
     cb = _cb;
     done = false;
 
-    find();
+    //find();
 }
 
 

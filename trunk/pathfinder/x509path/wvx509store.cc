@@ -192,7 +192,7 @@ void WvX509Store::get_cross_certs(shared_ptr<WvX509> &cert,
             (*i).second->get_aki() != (*i).second->get_ski())
         {
             log("%s matches.\n", (*i).second->get_subject());
-           certlist.push_back((*i).second);
+            certlist.push_back((*i).second);
         }
     }
 }

@@ -22,7 +22,7 @@ typedef wv::function<void(WvStringParm, WvStringParm, WvBuf&, WvError)> Download
 
 class Downloader
 {
-  public:
+public:
     Downloader(WvStringParm _url, WvHttpPool *_pool, 
                DownloadFinishedCb _cb,
                WvStringParm _method = "GET",
@@ -31,7 +31,7 @@ class Downloader
     virtual ~Downloader();
     bool is_done() { return done; }
 
-  private:
+private:
     WvDynBuf downloadbuf;
     void download_cb(WvStream &s);
     void download_closed_cb(WvStream &s);
