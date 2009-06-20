@@ -3,7 +3,7 @@ find_package(PkgConfig)
 cmake_minimum_required(VERSION 2.5)
 
 PROJECT(PATHFINDER)
-SET(PACKAGE_VERSION 1.0.0)
+SET(PACKAGE_VERSION 1.1.0)
 
 pkg_check_modules(UNICONF libuniconf)
 
@@ -147,7 +147,7 @@ INSTALL (FILES pathfinderd-dbus.conf
 SET(CPACK_PACKAGE_NAME "pathfinder")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "pathfinder")
 SET(CPACK_PACKAGE_VERSION_MAJOR "1")
-SET(CPACK_PACKAGE_VERSION_MINOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "1")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(CPACK_SOURCE_IGNORE_FILES "/.git/;.gitignore;.*~;/.svn/;CMakeFiles/;CMakeCache.txt;/Testing/;DartTestfile.txt;.pc$;.cmake;/_CPack_Packages/;version.h$;.tar.gz;.tar.Z;.*#.*";/pathviewer-0.1.0-Source/;Makefile)
 INCLUDE(CPack)
