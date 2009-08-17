@@ -16,6 +16,7 @@
 #include <boost/shared_ptr.hpp>
 #include <map>
 #include <list>
+#include <stdint.h>
 
 
 typedef std::list< boost::shared_ptr<WvX509> > WvX509List;
