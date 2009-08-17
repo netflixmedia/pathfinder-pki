@@ -18,6 +18,8 @@
 #include <wvhttppool.h>
 #include <wvx509.h>
 
+#include <stdint.h>
+
 #include "downloader.h"
 #include "revocationfinder.h"
 #include "wvcrlcache.h"
