@@ -1,6 +1,6 @@
-diff -urNX apacheignore httpd-2.2.8/Makefile.in httpd-2.2.8-pathfinder/Makefile.in
+diff -urN httpd-2.2.8/Makefile.in httpd-2.2.8-pathfinder/Makefile.in
 --- httpd-2.2.8/Makefile.in	2007-04-24 07:08:01.000000000 -0400
-+++ httpd-2.2.8-pathfinder/Makefile.in	2008-03-25 13:50:50.000000000 -0400
++++ httpd-2.2.8-pathfinder/Makefile.in	2009-08-12 16:43:13.000000000 -0400
 @@ -4,7 +4,7 @@
  
  PROGRAM_NAME         = $(progname)
@@ -10,9 +10,9 @@ diff -urNX apacheignore httpd-2.2.8/Makefile.in httpd-2.2.8-pathfinder/Makefile.
  PROGRAM_PRELINK      = $(COMPILE) -c $(top_srcdir)/server/buildmark.c
  PROGRAM_DEPENDENCIES = \
    server/libmain.la \
-diff -urNX apacheignore httpd-2.2.8/acinclude.m4 httpd-2.2.8-pathfinder/acinclude.m4
+diff -urN httpd-2.2.8/acinclude.m4 httpd-2.2.8-pathfinder/acinclude.m4
 --- httpd-2.2.8/acinclude.m4	2005-11-13 01:33:15.000000000 -0500
-+++ httpd-2.2.8-pathfinder/acinclude.m4	2008-03-25 13:50:50.000000000 -0400
++++ httpd-2.2.8-pathfinder/acinclude.m4	2009-08-12 16:43:13.000000000 -0400
 @@ -97,6 +97,8 @@
    APACHE_SUBST(APU_INCLUDEDIR)
    APACHE_SUBST(APU_VERSION)
@@ -22,9 +22,9 @@ diff -urNX apacheignore httpd-2.2.8/acinclude.m4 httpd-2.2.8-pathfinder/acinclud
  
    abs_srcdir="`(cd $srcdir && pwd)`"
  
-diff -urNX apacheignore httpd-2.2.8/modules/ssl/Makefile.in httpd-2.2.8-pathfinder/modules/ssl/Makefile.in
+diff -urN httpd-2.2.8/modules/ssl/Makefile.in httpd-2.2.8-pathfinder/modules/ssl/Makefile.in
 --- httpd-2.2.8/modules/ssl/Makefile.in	2006-07-11 23:38:44.000000000 -0400
-+++ httpd-2.2.8-pathfinder/modules/ssl/Makefile.in	2008-03-25 13:50:50.000000000 -0400
++++ httpd-2.2.8-pathfinder/modules/ssl/Makefile.in	2009-08-12 16:43:13.000000000 -0400
 @@ -19,6 +19,8 @@
  
  include $(top_srcdir)/build/special.mk
@@ -34,9 +34,9 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/Makefile.in httpd-2.2.8-pathfind
  #
  #   developer stuff
  #   (we really don't expect end users to use these targets!)
-diff -urNX apacheignore httpd-2.2.8/modules/ssl/config.m4 httpd-2.2.8-pathfinder/modules/ssl/config.m4
+diff -urN httpd-2.2.8/modules/ssl/config.m4 httpd-2.2.8-pathfinder/modules/ssl/config.m4
 --- httpd-2.2.8/modules/ssl/config.m4	2006-04-21 21:53:06.000000000 -0400
-+++ httpd-2.2.8-pathfinder/modules/ssl/config.m4	2008-03-25 13:50:50.000000000 -0400
++++ httpd-2.2.8-pathfinder/modules/ssl/config.m4	2009-08-12 16:43:13.000000000 -0400
 @@ -12,6 +12,8 @@
  dnl  See the License for the specific language governing permissions and
  dnl  limitations under the License.
@@ -64,9 +64,9 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/config.m4 httpd-2.2.8-pathfinder
  ])
  
  # Ensure that other modules can pick up mod_ssl.h
-diff -urNX apacheignore httpd-2.2.8/modules/ssl/mod_ssl.c httpd-2.2.8-pathfinder/modules/ssl/mod_ssl.c
+diff -urN httpd-2.2.8/modules/ssl/mod_ssl.c httpd-2.2.8-pathfinder/modules/ssl/mod_ssl.c
 --- httpd-2.2.8/modules/ssl/mod_ssl.c	2007-11-20 09:16:11.000000000 -0500
-+++ httpd-2.2.8-pathfinder/modules/ssl/mod_ssl.c	2008-03-25 13:50:50.000000000 -0400
++++ httpd-2.2.8-pathfinder/modules/ssl/mod_ssl.c	2009-08-12 16:43:13.000000000 -0400
 @@ -145,7 +145,14 @@
                  "Use the server's cipher ordering preference")
      SSL_CMD_ALL(UserName, TAKE1,
@@ -83,9 +83,9 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/mod_ssl.c httpd-2.2.8-pathfinder
      /*
       * Proxy configuration for remote SSL connections
       */
-diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_config.c httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_config.c
+diff -urN httpd-2.2.8/modules/ssl/ssl_engine_config.c httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_config.c
 --- httpd-2.2.8/modules/ssl/ssl_engine_config.c	2006-07-23 07:11:58.000000000 -0400
-+++ httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_config.c	2008-03-25 13:50:50.000000000 -0400
++++ httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_config.c	2009-08-12 17:07:49.000000000 -0400
 @@ -167,6 +167,10 @@
      sc->proxy_enabled          = UNSET;
      sc->vhost_id               = NULL;  /* set during module init */
@@ -108,41 +108,7 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_config.c httpd-2.2.8-
      cfgMergeInt(session_cache_timeout);
      cfgMergeBool(cipher_server_pref);
  
-@@ -810,6 +818,16 @@
-     /* XXX: bring back per-dir */
-     sc->server->auth.ca_cert_path = arg;
- 
-+#ifdef HAVE_PATHFINDER
-+    if (sc->pathfinder_enabled)
-+    {
-+        ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-+                     cmd->server,
-+                     "Ignoring SSLCACertificatePath since "
-+                     "SSLPathfinder is enabled.");
-+    }
-+#endif
-+
-     return NULL;
- }
- 
-@@ -828,6 +846,16 @@
-     /* XXX: bring back per-dir */
-     sc->server->auth.ca_cert_file = arg;
- 
-+#ifdef HAVE_PATHFINDER
-+    if (sc->pathfinder_enabled)
-+    {
-+        ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-+                     cmd->server,
-+                     "Ignoring SSLCACertificateFile since "
-+                     "SSLPathfinder is enabled.");
-+    }
-+#endif
-+
-     return NULL;
- }
- 
-@@ -874,6 +902,16 @@
+@@ -874,6 +882,16 @@
  
      sc->server->crl_path = arg;
  
@@ -159,7 +125,7 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_config.c httpd-2.2.8-
      return NULL;
  }
  
-@@ -890,6 +928,16 @@
+@@ -890,6 +908,16 @@
  
      sc->server->crl_file = arg;
  
@@ -176,7 +142,7 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_config.c httpd-2.2.8-
      return NULL;
  }
  
-@@ -974,6 +1022,16 @@
+@@ -974,6 +1002,16 @@
          sc->server->auth.verify_depth = depth;
      }
  
@@ -193,7 +159,7 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_config.c httpd-2.2.8-
      return NULL;
  }
  
-@@ -1252,6 +1310,42 @@
+@@ -1252,6 +1290,42 @@
      return NULL;
  }
  
@@ -236,7 +202,7 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_config.c httpd-2.2.8-
  const char *ssl_cmd_SSLProxyProtocol(cmd_parms *cmd,
                                       void *dcfg,
                                       const char *arg)
-@@ -1303,6 +1397,16 @@
+@@ -1303,6 +1377,16 @@
  
      sc->proxy->auth.verify_depth = depth;
  
@@ -253,41 +219,7 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_config.c httpd-2.2.8-
      return NULL;
  }
  
-@@ -1319,6 +1423,16 @@
- 
-     sc->proxy->auth.ca_cert_file = arg;
- 
-+#ifdef HAVE_PATHFINDER
-+    if (sc->pathfinder_enabled)
-+    {
-+        ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-+                     cmd->server,
-+                     "Ignoring SSLProxyVerifyDepth since "
-+                     "SSLPathfinder is enabled.");
-+    }
-+#endif
-+
-     return NULL;
- }
- 
-@@ -1335,6 +1449,16 @@
- 
-     sc->proxy->auth.ca_cert_path = arg;
- 
-+#ifdef HAVE_PATHFINDER
-+    if (sc->pathfinder_enabled)
-+    {
-+        ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-+                     cmd->server,
-+                     "Ignoring SSLProxyCACertificatePath since "
-+                     "SSLPathfinder is enabled.");
-+    }
-+#endif
-+
-     return NULL;
- }
- 
-@@ -1351,6 +1475,16 @@
+@@ -1351,6 +1435,16 @@
  
      sc->proxy->crl_path = arg;
  
@@ -304,7 +236,7 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_config.c httpd-2.2.8-
      return NULL;
  }
  
-@@ -1367,6 +1501,16 @@
+@@ -1367,6 +1461,16 @@
  
      sc->proxy->crl_file = arg;
  
@@ -321,10 +253,10 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_config.c httpd-2.2.8-
      return NULL;
  }
  
-diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_init.c httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_init.c
+diff -urN httpd-2.2.8/modules/ssl/ssl_engine_init.c httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_init.c
 --- httpd-2.2.8/modules/ssl/ssl_engine_init.c	2007-12-08 09:05:12.000000000 -0500
-+++ httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_init.c	2008-03-25 13:50:50.000000000 -0400
-@@ -477,6 +477,54 @@
++++ httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_init.c	2009-08-12 17:11:30.000000000 -0400
+@@ -477,6 +477,58 @@
      }
  }
  
@@ -358,14 +290,18 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_init.c httpd-2.2.8-pa
 +
 +    if (mctx->pks && (mctx->pks->ca_name_file || mctx->pks->ca_name_path)) {
 +        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s,
-+                "Configuring hint-list for client authentication");
++                "Configuring hint-list for client authentication (1)");
 +        ca_list = ssl_init_FindCAList(s, ptemp,
 +                                      mctx->pks->ca_name_file,
 +                                      mctx->pks->ca_name_path);
-+    } else if (need_ca_cert)
++    } else if (mctx->auth.ca_cert_file || mctx->auth.ca_cert_path) {
++        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s,
++                "Configuring hint-list for client authentication (2)");
 +        ca_list = ssl_init_FindCAList(s, ptemp,
 +                                      mctx->auth.ca_cert_file,
 +                                      mctx->auth.ca_cert_path);
++    }
++
 +    if (!ca_list) {
 +        ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
 +                "Unable to determine list of acceptable "
@@ -379,7 +315,7 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_init.c httpd-2.2.8-pa
  static void ssl_init_ctx_verify(server_rec *s,
                                  apr_pool_t *p,
                                  apr_pool_t *ptemp,
-@@ -508,43 +556,32 @@
+@@ -508,43 +560,32 @@
          verify |= SSL_VERIFY_PEER;
      }
  
@@ -442,9 +378,9 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_init.c httpd-2.2.8-pa
  
      /*
       * Give a warning when no CAs were configured but client authentication
-diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_kernel.c httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_kernel.c
+diff -urN httpd-2.2.8/modules/ssl/ssl_engine_kernel.c httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_kernel.c
 --- httpd-2.2.8/modules/ssl/ssl_engine_kernel.c	2006-07-11 23:38:44.000000000 -0400
-+++ httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_kernel.c	2008-03-25 13:51:57.000000000 -0400
++++ httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_kernel.c	2009-08-12 16:43:13.000000000 -0400
 @@ -30,6 +30,48 @@
                                              -- Unknown                */
  #include "ssl_private.h"
@@ -608,9 +544,9 @@ diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_engine_kernel.c httpd-2.2.8-
  int ssl_callback_SSLVerify(int ok, X509_STORE_CTX *ctx)
  {
      /* Get Apache context back through OpenSSL context */
-diff -urNX apacheignore httpd-2.2.8/modules/ssl/ssl_private.h httpd-2.2.8-pathfinder/modules/ssl/ssl_private.h
+diff -urN httpd-2.2.8/modules/ssl/ssl_private.h httpd-2.2.8-pathfinder/modules/ssl/ssl_private.h
 --- httpd-2.2.8/modules/ssl/ssl_private.h	2007-11-20 09:16:11.000000000 -0500
-+++ httpd-2.2.8-pathfinder/modules/ssl/ssl_private.h	2008-03-25 13:50:50.000000000 -0400
++++ httpd-2.2.8-pathfinder/modules/ssl/ssl_private.h	2009-08-12 16:43:13.000000000 -0400
 @@ -447,6 +447,10 @@
      int              vhost_id_len;
      int              session_cache_timeout;
