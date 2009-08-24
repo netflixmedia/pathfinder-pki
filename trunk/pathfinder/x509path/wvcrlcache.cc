@@ -1,4 +1,5 @@
 #include "wvcrlcache.h"
+#include "util.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -40,8 +41,9 @@ shared_ptr<WvCRL> WvCRLCache::get(WvStringParm rawpath)
         return crlmap[rawpath.cstr()].crl;
 
     shared_ptr<WvCRL> crl(new WvCRL);
-    crl->decode(WvCRL::CRLFilePEM, rawpath);
-    if (!crl->isok()) 
+    if (guess_encoding(rawpath) == WvX509::CertFilePEM)
+        crl->decode(WvCRL::CRLFilePEM, rawpath);
+    else
         crl->decode(WvCRL::CRLFileDER, rawpath);
     
     if (!crl->isok())

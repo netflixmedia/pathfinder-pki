@@ -62,6 +62,7 @@ void RevocationFinder::find()
         {
             path->add_crl(cert->get_subject(), crl);
             done = true;
+            log("Got CRL from cache.\n");
             cb(err);
             return;
         }
@@ -90,6 +91,7 @@ void RevocationFinder::find()
         {
             path->add_crl(cert->get_subject(), crl);
             done = true;
+            log("Got CRL from cache.\n");
             cb(err);
             return;
         }
