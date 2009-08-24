@@ -284,6 +284,10 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
 // return.
 void PathFinder::examine_signer(shared_ptr<WvX509> &i, shared_ptr<WvX509> &cert)
 {
+    static int refcount=0;
+
+    refcount++;
+
     if (i->get_subject() == cert->get_issuer() &&
         i->get_issuer() != cert->get_subject() &&
         added_certs.count(i->get_subject().cstr()) == 0)
@@ -292,7 +296,7 @@ void PathFinder::examine_signer(shared_ptr<WvX509> &i, shared_ptr<WvX509> &cert)
         //    i->get_subject(), i->get_issuer(), i->get_ski(), i->get_aki());
         WvString curfront = path->subject_at_front();
         check_cert(i);
-        if (!got_cert_path)
+        if (refcount == 1 && !got_cert_path)
         {
             log("Path discovery hit a dead end.\n");
             while (path->subject_at_front() != curfront)
@@ -303,6 +307,8 @@ void PathFinder::examine_signer(shared_ptr<WvX509> &i, shared_ptr<WvX509> &cert)
             }
         }
     }
+
+    refcount--;
 }
 
 
@@ -433,10 +439,17 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
     while (_urls.count())
     {
         WvUrl url(_urls.popstr());
-        if (url.getproto() == "http"  || 
-            url.getproto() == "https" ||
+        if (url.isok() && (url.getproto() == "http"  || 
+                           url.getproto() == "https")) /*||
             url.getproto() == "ldap"  ||
-            url.getproto() == "ldaps")
+            url.getproto() == "ldaps")*/    // LDAP downloads don't
+            // actually work properly yet.  WvURL doesn't understand these
+            // particular protocol identifiers.  Removing these for now...
+            // ANOTHER problem we'll have is what to do when the HTTP
+            // download succeeds, but we hit a root we don't trust?  Do we
+            // then rewind and try the LDAP?  I'm not sure that'll work as
+            // written.  When re-enabling the ldap download code,
+            // definitely keep that in mind...
         {
             shared_ptr<Downloader> d(new Downloader(url, pool, _cb));
             downloaders.push_back(d);
@@ -448,14 +461,19 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
             while (!d->is_done() && WvIStreamList::globallist.isok())
                 WvIStreamList::globallist.runonce();
 
-            if (got_cert_path)
+            if (!got_cert_path)
+                wouldfail("Downloaded signer did not lead to a valid "
+                          "trust path.");
+            //if (got_cert_path)
+                // we don't deal well with going on to try the next URL...
                 return;
         }
-        else
+        else if (!!url.getproto())
             log("Protocol %s not supported for getting object.\n", url.getproto());
     }
 
-    wouldfail("Couldn't find valid URI to get object needed to perform validation");
+    wouldfail("Couldn't find valid URI to get object needed to perform "
+              "validation.");
     return;
 }
 
