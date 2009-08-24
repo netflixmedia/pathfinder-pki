@@ -252,6 +252,20 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
         // and take the next branch.
         // again, disallow certificates whose issuer matches our subject
         // (we don't want to go around in circles!)
+        // for efficiency, sort the list so that entries corresponding to
+        // an [Intermediate CAs] entry are first.
+        for (WvX509List::iterator i=certlist.begin();
+             i != certlist.end(); i++)
+        {
+            if (!!cfg["Intermediate CAs"].xget((*i)->get_aki()))
+            {
+                log("Moving %s to the front of the list.\n",
+                    (*i)->get_issuer());
+                certlist.push_front(*i);
+                i = certlist.erase(i);
+                i--;
+            }
+        }
         for (WvX509List::iterator i=certlist.begin();
              i != certlist.end(); i++)
         {
