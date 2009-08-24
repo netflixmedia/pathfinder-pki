@@ -150,7 +150,8 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
 
     if (!(validation_flags & WVX509_SKIP_REVOCATION_CHECK))
     {
-        log("Getting revocation information for path of length %s.\n", path->pathsize());
+        log("Getting revocation information for path of length %s.\n",
+                path->pathsize());
         shared_ptr<WvX509> prev = cert;
         
         for (WvX509List::iterator i = path->begin(); i != path->end(); i++)
@@ -194,9 +195,7 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
     if (!!hardcoded_loc)
     {
         shared_ptr<WvX509> cacert(new WvX509);
-        cacert->decode(WvX509::CertFilePEM, hardcoded_loc);
-        if (!cacert->isok()) 
-            cacert->decode(WvX509::CertFileDER, hardcoded_loc);
+        cacert->decode(guess_encoding(hardcoded_loc), hardcoded_loc);
         
         if (!cacert->isok())
         {
@@ -284,10 +283,6 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
 // return.
 void PathFinder::examine_signer(shared_ptr<WvX509> &i, shared_ptr<WvX509> &cert)
 {
-    static int refcount=0;
-
-    refcount++;
-
     if (i->get_subject() == cert->get_issuer() &&
         i->get_issuer() != cert->get_subject() &&
         added_certs.count(i->get_subject().cstr()) == 0)
@@ -296,7 +291,7 @@ void PathFinder::examine_signer(shared_ptr<WvX509> &i, shared_ptr<WvX509> &cert)
         //    i->get_subject(), i->get_issuer(), i->get_ski(), i->get_aki());
         WvString curfront = path->subject_at_front();
         check_cert(i);
-        if (refcount == 1 && !got_cert_path)
+        if (!got_cert_path)
         {
             log("Path discovery hit a dead end.\n");
             while (path->subject_at_front() != curfront)
@@ -307,8 +302,6 @@ void PathFinder::examine_signer(shared_ptr<WvX509> &i, shared_ptr<WvX509> &cert)
             }
         }
     }
-
-    refcount--;
 }
 
 
