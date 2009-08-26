@@ -50,7 +50,7 @@ public:
                                  "%s)", DEFAULT_DBUS_MONIKER), 
                         "MONIKER", dbusmoniker);
 #ifdef OPENSSL_FIPS
-        args.set_bool_option('f', "fips", WvString("Enable FIPS mode crypto "
+        args.add_set_bool_option('f', "fips", WvString("Enable FIPS mode crypto "
                                               "(default: OFF)"), fips_mode);
 #endif
     }
