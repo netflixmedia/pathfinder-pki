@@ -133,15 +133,20 @@ try to modify it.
  checking for the pathfinder daemon.
   - Example: Skip Revocation Check = 0
 
-[Bridges]: Specifies bundles that can be used to bridge trust between anchors
-(from an untrusted anchor to a trusted one). Specify one bundle per line.
+[Bridges]: Specifies bundles that can be used to bridge trust between PKIs
+(from an untrusted PKI, across the bridge, to a trusted anchor). Typically
+such a bundle is published by a bridge, and contains 2 cross-certificates
+for each bridged PKI: one issued by the bridge and one issued *to* the
+bridge.  Specify one bundle per line.
  - Example: My bridge = /var/pathfinder/bridges/mybridge.p7c
 
-[Intermediate CAs]: Specifies the AKIs of intermediate CA that may function 
-as a bridge. Pathfinder will use these AKIs to lookup potential bridges
-when examining bridge bundles, above. For this section, the AKI is the key, 
-the value should simply be 1.
- - Example: oE0:26:A2:10:00:7D:D5:96:95:14:0C:F2:2E:54:63:F1:65:66:D9:0E = 1
+[Intermediate CAs]: Specifies the AKIs of intermediate CA that may be
+preferable when constructing a path or examining a bridge bundle. 
+This is *not* essential for bridging to work, but it can improve
+performance by choosing "your" CA certificate first when evaluating a
+bridge bundle instead of iterating through other untrusted ones first.
+For this section, the AKI is the key, the value should simply be 1.
+ - Example: E0:26:A2:10:00:7D:D5:96:95:14:0C:F2:2E:54:63:F1:65:66:D9:0E = 1
 
 [CRL Location]: Specifies a location on disk which should be used to find
 a CRL associated with a particular CA. For client certificates of this CA,
