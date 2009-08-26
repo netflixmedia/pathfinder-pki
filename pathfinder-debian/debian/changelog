@@ -1,3 +1,9 @@
+pathfinder (1.0.0-1) unstable; urgency=low
+
+  * Carillon-packaged pathfinder 1.0.0 for CDS
+
+ -- Dave Coombs <dcoombs@carillon.ca>  Wed, 13 May 2009 10:42:50 -0500
+
 pathfinder (0.2.4-4) unstable; urgency=low
 
   * Fix the diff, so that it doesn't include all of the CMake garbage.
