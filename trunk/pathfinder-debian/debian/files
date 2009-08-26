@@ -1,5 +1,5 @@
-pathfinderd_1.0.0-1_i386.deb utils optional
-pathfinder-utils_1.0.0-1_i386.deb utils optional
-libpathfinder-openssl-1_1.0.0-1_i386.deb libs optional
-libpathfinder-nss-1_1.0.0-1_i386.deb libs optional
-libpathfinder-dev_1.0.0-1_i386.deb libdevel optional
+pathfinderd_1.1.0-1_i386.deb utils optional
+pathfinder-utils_1.1.0-1_i386.deb utils optional
+libpathfinder-openssl-1_1.1.0-1_i386.deb libs optional
+libpathfinder-nss-1_1.1.0-1_i386.deb libs optional
+libpathfinder-dev_1.1.0-1_i386.deb libdevel optional
