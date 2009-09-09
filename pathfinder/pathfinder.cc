@@ -191,7 +191,7 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
     // in revocationfinder)
 
     WvString hardcoded_loc = cfg["CA Location"].xget(
-        url_encode(cert->get_issuer(), "/"));
+        url_encode(cert->get_issuer(), "/="));
     if (!!hardcoded_loc)
     {
         shared_ptr<WvX509> cacert(new WvX509);
