@@ -110,7 +110,7 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
     bool md = is_md(cert);
     log(md ? "Yes\n" : "No\n");
     
-    if (md && cfg["Defaults/Allow MD5"].xgetint(0) == 0)
+    if (md && (cfg["Defaults"].xgetint("Allow MD5", 0) == 0))
     {
         wouldfail("Certificate signed using a disallowed Hash algorithm.");
         return;
