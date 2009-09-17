@@ -152,15 +152,16 @@ For this section, the AKI is the key, the value should simply be 1.
 a CRL associated with a particular CA. For client certificates of this CA,
 this CRL will simply be loaded off of disk, instead of going over the network
 for download. Note that the keys for the specified CA names should have slashes
-escaped as %2f.
- - Example: CN=CAcert WoT User%2femailAddress=pg@futureware.at = file:///var/pathfinder/crls/mycrl.crl
+escaped as %2f, and = signs escaped as %3d.  Names should be specified with
+fields delimited by a (escaped) slash.
+ - Example: %2FC%3DCA%2FO%3DSigning CA%2FCN%3DSubscriber Cert Signing Authority = /var/pathfinder/crls/mycrl.crl
 
 [CA Location]: Specifies a location on disk which should be used to find
 a specific CA (instead of looking in the AIA extension of the client 
 certicate). Note that the keys for the specified CA names should have slashes
 escaped as %2f, and = signs escaped as %3d.  Names should be specified with
 fields delimited by a (escaped) slash.
- - Example: %2FC%3DCA%2FO%3DRoot CA%2FCN%3DCA Cert Signing Authority = file:///var/pathfinder/cas/myca.ca
+ - Example: %2FC%3DCA%2FO%3DRoot CA%2FCN%3DCA Cert Signing Authority = /var/pathfinder/cas/myca.ca
 
 === Adding support for Pathfinder to your program ===
 
