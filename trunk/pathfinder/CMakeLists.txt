@@ -3,7 +3,7 @@ find_package(PkgConfig)
 cmake_minimum_required(VERSION 2.5)
 
 PROJECT(PATHFINDER)
-SET(PACKAGE_VERSION 1.1.0)
+SET(PACKAGE_VERSION 1.1.1)
 
 pkg_check_modules(UNICONF libuniconf)
 
