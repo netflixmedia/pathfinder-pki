@@ -11,6 +11,7 @@
 #define __WVX509PATH_H
 #include <boost/shared_ptr.hpp>
 #include <map>
+#include <stdint.h>
 #include <wvcrl.h>
 #include <wvocsp.h>
 #include <wvx509.h>
