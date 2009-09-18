@@ -1,20 +1,11 @@
 pathfinder (1.1.1-1) unstable; urgency=low
 
-  * Carillon-packaged pathfinder 1.1.1 for CDS
+  * New upstream release.
+  * Changes to DBUS code make bug #542975 obsolete. (Closes: #542975)
+  * Include stdint.h for GCC 4.4 compatibility.  (Closes: #505053)
+  * Remove the send-interface lines from the DBUS configuration.  (Closes: #510696)
 
- -- Dave Coombs <dcoombs@carillon.ca>  Wed, 18 Sep 2009 13:20:05 -0500
-
-pathfinder (1.1.0-1) unstable; urgency=low
-
-  * Carillon-packaged pathfinder 1.1.0 for CDS
-
- -- Dave Coombs <dcoombs@carillon.ca>  Wed, 26 Aug 2009 16:07:05 -0500
-
-pathfinder (1.0.0-1) unstable; urgency=low
-
-  * Carillon-packaged pathfinder 1.0.0 for CDS
-
- -- Dave Coombs <dcoombs@carillon.ca>  Wed, 13 May 2009 10:42:50 -0500
+ -- Patrick Patterson <ppatters@debian.org>  Wed, 18 Sep 2009 13:20:05 -0500
 
 pathfinder (0.2.4-4) unstable; urgency=low
 
