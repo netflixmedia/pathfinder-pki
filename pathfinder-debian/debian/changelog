@@ -1,5 +1,11 @@
 pathfinder (1.1.0-1) unstable; urgency=low
 
+  * Carillon-packaged pathfinder 1.1.1 for CDS
+
+ -- Dave Coombs <dcoombs@carillon.ca>  Wed, 18 Sep 2009 13:20:05 -0500
+
+pathfinder (1.1.0-1) unstable; urgency=low
+
   * Carillon-packaged pathfinder 1.1.0 for CDS
 
  -- Dave Coombs <dcoombs@carillon.ca>  Wed, 26 Aug 2009 16:07:05 -0500
