@@ -1,6 +1,7 @@
 #include "testmethods.t.h"
 #include "wvx509policytree.h"
 #include <openssl/err.h>
+#include <stdint.h>
 
 using namespace boost;
 
