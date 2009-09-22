@@ -13,10 +13,11 @@
 
 extern "C" {
 
-int pathfinder_dbus_verify(const char *certhex, const char *policy, 
-                           const int initial_explicit_policy, 
-                           const int initial_policy_mapping_inhibit,
-                           char **errmsg)
+int pathfinder_app_dbus_verify(const char *appname,
+                               const char *certhex, const char *policy, 
+                               const int initial_explicit_policy, 
+                               const int initial_policy_mapping_inhibit,
+                               char **errmsg)
 {
     *errmsg = NULL; // sometimes we can't return a proper error
     if (!certhex || !policy)
@@ -53,12 +54,27 @@ int pathfinder_dbus_verify(const char *certhex, const char *policy,
     if (!msg)
         return 0;
 
-    if (!dbus_message_append_args(msg, DBUS_TYPE_STRING, &certhex, 
-                                  DBUS_TYPE_STRING, &policy,
-                                  DBUS_TYPE_BOOLEAN, &initial_explicit_policy,
-                                  DBUS_TYPE_BOOLEAN, &initial_policy_mapping_inhibit,
-                                  DBUS_TYPE_INVALID))
-        return 0;
+    if (appname && appname[0])
+    {
+        if (!dbus_message_append_args(msg,
+                    DBUS_TYPE_STRING, &certhex, 
+                    DBUS_TYPE_STRING, &policy,
+                    DBUS_TYPE_BOOLEAN, &initial_explicit_policy,
+                    DBUS_TYPE_BOOLEAN, &initial_policy_mapping_inhibit,
+                    DBUS_TYPE_STRING, &appname,
+                    DBUS_TYPE_INVALID))
+            return 0;
+    }
+    else
+    {
+        if (!dbus_message_append_args(msg,
+                    DBUS_TYPE_STRING, &certhex, 
+                    DBUS_TYPE_STRING, &policy,
+                    DBUS_TYPE_BOOLEAN, &initial_explicit_policy,
+                    DBUS_TYPE_BOOLEAN, &initial_policy_mapping_inhibit,
+                    DBUS_TYPE_INVALID))
+            return 0;
+    }
 
 
     if (!dbus_connection_send_with_reply(conn, msg, &pending, -1) || 
@@ -114,6 +130,17 @@ int pathfinder_dbus_verify(const char *certhex, const char *policy,
     dbus_connection_unref(conn);
 
     return validated;
+}
+
+int pathfinder_dbus_verify(const char *certhex, const char *policy, 
+                           const int initial_explicit_policy, 
+                           const int initial_policy_mapping_inhibit,
+                           char **errmsg)
+{
+    return pathfinder_app_dbus_verify(NULL, certhex, policy,
+                                      initial_explicit_policy,
+                                      initial_policy_mapping_inhibit,
+                                      errmsg);
 }
 
 }
