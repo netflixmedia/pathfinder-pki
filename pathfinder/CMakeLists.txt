@@ -7,7 +7,6 @@ SET(PACKAGE_VERSION 1.1.1)
 
 pkg_check_modules(UNICONF libuniconf)
 
-
 #PKGCONFIG(libuniconf UNICONF_INCLUDEDIR UNICONF_LIBDIR UNICONF_LINKFLAGS UNICONF_CFLAGS)
 PKGCONFIG(libwvdbus WVDBUS_INCLUDEDIR WVDBUS_LIBDIR WVDBUS_LINKFLAGS WVDBUS_CFLAGS)
 PKGCONFIG(dbus-1 DBUS_INCLUDEDIR DBUS_LIBDIR DBUS_LINKFLAGS DBUS_CFLAGS)
@@ -15,13 +14,11 @@ PKGCONFIG(openssl OPENSSL_INCLUDEDIR OPENSSL_LIBDIR OPENSSL_LINKFLAGS OPENSSL_CF
 PKGCONFIG(nss NSS_INCLUDEDIR NSS_LIBDIR NSS_LINKFLAGS NSS_CFLAGS)
 
 IF (NOT DBUS_CFLAGS)
-	MESSAGE(FATAL_ERROR, "You need to have DBUS Development packages
-installed to build Pathfinder.")
+	MESSAGE(FATAL_ERROR, "You need to have DBUS Development packages installed to build Pathfinder.")
 ENDIF(NOT DBUS_CFLAGS)
 
 IF (NOT WVDBUS_CFLAGS)
-	MESSAGE(FATAL_ERROR, "You must have the WvStreams DBus Development
-packages installed to build Pathfinder.")
+	MESSAGE(FATAL_ERROR, "You must have the WvStreams DBus Development packages installed to build Pathfinder.")
 ENDIF (NOT WVDBUS_CFLAGS)
 
 FIND_PATH(LDAP_INCLUDEDIR ldap.h)
@@ -55,8 +52,7 @@ if(LDAP_FOUND)
 	set(LDAP_CFLAGS "-I${LDAP_INCLUDEDIR}")
     endif(${LDAP_INCLUDEDIR} STREQUAL "/usr/include")
 else(LDAP_FOUND)
-    message(FATAL_ERROR "You need to have the LDAP Development packages
-install to build Pathfinder.")
+    message(FATAL_ERROR "You need to have the LDAP Development packages installed to build Pathfinder.")
 endif(LDAP_FOUND)
 
 # wvdiriter in wvstreams will assert if we don't have these set... since this is how wvstreams 
@@ -148,6 +144,6 @@ SET(CPACK_PACKAGE_NAME "pathfinder")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "pathfinder")
 SET(CPACK_PACKAGE_VERSION_MAJOR "1")
 SET(CPACK_PACKAGE_VERSION_MINOR "1")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(CPACK_PACKAGE_VERSION_PATCH "1")
 SET(CPACK_SOURCE_IGNORE_FILES "/.git/;.gitignore;.*~;/.svn/;CMakeFiles/;CMakeCache.txt;/Testing/;DartTestfile.txt;.pc$;.cmake;/_CPack_Packages/;version.h$;.tar.gz;.tar.Z;.*#.*";/pathviewer-0.1.0-Source/;Makefile)
 INCLUDE(CPack)
