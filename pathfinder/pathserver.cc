@@ -90,6 +90,20 @@ bool PathServer::incoming(WvDBusConn *conn, WvDBusMsg &msg)
         initial_policy_set_tcl = cfg["policy"].xget(appname, ANY_POLICY_OID);
         log("Using special policy %s for appname %s.\n", 
             initial_policy_set_tcl, appname);
+        if (!initial_explicit_policy)
+        {
+            WvStringList new_initial_policy_set;
+            wvtcl_decode(new_initial_policy_set, initial_policy_set_tcl);
+            if (new_initial_policy_set.count() != 1 ||
+                new_initial_policy_set.popstr() != ANY_POLICY_OID)
+            {
+                log("Setting initial_explicit_policy, even though it was "
+                    "previously unset, to force that specify policy to "
+                    "match.");
+                initial_explicit_policy = true;
+                flags |= WVX509_INITIAL_EXPLICIT_POLICY;
+            }
+        }
     }
     
     PathValidator::ValidatedCb cb = wv::bind(
