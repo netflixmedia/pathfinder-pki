@@ -1,4 +1,4 @@
-pathfinder (1.1.1-1) unstable; urgency=low
+pathfinder (1.1.2-1) unstable; urgency=low
 
   * New upstream release.
   * Changes to DBUS code make bug #542975 obsolete. (Closes: #542975)
