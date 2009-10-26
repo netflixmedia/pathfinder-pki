@@ -43,8 +43,9 @@ class WvX509Path
         { x509_list.pop_front(); }
     void prepend_cert(boost::shared_ptr<WvX509> &cert);
     void append_cert(boost::shared_ptr<WvX509> &cert);
-    void add_crl(WvStringParm ski, boost::shared_ptr<WvCRL> &crl);
-    void add_ocsp_resp(WvStringParm ski, boost::shared_ptr<WvOCSPResp> &ocsp);
+    void add_crl(WvStringParm subject, boost::shared_ptr<WvCRL> &crl);
+    void add_ocsp_resp(WvStringParm subject,
+                       boost::shared_ptr<WvOCSPResp> &ocsp);
     WvX509List::iterator begin() { return x509_list.begin(); }
     WvX509List::iterator end() { return x509_list.end(); }
     size_t pathsize() const

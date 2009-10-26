@@ -49,15 +49,18 @@ void WvX509Path::append_cert(shared_ptr<WvX509> &x509)
 }
 
 
-void WvX509Path::add_crl(WvStringParm ski, shared_ptr<WvCRL> &crl)
+void WvX509Path::add_crl(WvStringParm subject, shared_ptr<WvCRL> &crl)
 {
-    crl_map.insert(CRLPair(ski.cstr(), crl));
+    log("Adding a CRL for %s.\n", subject);
+    crl_map.insert(CRLPair(subject.cstr(), crl));
 }
 
 
-void WvX509Path::add_ocsp_resp(WvStringParm ski, shared_ptr<WvOCSPResp> &ocsp)
+void WvX509Path::add_ocsp_resp(WvStringParm subject,
+                               shared_ptr<WvOCSPResp> &ocsp)
 {
-    ocsp_map.insert(OCSPRespPair(ski.cstr(), ocsp));
+    log("Adding an OCSP response for %s.\n", subject);
+    ocsp_map.insert(OCSPRespPair(subject.cstr(), ocsp));
 }
 
 
