@@ -62,7 +62,7 @@ void RevocationFinder::find()
         {
             path->add_crl(cert->get_subject(), crl);
             done = true;
-            log("Got CRL from cache.\n");
+            log("Got CRL from hardcoded location.\n");
             cb(err);
             return;
         }
@@ -248,6 +248,16 @@ void RevocationFinder::ocsp_download_finished_cb(WvStringParm urlstr,
     if (!resp->isok())
     {
         log("OCSP response downloaded from %s is not ok!\n", urlstr);
+        try_download_next();
+
+        return;
+    }
+
+    WvOCSPResp::Status status = resp->get_status(*cert, *issuer);
+    if (status == WvOCSPResp::Error || status == WvOCSPResp::Unknown)
+    {
+        log("OCSP response isn't canonical (status: %s).  Falling back "
+            "to CRL, if available.\n", WvOCSPResp::status_str(status));
         try_download_next();
 
         return;
