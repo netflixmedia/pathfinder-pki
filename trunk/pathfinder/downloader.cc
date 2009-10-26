@@ -103,7 +103,7 @@ void Downloader::download_closed_cb(WvStream &s)
     WvHTTPHeaderDict::Iter i(stream->headers);
     for (i.rewind(); i.next(); )
     {
-        if (i->name == "Content-Type")
+        if (!strcasecmp(i->name, "Content-Type"))
         {
             mimetype = i->value;
             break;
