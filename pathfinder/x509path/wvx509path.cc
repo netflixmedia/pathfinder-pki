@@ -265,8 +265,21 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                     return false;
                 }
 
-                extra_certs_to_be_validated.push_back(
-                    shared_ptr<WvX509>(new WvX509(resp_signer)));
+                // validate the cert *UNLESS* the id-pkix-ocsp-nocheck
+                // extension is present. (sigh)
+                if (X509_get_ext_by_NID(resp_signer.get_cert(),
+                                        NID_id_pkix_OCSP_noCheck, -1) < 0)
+                {
+                    extra_certs_to_be_validated.push_back(
+                        shared_ptr<WvX509>(new WvX509(resp_signer)));
+                }
+                else
+                {
+                    log(WvLog::Info, "Not validating the OCSP signing "
+                        "certificate (%s) since it asserts the "
+                        "id-pkix-ocsp-nocheck extension.\n",
+                        resp_signer.get_subject());
+                }
                 validated_ocsp = true;
             }
         }
