@@ -172,7 +172,9 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
         // responder certificate to our list of extra certificates to be 
         // validated. note that we also need aki info to make it work.
         bool validated_ocsp = false;        
-        if (check_revocation && cur->get_aki()) 
+        bool have_aki = !!cur->get_aki();
+        bool have_ski = !!cur->get_ski();
+        if (check_revocation) 
         {
             pair<OCSPRespMap::iterator, OCSPRespMap::iterator> iterpair = 
             ocsp_map.equal_range(cur->get_subject().cstr());
@@ -231,23 +233,35 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                     return false;
                 }
                 
-                if (resp_signer.get_aki() == cur->get_ski())
+                if ((have_ski && resp_signer.get_aki() == cur->get_ski())
+                        ||
+                   (resp_signer.get_issuer() == cur->get_subject()))
                 {
                     // this is somewhat questionable, but allow it for now:
                     // some certificates in the wild are the signer of their
                     // own OCSP responder
                     log(WvLog::Warning, "Certificate %s's OCSP responder's "
-                        "AKI matches the current certificate's SKI. This "
+                        "seems to be signed by the current certificate. This "
                         "is somewhat questionable.\n");
                 }
-                else if (resp_signer.get_aki() != cur->get_aki())
+                else if ((have_aki && resp_signer.get_aki() != cur->get_aki())
+                        ||
+                    (resp_signer.get_issuer() != cur->get_issuer()))
                 {
-                    validate_failed(WvString("Certificate %s's OCSP "
+                    if (have_aki)
+                        validate_failed(WvString("Certificate %s's OCSP "
                                              "responder's AKI (%s) does not "
                                              "match own (%s)",
                                              cur->get_subject(), 
                                              resp_signer.get_aki(),
                                              cur->get_aki()), err);
+                    else
+                        validate_failed(WvString("Certificate %s's OCSP "
+                                             "responder's issuer (%s) does "
+                                             "not match own (%s)",
+                                             cur->get_subject(),
+                                             resp_signer.get_issuer(),
+                                             cur->get_issuer()), err);
                     return false;
                 }
 
@@ -262,7 +276,7 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
         if (check_revocation && !validated_ocsp)
         {
             pair<CRLMap::iterator, CRLMap::iterator> iterpair = 
-            crl_map.equal_range(cur->get_subject().cstr());
+                crl_map.equal_range(cur->get_subject().cstr());
 
             bool one_valid_crl = false;
             for (CRLMap::iterator j = iterpair.first; j != iterpair.second; j++)
