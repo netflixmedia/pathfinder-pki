@@ -164,6 +164,7 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
         {
             (*i)->find();
         }
+        check_done(); // maybe there was nothing to download.
     }
     else
     {
