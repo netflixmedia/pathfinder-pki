@@ -116,6 +116,21 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
         return;
     }
     
+    // complain if self-signed certs don't have SKI
+    if (cert->get_issuer() == cert->get_subject())
+    {
+        if (!cert->get_ski())
+            log(WvLog::Warning, "Self-signed certificate doesn't have "
+                                "SKI! (%s)\n", cert->get_subject());
+    }
+    // complain if anyn other certs don't have AKI
+    else
+    {
+        if (!cert->get_aki())
+            log(WvLog::Warning, "Certificate doesn't have AKI! (%s)\n",
+                                cert->get_subject());
+    }
+
     // we allow at most one certificate of the same name that is not self
     // signed in the path
     if (cert->get_subject() != cert->get_issuer())
