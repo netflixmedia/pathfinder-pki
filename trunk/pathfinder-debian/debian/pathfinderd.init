@@ -87,7 +87,7 @@ case "$1" in
 	;;
   restart)
         log_begin_msg "Restarting $DESC: "
-	start-stop-daemon --stop --test--quiet --pidfile \
+	start-stop-daemon --stop --test --quiet --pidfile \
 		/var/run/$NAME.pid --exec $DAEMON
 	[ -n "$DODTIME" ] && sleep $DODTIME
 	start-stop-daemon --start --quiet --pidfile \

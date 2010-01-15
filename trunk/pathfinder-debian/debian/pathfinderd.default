@@ -1,5 +1,5 @@
 # Defaults for pathfinder initscript
-# sourced by /etc/init.d/pathfinder
+# sourced by /etc/init.d/pathfinderd
 # installed at /etc/default/pathfinder by the maintainer scripts
 
 #
