@@ -32,9 +32,7 @@ case "$1" in
     			/etc/init.d/pathfinderd stop
     		fi
     
-    		rm -f /etc/init.d/pathfinderd  
-    		update-rc.d pathfinderd remove
-    		rm -f /etc/pathfinderd.conf /etc/dbus-1/system/pathfinderd.conf
+    		update-rc.d -f pathfinderd remove
     	fi
     ;;
 
