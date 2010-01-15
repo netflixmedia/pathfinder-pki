@@ -1,11 +1,11 @@
-pathfinder (1.1.2-1) unstable; urgency=low
+pathfinder (1.1.3-1) hardy; urgency=low
 
   * New upstream release.
   * Changes to DBUS code make bug #542975 obsolete. (Closes: #542975)
   * Include stdint.h for GCC 4.4 compatibility.  (Closes: #505053)
   * Remove the send-interface lines from the DBUS configuration.  (Closes: #510696)
 
- -- Patrick Patterson <ppatters@debian.org>  Wed, 18 Sep 2009 13:20:05 -0500
+ -- Patrick Patterson <ppatters@debian.org>  Fri, 15 Jan 2010 13:47:26 -0500
 
 pathfinder (0.2.4-4) unstable; urgency=low
 
