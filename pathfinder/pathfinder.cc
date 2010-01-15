@@ -169,17 +169,20 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
                 path->pathsize());
         shared_ptr<WvX509> prev = cert;
         
+        bool made_revocationfinder=false;
         for (WvX509List::iterator i = path->begin(); i != path->end(); i++)
         {
             get_revocation_info((*i), prev);    // populates rfs
             prev = (*i);
+            made_revocationfinder=true;
         }
         for (RevocationFinderList::iterator i = rfs.begin();
              i != rfs.end(); i++)
         {
             (*i)->find();
         }
-        check_done(); // maybe there was nothing to download.
+        if (made_revocationfinder == false)
+            check_done(); // won't get a callback from it, then!
     }
     else
     {
