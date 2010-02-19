@@ -154,6 +154,7 @@ void Downloader::download_ldap()
                         lurl->lud_filter,
                         lurl->lud_attrs, 
                         0, NULL, NULL, NULL, 0, &res);
+                WvString attr(lurl->lud_attrs[0]);
                 ldap_free_urldesc(lurl);
                 if (retval == LDAP_SUCCESS)
                 {
@@ -165,7 +166,6 @@ void Downloader::download_ldap()
                         entry = ldap_first_entry(ldap, res);
                         if (entry)
                         {
-                            WvString attr(lurl->lud_attrs[0]);
                             struct berval **val = NULL;       
                             if (attr == "cACertificate;binary" || 
                                 attr == "certificateRevocationList;binary")
