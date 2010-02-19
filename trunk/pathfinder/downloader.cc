@@ -154,55 +154,75 @@ void Downloader::download_ldap()
                         lurl->lud_filter,
                         lurl->lud_attrs, 
                         0, NULL, NULL, NULL, 0, &res);
+                ldap_free_urldesc(lurl);
                 if (retval == LDAP_SUCCESS)
                 {
                     log(WvLog::Debug5, "LDAP Search succeeded...\n");
                     retval = ldap_count_messages(ldap, res);
-                    if (retval == 1)                        
+                    if (retval == 1 || true)                        
                     {               
-                        // Something about ldap_get_values() here and calling the callba
-                        // make sure to free everything...                              
-                        WvString attr(lurl->lud_attrs[0]);
-                        struct berval **val = NULL;       
-                        if (attr == "cACertificate;binary" || 
-                            attr == "certificateRevocationList")
-                        {                                                               
-                            log(WvLog::Debug5, "We've got a CA Cert or CRL\n");
-                            val = ldap_get_values_len(ldap, res, attr);
-                            if (val)
-                            {
-                                buf.put(val[0]->bv_val, val[0]->bv_len);
-                                log(WvLog::Debug5, "Response was %s bytes long\n",
-                                    buf.used());
-                                ldap_value_free_len(val);
-                                ldap_msgfree(res);
-                                ldap_free_urldesc(lurl);
-                                ldap_unbind_ext(ldap, NULL, NULL);
-                                done = true;
-                                if (finished_cb)
-                                    finished_cb(url, mimetype, buf, err);
-                                return;
+                        LDAPMessage *entry = NULL;
+                        entry = ldap_first_entry(ldap, res);
+                        if (entry)
+                        {
+                            WvString attr(lurl->lud_attrs[0]);
+                            struct berval **val = NULL;       
+                            if (attr == "cACertificate;binary" || 
+                                attr == "certificateRevocationList;binary")
+                            {                                                               
+                                log(WvLog::Debug5, "We've got a CA Cert or CRL.\n");
+                                val = ldap_get_values_len(ldap, entry, attr);
+                                if (val)
+                                {
+#if 0
+                                    if (ldap_count_values(val) > 1)
+                                        log(WvLog::Info, 
+                                            "Strange - more than one entry returned for %s.\n"
+                                            "Using only the first value!\n", attr);
+#endif
+                                    buf.put(val[0]->bv_val, val[0]->bv_len);
+                                    log(WvLog::Debug5, "Response was %s bytes long.\n",
+                                        buf.used());
+                                    ldap_value_free_len(val);
+                                    ldap_msgfree(res);
+                                    ldap_unbind_ext(ldap, NULL, NULL);
+                                    done = true;
+                                    if (finished_cb)
+                                        finished_cb(url, mimetype, buf, err);
+
+                                    return;
+                                }
+                                else
+                                {
+                                    int ov;
+                                    ldap_get_option(ldap, LDAP_OPT_RESULT_CODE, &ov);
+                                    BerElement **bel = NULL;
+                                    log(WvLog::Critical, "Attribute was: %s\n",
+                                        ldap_first_attribute(ldap, res, bel));
+                                    log(WvLog::Critical, "Error getting value for %s (%s)!\n",
+                                        attr, 
+                                        ldap_err2string(ov));
+                                    ldap_msgfree(res);       
+                                    ldap_unbind_ext(ldap, NULL, NULL);
+                                }
                             }
                             else
                             {
-                                int ov;
-                                log(WvLog::Critical, "Error getting value for %s (%s)\n",
-                                    attr, 
-                                    ldap_err2string(ldap_get_option(ldap, LDAP_OPT_RESULT_CODE, &ov )));
-                                ldap_msgfree(res);       
-                                ldap_free_urldesc(lurl);
+                                log(WvLog::Info, 
+                                    "I don't know how to process the attribute: %s\n", 
+                                    attr); 
+                                ldap_msgfree(res);
                                 ldap_unbind_ext(ldap, NULL, NULL);
                             }
-                        }                                           
+                        }
                         else
                         {
-                            log(WvLog::Info, 
-                                "I don't know how to process the attribute: %s\n", 
-                                attr); 
+                            int ov;
+                            ldap_get_option(ldap, LDAP_OPT_RESULT_CODE, &ov);
+                            log(WvLog::Critical, "No entry?? (%s)\n", ldap_err2string(ov));
                             ldap_msgfree(res);
-                            ldap_free_urldesc(lurl);
                             ldap_unbind_ext(ldap, NULL, NULL);
-                        }          
+                        }                                            
                     }
                     else
                     {

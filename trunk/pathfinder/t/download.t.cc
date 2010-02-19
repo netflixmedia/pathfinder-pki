@@ -59,13 +59,26 @@ WVTEST_MAIN("Good LDAP Download")
     WvHttpPool *p = new WvHttpPool();
     WvIStreamList::globallist.append(p, false, "WvHttpPool");
 
-    Downloader d3("ldap://dir.carillon.ca/CN=TEST%20RSA%20Signing%20CA1"
+    Downloader d3("ldap://dir.carillon.ca/CN=TEST%20RSA%20Signing%20CA"
                  "%2cOU=DEMO%20Certification%20Services%2cO=Carillon%20Information%20Security%20Inc.%2cC=CA?cACertificate;binary?base?objectclass=pkiCA", p, cb);
     while (!d3.is_done())
         WvIStreamList::globallist.runonce();
     WVPASS(dl_pass);
 }    
 
+WVTEST_MAIN("No Such entry LDAP Download")
+{
+    WvHttpPool *p = new WvHttpPool();
+    WvIStreamList::globallist.append(p, false, "WvHttpPool");
+
+    Downloader d3("ldap://chicken/CN=TEST%20RSA%20Signing%20CA1"
+                 "%2cOU=DEMO%20Certification%20Services%2cO=Carillon%20Information%20Security%20Inc.%2cC=CA?cACertificate;binary?base?objectclass=pkiCA", p, cb);
+    while (!d3.is_done())
+        WvIStreamList::globallist.runonce();
+    WVFAIL(dl_pass);
+}    
+
+/*
 WVTEST_MAIN("Too many entries LDAP Download")
 {
     WvHttpPool *p = new WvHttpPool();
@@ -76,3 +89,4 @@ WVTEST_MAIN("Too many entries LDAP Download")
         WvIStreamList::globallist.runonce();
     WVFAIL(dl_pass);
 }
+*/
