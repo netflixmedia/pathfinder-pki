@@ -81,6 +81,11 @@ void RevocationFinder::find()
         return;
     }
 
+    if (cfg.xgetint("Default/Prefer LDAP"))
+        sort_urls(crl_urls, true);          
+    else 
+        sort_urls(crl_urls, false);    
+
     WvStringList::Iter i(crl_urls);
     for (i.rewind(); i.next();)
     {

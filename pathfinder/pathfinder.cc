@@ -306,6 +306,11 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
     DownloadFinishedCb cb = wv::bind(&PathFinder::signer_download_finished_cb, 
                                      this, cert, _1, _2, _3, _4);
 
+    if (cfg.xgetint("Default/Prefer LDAP"))
+        sort_urls(ca_urls, true);
+    else
+        sort_urls(ca_urls, false);
+    
     retrieve_object(ca_urls, cb);
 }
 
