@@ -229,7 +229,6 @@ void Downloader::download_ldap()
                         log("LDAP Search returned more than one value (%s),"
                             "which is not permitted.\n", retval);
                         ldap_msgfree(res);
-                        ldap_free_urldesc(lurl);
                         ldap_unbind_ext(ldap, NULL, NULL);
                     }
                 }
@@ -238,7 +237,6 @@ void Downloader::download_ldap()
                     log(WvLog::Info, "LDAP Search failed: %s\n", 
                         ldap_err2string(retval));
                     ldap_msgfree(res);
-                    ldap_free_urldesc(lurl);
                     ldap_unbind_ext(ldap, NULL, NULL);
                 } 
             }
