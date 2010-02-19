@@ -1,4 +1,6 @@
 #include <wvfile.h>
+#include <wvurl.h>
+#include <wvregex.h>
 #include <openssl/objects.h>
 #include <openssl/x509.h>
 #include <assert.h>
@@ -41,4 +43,41 @@ bool is_md(shared_ptr<WvX509> &x509)
       
     return false;
 }
+
+#if 0
+bool is_valid_host(WvStringParm hostname_or_ip)
+{
+// If and when WvRegex ever grows more intelligence... do this.
+    WvRegex r("^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\\."
+              "([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$");
+    WvString match;
+    r.match(hostname_or_ip, match);
+    if (hostname_or_ip == match)
+    {
+        // This was an IP Address
+        return true;
+    }
+    r.set("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*"
+          "([A-Za-z]|[A-Za-z][A-Za-z0-9\\-]*[A-Za-z0-9])$");
+    r.match(hostname_or_ip, match);
+    if (!!match)
+        return true;
+    else
+        return false;
+}
+#endif
+
+WvUrl rewrite_url(WvUrl url, WvStringParm hostname_or_ip)
+{
+
+    // This isn't as generic as I would like, but it's better than nothing.
+    WvString newurl;
+    newurl.append(url.getproto());
+    newurl.append("://");
+    newurl.append(hostname_or_ip);
+    newurl.append("/");
+    newurl.append(url.getfile());
+
+    return WvUrl(newurl);
+} 
 
