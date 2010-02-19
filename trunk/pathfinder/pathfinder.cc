@@ -464,7 +464,34 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
 
     while (_urls.count())
     {
-        WvUrl url(_urls.popstr());
+        WvString newurl = _urls.popstr();
+        WvUrl tmpurl(newurl);
+        
+        if (tmpurl.getproto() == "http" || tmpurl.getproto() == "https")
+        {
+            WvString hproxy = cfg.xget("General/HTTP Proxy");
+            if (!!hproxy)
+            {
+                WvUrl nurl(rewrite_url(tmpurl, hproxy));
+                newurl = nurl;
+            }
+        }
+        else if (tmpurl.getproto() == "ldap")
+        {
+            WvString lproxy = cfg.xget("General/LDAP Proxy");
+            if (!!lproxy)
+            {
+                WvUrl nurl(rewrite_url(tmpurl, lproxy));
+                newurl = nurl;
+            }
+        }
+        else
+        {
+            log(WvLog::Notice, "URL of type '%s' not currently supported", tmpurl.getproto());
+            return;
+        }
+        
+        WvUrl url(newurl);
         if (url.isok() && (url.getproto() == "http"  || 
                            url.getproto() == "https")) /*||
             url.getproto() == "ldap"  ||

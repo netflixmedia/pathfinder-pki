@@ -116,6 +116,13 @@ of pathfinder.
 - CRL Cache Location: This specifies where CRLs previously downloaded from
  the internet will be stored for later retrieval. 
  - Example: CRL Cache Location = /var/cache/pathfinder/crls/
+- LDAP Proxy: This specifies a host that you wish to have all LDAP Queries
+  re-directed to, instead of trying to reach the actual host.
+- HTTP Proxy: This specifies a host that you wish to have all HTTP Queries
+  re-directed to, instead of trying to read the actual host.
+- Prefer LDAP: This informs Pathfinder that it is preferable to attempt to
+  use LDAP URLs for CRL and AIA lookups, regardless of the order found in
+  the certificate.
 
 [Trusted directories]: This section is used to specify directories containing
 trusted certificates, in format "identifier" = "value"

@@ -116,3 +116,44 @@ WVTEST_MAIN("check MD5 or not")
     cert->decode(WvX509::CertPEM, sha1cert);
     WVPASSEQ(is_md(cert), false);
 }
+
+#if 0
+WVTEST_MAIN("is_valid_host")
+{
+    WVPASS(is_valid_host("chicken"));
+    WVPASS(is_valid_host("dir.carillon.ca"));
+    WVPASS(is_valid_host("carillon.ca"));
+    WVPASS(is_valid_host("192.168.6.1"));
+    WVPASS(is_valid_host("1.1.1.1"));
+    WVPASS(is_valid_host("1.1.1.11"));
+    WVPASS(is_valid_host("1.1.1.111"));
+    WVPASS(is_valid_host("1.1.11.1"));
+    WVPASS(is_valid_host("1.1.111.1"));
+    WVPASS(is_valid_host("1.11.1.1"));
+    WVPASS(is_valid_host("1.111.1.1"));
+    WVPASS(is_valid_host("11.1.1.11"));
+    WVPASS(is_valid_host("111.1.1.11"));
+    WVPASS(is_valid_host("111.1.1.1"));
+    WVPASS(is_valid_host("11.1.1.1"));
+    WVFAIL(is_valid_host("chicken:243"));
+    WVFAIL(is_valid_host("1.1.1"));
+    WVFAIL(is_valid_host("256.1.1.1"));
+    WVFAIL(is_valid_host("1.256.1.1"));
+    WVFAIL(is_valid_host("255.256.1.1"));
+    WVFAIL(is_valid_host("255.1.256.1"));
+    WVFAIL(is_valid_host("1.1.1.256"));
+    WVFAIL(is_valid_host("1.1.1.1.1"));    
+    WVFAIL(is_valid_host("$#!@"));
+    WVFAIL(is_valid_host("."));
+    WVFAIL(is_valid_host(".."));
+    WVFAIL(is_valid_host(""));
+}
+#endif
+
+WVTEST_MAIN("rewrite_url")
+{
+    WvUrl url("http://foo/asda/asdasd/asdasd.php?foo=BAR;#a");
+    WvString newhost("bar");
+    WvUrl newurl(rewrite_url(url, newhost));
+    WVPASS(newurl.gethost() == newhost);
+}
