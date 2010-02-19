@@ -110,7 +110,7 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
     bool md = is_md(cert);
     log(md ? "Yes\n" : "No\n");
     
-    if (md && (cfg["Defaults"].xgetint("Allow MD5", 0) == 0))
+    if (md && (cfg["General"].xgetint("Allow MD5", 0) == 0))
     {
         wouldfail("Certificate signed using a disallowed Hash algorithm.");
         return;
@@ -306,8 +306,11 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
     DownloadFinishedCb cb = wv::bind(&PathFinder::signer_download_finished_cb, 
                                      this, cert, _1, _2, _3, _4);
 
-    if (cfg.xgetint("Default/Prefer LDAP"))
+    if (cfg["General"].xgetint("Prefer LDAP"))
+    {
+        log(WvLog::Info, "Using LDAP URLs first!\n");
         sort_urls(ca_urls, true);
+    }
     else
         sort_urls(ca_urls, false);
     
@@ -474,18 +477,20 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
         
         if (tmpurl.getproto() == "http" || tmpurl.getproto() == "https")
         {
-            WvString hproxy = cfg.xget("General/HTTP Proxy");
+            WvString hproxy = cfg["General"].xget("HTTP Proxy");
             if (!!hproxy)
             {
+                log(WvLog::Info, "Using '%s' as the HTTP Proxy!\n", hproxy);
                 WvUrl nurl(rewrite_url(tmpurl, hproxy));
                 newurl = nurl;
             }
         }
         else if (tmpurl.getproto() == "ldap")
         {
-            WvString lproxy = cfg.xget("General/LDAP Proxy");
+            WvString lproxy = cfg["General"].xget("LDAP Proxy");
             if (!!lproxy)
             {
+                log(WvLog::Info, "Using '%s' as the LDAP Proxy!\n", lproxy);
                 WvUrl nurl(rewrite_url(tmpurl, lproxy));
                 newurl = nurl;
             }

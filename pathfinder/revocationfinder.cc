@@ -81,7 +81,7 @@ void RevocationFinder::find()
         return;
     }
 
-    if (cfg.xgetint("Default/Prefer LDAP"))
+    if (cfg["General"].xgetint("Prefer LDAP"))
         sort_urls(crl_urls, true);          
     else 
         sort_urls(crl_urls, false);    
@@ -172,18 +172,20 @@ bool RevocationFinder::retrieve_object_http(WvStringParm _url,
     WvString newurl(_url);
     if (tmpurl.getproto() == "http" || tmpurl.getproto() == "https")
     {
-        WvString hproxy = cfg.xget("General/HTTP Proxy");
+        WvString hproxy = cfg["General"].xget("HTTP Proxy");
         if (!!hproxy)
         {
+            log(WvLog::Info, "Using '%s' as the HTTP Proxy", hproxy);
             WvUrl nurl(rewrite_url(tmpurl, hproxy));
             newurl = nurl;
         }
     }
     else if (tmpurl.getproto() == "ldap")
     {
-        WvString lproxy = cfg.xget("General/LDAP Proxy");
+        WvString lproxy = cfg["General"].xget("LDAP Proxy");
         if (!!lproxy)
         {
+            log(WvLog::Info, "Using '%s' as the LDAP Proxy", lproxy);
             WvUrl nurl(rewrite_url(tmpurl, lproxy));
             newurl = nurl;
         }
