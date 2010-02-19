@@ -24,6 +24,8 @@ bool is_md(boost::shared_ptr<WvX509> &x509);
 
 // bool is_valid_host(WvStringParm hostname_or_ip);
 
+void sort_urls(WvStringList &urllist, bool ldap_first = true);
+
 WvUrl rewrite_url(WvUrl url, WvStringParm hostname_or_ip);
 
 #endif // __UTIL_H

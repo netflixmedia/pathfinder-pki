@@ -81,3 +81,37 @@ WvUrl rewrite_url(WvUrl url, WvStringParm hostname_or_ip)
     return WvUrl(newurl);
 } 
 
+void sort_urls(WvStringList &urllist, bool ldap_first)
+{
+    WvStringList llist, hlist, olist;
+    while (urllist.count())
+    {
+        WvUrl url(urllist.popstr());
+        if (url.getproto() == "ldap")
+            llist.append(url);
+        else if (url.getproto() == "http" ||
+                 url.getproto() == "https") 
+            hlist.append(url);
+        else
+            olist.append(url);
+    }
+
+    if (ldap_first)
+    {
+        while (llist.count())
+            urllist.append(llist.popstr());
+        while (hlist.count())
+            urllist.append(hlist.popstr());
+    }
+    else
+    {
+        while (hlist.count())
+            urllist.append(hlist.popstr());
+        while (llist.count())
+            urllist.append(llist.popstr());
+    }
+    while (olist.count())
+        urllist.append(olist.popstr());
+
+    return;
+}
