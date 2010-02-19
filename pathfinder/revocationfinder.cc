@@ -163,22 +163,38 @@ bool RevocationFinder::retrieve_object_http(WvStringParm _url,
 {
     log("Attempting to retrieve revocation object at URL %s.\n", _url);
     
-    WvUrl url(_url);
-    if (url.getproto() == "http" || 
-        url.getproto() == "https" ||
-        url.getproto() == "ldap" ||
-        url.getproto() == "ldaps")
+    WvUrl tmpurl(_url);
+    WvString newurl(_url);
+    if (tmpurl.getproto() == "http" || tmpurl.getproto() == "https")
     {
-        shared_ptr<Downloader> d(new Downloader(url, pool, _cb, _method, 
-                                                _headers, _content_source));
-        downloaders.push_back(d);
-        return true;
+        WvString hproxy = cfg.xget("General/HTTP Proxy");
+        if (!!hproxy)
+        {
+            WvUrl nurl(rewrite_url(tmpurl, hproxy));
+            newurl = nurl;
+        }
+    }
+    else if (tmpurl.getproto() == "ldap")
+    {
+        WvString lproxy = cfg.xget("General/LDAP Proxy");
+        if (!!lproxy)
+        {
+            WvUrl nurl(rewrite_url(tmpurl, lproxy));
+            newurl = nurl;
+        }
     }
     else
+    {
         log("Protocol %s not supported for getting object.\n", 
-            url.getproto());
+            tmpurl.getproto());
+        return false;
+    }
 
-    return false;
+    WvUrl url(newurl);
+    shared_ptr<Downloader> d(new Downloader(url, pool, _cb, _method, 
+                                            _headers, _content_source));
+    downloaders.push_back(d);
+    return true;
 }
 
 
