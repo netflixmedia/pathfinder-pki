@@ -129,21 +129,25 @@ void Downloader::download_ldap()
     WvString mimetype = WvString::null;
 
     log("Found an LDAP URI: %s\n", url);
-    if (url == "ldaps")      
+    if (strncmp(url,"ldaps", 5) == 0)      
     {
         log("Sorry, don't know how to handle LDAP over SSL yet.\n");
     }
     else
     {
-        LDAP *ldap = NULL;
-        int retval = ldap_initialize(&ldap, WvString(url));
-        if (retval == LDAP_SUCCESS)                        
+        LDAPURLDesc *lurl = NULL;
+        int retval = ldap_url_parse(WvString(url), &lurl);
+        if (retval == LDAP_SUCCESS)
         {
-            log("LDAP initialized..\n");         
-            LDAPURLDesc *lurl = NULL;
-            retval = ldap_url_parse(WvString(url), &lurl);
-            if (retval == LDAP_SUCCESS)
+            log(WvLog::Debug5,"Host name: %s\n"
+                "DN: %s\nATTR: %s\n", 
+                lurl->lud_host, lurl->lud_dn, 
+                lurl->lud_attrs ? lurl->lud_attrs[0] : "none");
+            LDAP *ldap = NULL;
+            retval = ldap_initialize(&ldap, WvString(url));
+            if (retval == LDAP_SUCCESS)                        
             {
+                log(WvLog::Debug5, "LDAP initialized..\n");         
                 LDAPMessage *res = NULL;
                 retval = ldap_search_ext_s(ldap, lurl->lud_dn,
                         lurl->lud_scope,
@@ -152,6 +156,7 @@ void Downloader::download_ldap()
                         0, NULL, NULL, NULL, 0, &res);
                 if (retval == LDAP_SUCCESS)
                 {
+                    log(WvLog::Debug5, "LDAP Search succeeded...\n");
                     retval = ldap_count_messages(ldap, res);
                     if (retval == 1)                        
                     {               
@@ -159,54 +164,77 @@ void Downloader::download_ldap()
                         // make sure to free everything...                              
                         WvString attr(lurl->lud_attrs[0]);
                         struct berval **val = NULL;       
-                        if (attr == "cACertificate;binary" || attr == "certificateRevocationList")
+                        if (attr == "cACertificate;binary" || 
+                            attr == "certificateRevocationList")
                         {                                                               
+                            log(WvLog::Debug5, "We've got a CA Cert or CRL\n");
                             val = ldap_get_values_len(ldap, res, attr);
-                            buf.put(val[0]->bv_val, val[0]->bv_len);   
-                            ldap_value_free_len(val);
-                            ldap_msgfree(res);
-                            ldap_free_urldesc(lurl);
-                            ldap_unbind_ext(ldap, NULL, NULL);
-                            done = true;
-                            if (finished_cb)
-                                finished_cb(url, mimetype, buf, err);
-                            return;
+                            if (val)
+                            {
+                                buf.put(val[0]->bv_val, val[0]->bv_len);
+                                log(WvLog::Debug5, "Response was %s bytes long\n",
+                                    buf.used());
+                                ldap_value_free_len(val);
+                                ldap_msgfree(res);
+                                ldap_free_urldesc(lurl);
+                                ldap_unbind_ext(ldap, NULL, NULL);
+                                done = true;
+                                if (finished_cb)
+                                    finished_cb(url, mimetype, buf, err);
+                                return;
+                            }
+                            else
+                            {
+                                int ov;
+                                log(WvLog::Critical, "Error getting value for %s (%s)\n",
+                                    attr, 
+                                    ldap_err2string(ldap_get_option(ldap, LDAP_OPT_RESULT_CODE, &ov )));
+                                ldap_msgfree(res);       
+                                ldap_free_urldesc(lurl);
+                                ldap_unbind_ext(ldap, NULL, NULL);
+                            }
                         }                                           
                         else
                         {
+                            log(WvLog::Info, 
+                                "I don't know how to process the attribute: %s\n", 
+                                attr); 
                             ldap_msgfree(res);
                             ldap_free_urldesc(lurl);
                             ldap_unbind_ext(ldap, NULL, NULL);
-                            log("I don't know how to process the attribute: %s\n", attr); 
                         }          
                     }
                     else
                     {
+                        log("LDAP Search returned more than one value (%s),"
+                            "which is not permitted.\n", retval);
                         ldap_msgfree(res);
                         ldap_free_urldesc(lurl);
                         ldap_unbind_ext(ldap, NULL, NULL);
-                        log("LDAP Search returned more than one value, which is not permitted.\n");
                     }
                 }
                 else
                 {
+                    log(WvLog::Info, "LDAP Search failed: %s\n", 
+                        ldap_err2string(retval));
                     ldap_msgfree(res);
                     ldap_free_urldesc(lurl);
                     ldap_unbind_ext(ldap, NULL, NULL);
-                    log("LDAP Search failed: %s\n", ldap_err2string(retval));
                 } 
             }
             else
             {
-                ldap_free_urldesc(lurl);
-                ldap_unbind_ext(ldap, NULL, NULL);
-                log("LDAP URL could not be parsed.\n");
+                log(WvLog::Critical, "LDAP could not initialize: %s\n", 
+                    ldap_err2string(retval));
+                if(ldap)
+                    ldap_unbind_ext(ldap, NULL, NULL);
             }
         }
         else
         {
-            ldap_unbind_ext(ldap, NULL, NULL);
-            log("LDAP could not initialize: %s\n", ldap_err2string(retval));
+            ldap_free_urldesc(lurl);
+            log(WvLog::Critical, "LDAP URL could not be parsed: %s.\n", 
+                ldap_err2string(retval));
         }
     }
     err.seterr("LDAP download failed!");
