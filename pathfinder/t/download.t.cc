@@ -28,7 +28,7 @@ WVTEST_MAIN("HTTP Download")
     while (!d.is_done())
         WvIStreamList::globallist.runonce();
     WVPASS(dl_pass);
-
+    delete p;
 }
 
 WVTEST_MAIN("LDAPS Download")
@@ -40,6 +40,7 @@ WVTEST_MAIN("LDAPS Download")
     while (!d1.is_done())
         WvIStreamList::globallist.runonce();
     WVFAIL(dl_pass);
+    delete p;
 }
 
 WVTEST_MAIN("Malformed LDAP URL Download")
@@ -52,6 +53,7 @@ WVTEST_MAIN("Malformed LDAP URL Download")
     while (!d2.is_done())
         WvIStreamList::globallist.runonce();
     WVFAIL(dl_pass); // URL has a comma.
+    delete p;
 }
 
 WVTEST_MAIN("Good LDAP Download")
@@ -64,6 +66,7 @@ WVTEST_MAIN("Good LDAP Download")
     while (!d3.is_done())
         WvIStreamList::globallist.runonce();
     WVPASS(dl_pass);
+    delete p;
 }    
 
 WVTEST_MAIN("No Such entry LDAP Download")
@@ -76,6 +79,7 @@ WVTEST_MAIN("No Such entry LDAP Download")
     while (!d3.is_done())
         WvIStreamList::globallist.runonce();
     WVFAIL(dl_pass);
+    delete p;
 }    
 
 /*
