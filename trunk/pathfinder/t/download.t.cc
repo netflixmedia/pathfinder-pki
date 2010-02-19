@@ -4,21 +4,20 @@
 
 WVTEST_MAIN("HTTP Download")
 {
-    WvHTTPPool *p = new WvHTTPPool();
-    WvIStreamList l;
-    l.append(p, false, "WvHttpPool");
-    Downloader d("http://www.carillon.ca/caops", p, null);
-    while (!d->is_done())
-        l.runonce();
+    WvHttpPool *p = new WvHttpPool();
+    WvIStreamList::globallist.append(p, false, "WvHttpPool");
+    Downloader d("http://www.carillon.ca/caops", p, NULL);
+    while (!d.is_done())
+        WvIStreamList::globallist.runonce();
     
 }
 
 WVTEST_MAIN("LDAP Download")
 {
-    WvHTTPPool *p = new WvHTTPPool();
-    WvIStreamList l;
-    l.append(p, false, "WvHttpPool");
-    Downloader d("ldap://dir.carillon.ca/", p, null);
-    while (!d->is_done())
-        l.runonce();
+    WvHttpPool *p = new WvHttpPool();
+    
+    WvIStreamList::globallist.append(p, false, "WvHttpPool");
+    Downloader d("ldap://dir.carillon.ca/", p, NULL);
+    while (!d.is_done())
+        WvIStreamList::globallist.runonce();
 }
