@@ -53,7 +53,8 @@ Downloader::Downloader(WvStringParm _url, WvHttpPool *_pool,
         WvString mimetype = WvString::null;
         err.seterr("Unrecognised protocol... dying");
         done = true;
-        finished_cb(url, mimetype, downloadbuf, err);
+        if (finished_cb)
+            finished_cb(url, mimetype, downloadbuf, err);
     }
 }
 
@@ -97,7 +98,8 @@ void Downloader::download_closed_cb(WvStream &s)
     {
         log("Didn't download %s successfully (%s).\n", url, s.errstr());
         err.seterr_both(s.geterr(), s.errstr());
-        finished_cb(url, mimetype, downloadbuf, err);
+        if (finished_cb)
+            finished_cb(url, mimetype, downloadbuf, err);
         return;
     }
     WvHTTPHeaderDict::Iter i(stream->headers);
@@ -116,7 +118,8 @@ void Downloader::download_closed_cb(WvStream &s)
 #endif
 
     done = true;
-    finished_cb(url, mimetype, downloadbuf, err);
+    if (finished_cb)
+        finished_cb(url, mimetype, downloadbuf, err);
 }
 
 void Downloader::download_ldap()
@@ -165,7 +168,8 @@ void Downloader::download_ldap()
                             ldap_free_urldesc(lurl);
                             ldap_unbind_ext(ldap, NULL, NULL);
                             done = true;
-                            finished_cb(url, mimetype, buf, err);
+                            if (finished_cb)
+                                finished_cb(url, mimetype, buf, err);
                             return;
                         }                                           
                         else
@@ -207,6 +211,7 @@ void Downloader::download_ldap()
     }
     err.seterr("LDAP download failed!");
     done = true;
-    finished_cb(url, mimetype, buf, err);
+    if (finished_cb)
+        finished_cb(url, mimetype, buf, err);
     return;
 }
