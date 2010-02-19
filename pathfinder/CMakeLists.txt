@@ -1,6 +1,6 @@
 INCLUDE(UsePkgConfig)
 find_package(PkgConfig)
-cmake_minimum_required(VERSION 2.5)
+cmake_minimum_required(VERSION 2.4.7)
 
 PROJECT(PATHFINDER)
 SET(PACKAGE_VERSION 1.1.3)
