@@ -175,7 +175,7 @@ bool RevocationFinder::retrieve_object_http(WvStringParm _url,
         WvString hproxy = cfg["General"].xget("HTTP Proxy");
         if (!!hproxy)
         {
-            log(WvLog::Info, "Using '%s' as the HTTP Proxy", hproxy);
+            log(WvLog::Info, "Using '%s' as the HTTP Proxy!\n", hproxy);
             WvUrl nurl(rewrite_url(tmpurl, hproxy));
             newurl = nurl;
         }
@@ -185,7 +185,7 @@ bool RevocationFinder::retrieve_object_http(WvStringParm _url,
         WvString lproxy = cfg["General"].xget("LDAP Proxy");
         if (!!lproxy)
         {
-            log(WvLog::Info, "Using '%s' as the LDAP Proxy", lproxy);
+            log(WvLog::Info, "Using '%s' as the LDAP Proxy!\n", lproxy);
             WvUrl nurl(rewrite_url(tmpurl, lproxy));
             newurl = nurl;
         }
