@@ -75,7 +75,6 @@ WvUrl rewrite_url(WvUrl url, WvStringParm hostname_or_ip)
     newurl.append(url.getproto());
     newurl.append("://");
     newurl.append(hostname_or_ip);
-    newurl.append("/");
     newurl.append(url.getfile());
 
     return WvUrl(newurl);
