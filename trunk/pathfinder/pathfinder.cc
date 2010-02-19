@@ -494,14 +494,12 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
         WvUrl url(newurl);
         if (url.isok() && (url.getproto() == "http"  || 
                            url.getproto() == "https")) /*||
-            url.getproto() == "ldap"  ||
-            url.getproto() == "ldaps")*/    // LDAP downloads don't
-            // actually work properly yet.  WvURL doesn't understand these
-            // particular protocol identifiers.  Removing these for now...
-            // ANOTHER problem we'll have is what to do when the HTTP
-            // download succeeds, but we hit a root we don't trust?  Do we
-            // then rewind and try the LDAP?  I'm not sure that'll work as
-            // written.  When re-enabling the ldap download code,
+                           url.getproto() == "ldap" */    
+            
+            // Disable LDAP for now until we figure out what to do when the
+            // HTTP download succeeds, but we hit a root we don't trust?  Do
+            // we then rewind and try the LDAP?  I'm not sure that'll work
+            // as written.  When re-enabling the ldap download code,
             // definitely keep that in mind...
         {
             shared_ptr<Downloader> d(new Downloader(url, pool, _cb));
