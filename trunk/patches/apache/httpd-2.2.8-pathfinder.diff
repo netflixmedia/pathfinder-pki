@@ -1,5 +1,5 @@
-diff -urN httpd-2.2.8/Makefile.in httpd-2.2.8-pathfinder/Makefile.in
---- httpd-2.2.8/Makefile.in	2007-04-24 07:08:01.000000000 -0400
+diff -urN httpd-2.2.8-clean/Makefile.in httpd-2.2.8-pathfinder/Makefile.in
+--- httpd-2.2.8-clean/Makefile.in	2007-04-24 07:08:01.000000000 -0400
 +++ httpd-2.2.8-pathfinder/Makefile.in	2009-08-12 16:43:13.000000000 -0400
 @@ -4,7 +4,7 @@
  
@@ -10,8 +10,8 @@ diff -urN httpd-2.2.8/Makefile.in httpd-2.2.8-pathfinder/Makefile.in
  PROGRAM_PRELINK      = $(COMPILE) -c $(top_srcdir)/server/buildmark.c
  PROGRAM_DEPENDENCIES = \
    server/libmain.la \
-diff -urN httpd-2.2.8/acinclude.m4 httpd-2.2.8-pathfinder/acinclude.m4
---- httpd-2.2.8/acinclude.m4	2005-11-13 01:33:15.000000000 -0500
+diff -urN httpd-2.2.8-clean/acinclude.m4 httpd-2.2.8-pathfinder/acinclude.m4
+--- httpd-2.2.8-clean/acinclude.m4	2005-11-13 01:33:15.000000000 -0500
 +++ httpd-2.2.8-pathfinder/acinclude.m4	2009-08-12 16:43:13.000000000 -0400
 @@ -97,6 +97,8 @@
    APACHE_SUBST(APU_INCLUDEDIR)
@@ -22,8 +22,8 @@ diff -urN httpd-2.2.8/acinclude.m4 httpd-2.2.8-pathfinder/acinclude.m4
  
    abs_srcdir="`(cd $srcdir && pwd)`"
  
-diff -urN httpd-2.2.8/modules/ssl/Makefile.in httpd-2.2.8-pathfinder/modules/ssl/Makefile.in
---- httpd-2.2.8/modules/ssl/Makefile.in	2006-07-11 23:38:44.000000000 -0400
+diff -urN httpd-2.2.8-clean/modules/ssl/Makefile.in httpd-2.2.8-pathfinder/modules/ssl/Makefile.in
+--- httpd-2.2.8-clean/modules/ssl/Makefile.in	2006-07-11 23:38:44.000000000 -0400
 +++ httpd-2.2.8-pathfinder/modules/ssl/Makefile.in	2009-08-12 16:43:13.000000000 -0400
 @@ -19,6 +19,8 @@
  
@@ -34,8 +34,8 @@ diff -urN httpd-2.2.8/modules/ssl/Makefile.in httpd-2.2.8-pathfinder/modules/ssl
  #
  #   developer stuff
  #   (we really don't expect end users to use these targets!)
-diff -urN httpd-2.2.8/modules/ssl/config.m4 httpd-2.2.8-pathfinder/modules/ssl/config.m4
---- httpd-2.2.8/modules/ssl/config.m4	2006-04-21 21:53:06.000000000 -0400
+diff -urN httpd-2.2.8-clean/modules/ssl/config.m4 httpd-2.2.8-pathfinder/modules/ssl/config.m4
+--- httpd-2.2.8-clean/modules/ssl/config.m4	2006-04-21 21:53:06.000000000 -0400
 +++ httpd-2.2.8-pathfinder/modules/ssl/config.m4	2009-08-12 16:43:13.000000000 -0400
 @@ -12,6 +12,8 @@
  dnl  See the License for the specific language governing permissions and
@@ -64,8 +64,8 @@ diff -urN httpd-2.2.8/modules/ssl/config.m4 httpd-2.2.8-pathfinder/modules/ssl/c
  ])
  
  # Ensure that other modules can pick up mod_ssl.h
-diff -urN httpd-2.2.8/modules/ssl/mod_ssl.c httpd-2.2.8-pathfinder/modules/ssl/mod_ssl.c
---- httpd-2.2.8/modules/ssl/mod_ssl.c	2007-11-20 09:16:11.000000000 -0500
+diff -urN httpd-2.2.8-clean/modules/ssl/mod_ssl.c httpd-2.2.8-pathfinder/modules/ssl/mod_ssl.c
+--- httpd-2.2.8-clean/modules/ssl/mod_ssl.c	2007-11-20 09:16:11.000000000 -0500
 +++ httpd-2.2.8-pathfinder/modules/ssl/mod_ssl.c	2009-08-12 16:43:13.000000000 -0400
 @@ -145,7 +145,14 @@
                  "Use the server's cipher ordering preference")
@@ -83,8 +83,8 @@ diff -urN httpd-2.2.8/modules/ssl/mod_ssl.c httpd-2.2.8-pathfinder/modules/ssl/m
      /*
       * Proxy configuration for remote SSL connections
       */
-diff -urN httpd-2.2.8/modules/ssl/ssl_engine_config.c httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_config.c
---- httpd-2.2.8/modules/ssl/ssl_engine_config.c	2006-07-23 07:11:58.000000000 -0400
+diff -urN httpd-2.2.8-clean/modules/ssl/ssl_engine_config.c httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_config.c
+--- httpd-2.2.8-clean/modules/ssl/ssl_engine_config.c	2006-07-23 07:11:58.000000000 -0400
 +++ httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_config.c	2009-08-12 17:07:49.000000000 -0400
 @@ -167,6 +167,10 @@
      sc->proxy_enabled          = UNSET;
@@ -253,8 +253,8 @@ diff -urN httpd-2.2.8/modules/ssl/ssl_engine_config.c httpd-2.2.8-pathfinder/mod
      return NULL;
  }
  
-diff -urN httpd-2.2.8/modules/ssl/ssl_engine_init.c httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_init.c
---- httpd-2.2.8/modules/ssl/ssl_engine_init.c	2007-12-08 09:05:12.000000000 -0500
+diff -urN httpd-2.2.8-clean/modules/ssl/ssl_engine_init.c httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_init.c
+--- httpd-2.2.8-clean/modules/ssl/ssl_engine_init.c	2007-12-08 09:05:12.000000000 -0500
 +++ httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_init.c	2009-08-12 17:11:30.000000000 -0400
 @@ -477,6 +477,58 @@
      }
@@ -378,9 +378,9 @@ diff -urN httpd-2.2.8/modules/ssl/ssl_engine_init.c httpd-2.2.8-pathfinder/modul
  
      /*
       * Give a warning when no CAs were configured but client authentication
-diff -urN httpd-2.2.8/modules/ssl/ssl_engine_kernel.c httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_kernel.c
---- httpd-2.2.8/modules/ssl/ssl_engine_kernel.c	2006-07-11 23:38:44.000000000 -0400
-+++ httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_kernel.c	2009-08-12 16:43:13.000000000 -0400
+diff -urN httpd-2.2.8-clean/modules/ssl/ssl_engine_kernel.c httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_kernel.c
+--- httpd-2.2.8-clean/modules/ssl/ssl_engine_kernel.c	2006-07-11 23:38:44.000000000 -0400
++++ httpd-2.2.8-pathfinder/modules/ssl/ssl_engine_kernel.c	2010-02-22 09:38:07.000000000 -0500
 @@ -30,6 +30,48 @@
                                              -- Unknown                */
  #include "ssl_private.h"
@@ -493,7 +493,23 @@ diff -urN httpd-2.2.8/modules/ssl/ssl_engine_kernel.c httpd-2.2.8-pathfinder/mod
          }
          else {
              request_rec *id = r->main ? r->main : r;
-@@ -1156,10 +1239,50 @@
+@@ -706,6 +789,15 @@
+         }
+     }
+ 
++#ifdef HAVE_PATHFINDER
++    /* Check whether pathfinder has rejected the certificate.
++     */
++    if (sc->pathfinder_enabled && sslconn->pf_error > 0)
++    {
++        return HTTP_FORBIDDEN;
++    }
++#endif
++
+     /* If we're trying to have the user name set from a client
+      * certificate then we need to set it here. This should be safe as
+      * the user name probably isn't important from an auth checking point
+@@ -1156,10 +1248,44 @@
      return (DH *)mc->pTmpKeys[idx];
  }
  
@@ -510,44 +526,48 @@ diff -urN httpd-2.2.8/modules/ssl/ssl_engine_kernel.c httpd-2.2.8-pathfinder/mod
 +    SSLConnRec *sslconn = myConnConfig(conn);
 +    server_rec *s       = conn->base_server;
 +
++    sslconn->pf_error = 0;
++
 +    char *errmsg;
 +    int validated = pathfinder_helper(ctx->cert, s, &errmsg);
 +
 +    if (!validated)
 +    {
-+        int errnum = X509_V_ERR_CERT_UNTRUSTED;
-+
-+        if (sslconn->client_cert) {
-+            X509_free(sslconn->client_cert);
-+            sslconn->client_cert = NULL;
-+        }
-+        sslconn->client_dn = NULL;
++        sslconn->pf_error = X509_V_ERR_CERT_UNTRUSTED;
 +
 +        if (!strncmp(errmsg, "Couldn't download certificate signer", 36))
-+            errnum = X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT;
++            sslconn->pf_error = X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT;
 +        else if (!strncmp(errmsg, "Couldn't download CRL", 21))
-+            errnum = X509_V_ERR_UNABLE_TO_GET_CRL;
++            sslconn->pf_error = X509_V_ERR_UNABLE_TO_GET_CRL;
 +
-+        X509_STORE_CTX_set_error(ctx, errnum);
-+        sslconn->verify_error = X509_verify_cert_error_string(errnum);
-+        SSL_set_verify_result(sslconn->ssl, errnum);
++        SSL_set_verify_result(sslconn->ssl, X509_V_OK);
 +    }
 +    else
 +        SSL_set_verify_result(sslconn->ssl, X509_V_OK);
 +
 +    free(errmsg);
 +
-+    return validated;
++    return 1;
 +}
 +#endif
 +
  int ssl_callback_SSLVerify(int ok, X509_STORE_CTX *ctx)
  {
      /* Get Apache context back through OpenSSL context */
-diff -urN httpd-2.2.8/modules/ssl/ssl_private.h httpd-2.2.8-pathfinder/modules/ssl/ssl_private.h
---- httpd-2.2.8/modules/ssl/ssl_private.h	2007-11-20 09:16:11.000000000 -0500
-+++ httpd-2.2.8-pathfinder/modules/ssl/ssl_private.h	2009-08-12 16:43:13.000000000 -0400
-@@ -447,6 +447,10 @@
+diff -urN httpd-2.2.8-clean/modules/ssl/ssl_private.h httpd-2.2.8-pathfinder/modules/ssl/ssl_private.h
+--- httpd-2.2.8-clean/modules/ssl/ssl_private.h	2007-11-20 09:16:11.000000000 -0500
++++ httpd-2.2.8-pathfinder/modules/ssl/ssl_private.h	2010-02-22 09:38:11.000000000 -0500
+@@ -347,6 +347,9 @@
+     int is_proxy;
+     int disabled;
+     int non_ssl_request;
++#ifdef HAVE_PATHFINDER
++    int pf_error;
++#endif
+ } SSLConnRec;
+ 
+ typedef struct {
+@@ -447,6 +450,10 @@
      int              vhost_id_len;
      int              session_cache_timeout;
      BOOL             cipher_server_pref;
@@ -558,7 +578,7 @@ diff -urN httpd-2.2.8/modules/ssl/ssl_private.h httpd-2.2.8-pathfinder/modules/s
      modssl_ctx_t    *server;
      modssl_ctx_t    *proxy;
  };
-@@ -525,6 +529,10 @@
+@@ -525,6 +532,10 @@
  const char  *ssl_cmd_SSLProxyCARevocationFile(cmd_parms *, void *, const char *);
  const char  *ssl_cmd_SSLProxyMachineCertificatePath(cmd_parms *, void *, const char *);
  const char  *ssl_cmd_SSLProxyMachineCertificateFile(cmd_parms *, void *, const char *);
@@ -569,7 +589,7 @@ diff -urN httpd-2.2.8/modules/ssl/ssl_private.h httpd-2.2.8-pathfinder/modules/s
  
  /**  module initialization  */
  int          ssl_init_Module(apr_pool_t *, apr_pool_t *, apr_pool_t *, server_rec *);
-@@ -548,6 +556,9 @@
+@@ -548,6 +559,9 @@
  /**  OpenSSL callbacks */
  RSA         *ssl_callback_TmpRSA(SSL *, int, int);
  DH          *ssl_callback_TmpDH(SSL *, int, int);
