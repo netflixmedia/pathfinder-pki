@@ -519,8 +519,10 @@ void PathFinder::retrieve_object(WvStringList &_urls, DownloadFinishedCb _cb)
             // has been run, or else a get_signer() somewhere farther up
             // the stack can proceed to validate other paths before we know
             // if this one is any good!
+            log("Waiting for download to finish.\n");
             while (!d->is_done() && WvIStreamList::globallist.isok())
                 WvIStreamList::globallist.runonce();
+            log("Download finished.\n");
 
             if (!got_cert_path)
                 wouldfail("Downloaded signer did not lead to a valid "

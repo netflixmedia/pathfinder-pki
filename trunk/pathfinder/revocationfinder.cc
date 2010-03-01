@@ -52,10 +52,10 @@ RevocationFinder::~RevocationFinder()
 void RevocationFinder::find()
 {    
     int only_ocsp = cfg["Verification Options"].xgetint("Use OCSP", 1);
-    // Only get all of the CRL information if we have been told not to 
-    // use OCSP exclusively. We're using != 2 here since we want to treat *ANY* value
-    // other than 2 as 1, and 0 was caught over in pathfinder.cc, making check_ocsp here
-    // false.
+    // Only get all of the CRL information if we have been told not to use
+    // OCSP exclusively. We're using != 2 here since we want to treat *ANY*
+    // value other than 2 as 1, and 0 was caught over in pathfinder.cc,
+    // making check_ocsp here false.
     if (only_ocsp != 2)
     {
         // first, check to see if we have a CRL explicitly defined for this
