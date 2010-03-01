@@ -83,8 +83,6 @@ int main(int argc, char *argv[])
     args.add_option('v', "verbose",
             "Increase log level (can be used multiple times)",
             WvArgs::NoArgCallback(&inc_log_level));
-    args.add_reset_bool_option('\0', "skip-crl-check", 
-                               "Skips any CRL checking.", crl_check);
 
     if (!args.process(argc, argv, &remaining_args))
     {
@@ -134,12 +132,19 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    if (cfg["verification options"].xgetint("skip revocation check", 0))
+    {
+        wvcon->print("Skipping revocation checking as specified in "
+                     "configuration.\n");
+        crl_check = false;
+    }
+
     PathValidator p(x509, initial_policy_set_tcl, 
                     crl_check ? 0 : WVX509_SKIP_REVOCATION_CHECK, 
                     trusted_store, intermediate_store, crlcache, 
                     cfg, path_validated_cb);
 
-    switch(cfg["Verification Options"].xgetint("Use OCSP", 1))
+    switch (cfg["Verification Options"].xgetint("Use OCSP", 1))
     {
         case 0:
               p.validate(false);
@@ -149,8 +154,8 @@ int main(int argc, char *argv[])
               p.validate(true);
               break;
         default:
-              wverr->print(WvLog::Warning, "Unrecognised value for 'Use OCSP' found.\n"
-                                           "Treating as default of '1'!\n");
+              wverr->print("Unrecognised value for 'Use OCSP' found.\n"
+                           "Treating as default of '1'!\n");
               
               p.validate(true);
     }

@@ -67,7 +67,6 @@ void WvX509Path::add_ocsp_resp(WvStringParm subject,
 void validate_crl(WvX509Store *store, shared_ptr<WvX509> &x509)
 {
     WvX509Path crlpath;
-    
 }
 
 
@@ -178,6 +177,8 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
         {
             pair<OCSPRespMap::iterator, OCSPRespMap::iterator> iterpair = 
             ocsp_map.equal_range(cur->get_subject().cstr());
+            log(WvLog::Info, "Looking up %s in OCSP map.\n",
+                             cur->get_subject());
             if (iterpair.first != iterpair.second)
             {
                 shared_ptr<WvOCSPResp> resp = (*iterpair.first).second;
