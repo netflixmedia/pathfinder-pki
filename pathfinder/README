@@ -139,8 +139,12 @@ the way that pathfinder verifies certificates. This is intended primarily
 for debugging and troubleshooting purposes, and in general users shouldn't
 try to modify it.
  - Skip Revocation Check: If not set to 0 (or blank), disable revocation 
- checking for the pathfinder daemon.
+                          checking for the pathfinder daemon.
   - Example: Skip Revocation Check = 0
+ - Use OCSP: If set to 0, NEVER use OCSP. If set to 1, use OCSP and
+             then fall back to CRL, if set to 2, then ONLY use OCSP. 1 is
+             the default if not set.
+  - Example: Use OCSP = 1
 
 [Bridges]: Specifies bundles that can be used to bridge trust between PKIs
 (from an untrusted PKI, across the bridge, to a trusted anchor). Typically
