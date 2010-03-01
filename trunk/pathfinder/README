@@ -1,7 +1,7 @@
 === About Pathfinder ===
 
 Pathfinder is designed to provide a mechanism for any program to perform 
-RFC3280-compliant path validation of X509 certificates, even when some of 
+RFC5280-compliant path validation of X509 certificates, even when some of 
 the intermediate certificates are not present on the local machine. It will
 automatically download any such certificates (and their CRLs or OCSP 
 information) from the Internet as needed using the AIA and CRL distribution 

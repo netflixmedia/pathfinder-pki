@@ -50,29 +50,39 @@ RevocationFinder::~RevocationFinder()
 
 
 void RevocationFinder::find()
-{
-    // first, check to see if we have a CRL explicitly defined for this
-    // certificate's issuer
-    WvString hardcoded_crl_loc = cfg["CRL Location"].xget(
-        url_encode(cert->get_issuer(), "/="));
-    if (!!hardcoded_crl_loc)
+{    
+    int only_ocsp = cfg["Verification Options"].xgetint("Use OCSP", 1);
+    // Only get all of the CRL information if we have been told not to 
+    // use OCSP exclusively. We're using != 2 here since we want to treat *ANY* value
+    // other than 2 as 1, and 0 was caught over in pathfinder.cc, making check_ocsp here
+    // false.
+    if (only_ocsp != 2)
     {
-        shared_ptr<WvCRL> crl = crlcache->get_file(hardcoded_crl_loc);
-        if (crl && !crl->expired())
+        // first, check to see if we have a CRL explicitly defined for this
+        // certificate's issuer
+        WvString hardcoded_crl_loc = cfg["CRL Location"].xget(
+                                    url_encode(cert->get_issuer(), "/="));
+        if (!!hardcoded_crl_loc)
         {
-            path->add_crl(cert->get_subject(), crl);
-            done = true;
-            log("Got CRL from hardcoded location.\n");
-            cb(err);
-            return;
+            shared_ptr<WvCRL> crl = crlcache->get_file(hardcoded_crl_loc);
+            if (crl && !crl->expired())
+            {
+                path->add_crl(cert->get_subject(), crl);
+                done = true;
+                log("Got CRL from hardcoded location.\n");
+                cb(err);
+                return;
+            }
         }
     }
 
     // try to grab both crl and OCSP info (the latter only if we're checking 
-    // ocsp)
+    // ocsp, and the former only if CRL check is not excluded)
     if (check_ocsp)
         cert->get_ocsp(ocsp_urls);
-    cert->get_crl_urls(crl_urls);
+    
+    if (only_ocsp != 2)
+        cert->get_crl_urls(crl_urls);
 
     if (!crl_urls.count() && !ocsp_urls.count())
     {
@@ -81,24 +91,29 @@ void RevocationFinder::find()
         return;
     }
 
-    if (cfg["General"].xgetint("Prefer LDAP"))
-        sort_urls(crl_urls, true);          
-    else 
-        sort_urls(crl_urls, false);    
-
-    WvStringList::Iter i(crl_urls);
-    for (i.rewind(); i.next();)
+    // And here, only sort the CRL DP's and check the cache if we DO want to
+    // check CRL information.
+    if (only_ocsp != 2)
     {
-        WvUrl url(i());
+        if (cfg["General"].xgetint("Prefer LDAP"))
+            sort_urls(crl_urls, true);          
+        else 
+            sort_urls(crl_urls, false);    
 
-        shared_ptr<WvCRL> crl = crlcache->get_url(url);
-        if (crl && !crl->expired())
+        WvStringList::Iter i(crl_urls);
+        for (i.rewind(); i.next();)
         {
-            path->add_crl(cert->get_subject(), crl);
-            done = true;
-            log("Got CRL from cache.\n");
-            cb(err);
-            return;
+            WvUrl url(i());
+
+            shared_ptr<WvCRL> crl = crlcache->get_url(url);
+            if (crl && !crl->expired())
+            {
+                path->add_crl(cert->get_subject(), crl);
+                done = true;
+                log("Got CRL from cache.\n");
+                cb(err);
+                return;
+            }
         }
     }
 

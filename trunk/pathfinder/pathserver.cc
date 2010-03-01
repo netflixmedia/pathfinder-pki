@@ -115,8 +115,22 @@ bool PathServer::incoming(WvDBusConn *conn, WvDBusMsg &msg)
     shared_ptr<PathValidator> validator(pv);
     validatormap.insert(
         pair< WvDBusMsg *, shared_ptr<PathValidator> >(reply, validator));
-    validator->validate();
-    
+
+    switch(cfg["Verification Options"].xgetint("Use OCSP", 1))
+    {
+         case 0:
+               validator->validate(false);
+               break;            
+         case 1:
+         case 2:
+               validator->validate(true);
+               break;           
+         default:
+               log(WvLog::Warning, "Unrecognised value for 'Use OCSP' found.\n"
+                                   "Treating as default of '1'!\n");           
+               validator->validate(true);                                             
+    }
+        
     return true;
 }
 

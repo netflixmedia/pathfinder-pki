@@ -97,7 +97,6 @@ int main(int argc, char *argv[])
     WvHttpStream::global_enable_pipelining = false;
     WvString certname = remaining_args.popstr();
 
-
     shared_ptr<WvX509Store> trusted_store(new WvX509Store);
     {
         UniConf::Iter i(cfg["trusted directories"]);
@@ -139,7 +138,22 @@ int main(int argc, char *argv[])
                     crl_check ? 0 : WVX509_SKIP_REVOCATION_CHECK, 
                     trusted_store, intermediate_store, crlcache, 
                     cfg, path_validated_cb);
-    p.validate();
+
+    switch(cfg["Verification Options"].xgetint("Use OCSP", 1))
+    {
+        case 0:
+              p.validate(false);
+              break;
+        case 1:
+        case 2:
+              p.validate(true);
+              break;
+        default:
+              wverr->print(WvLog::Warning, "Unrecognised value for 'Use OCSP' found.\n"
+                                           "Treating as default of '1'!\n");
+              
+              p.validate(true);
+    }
 
     while (!done && WvIStreamList::globallist.isok())
         WvIStreamList::globallist.runonce();
