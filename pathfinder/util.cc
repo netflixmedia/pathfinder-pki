@@ -1,3 +1,12 @@
+/*
+ * util.cc
+ *
+ * Copyright (C) 2008-2011 Carillon Information Security Inc.
+ *
+ * This program and accompanying library is covered by the LGPL v2.1 or later, 
+ * please read LICENSE for details.
+ */
+
 #include <wvfile.h>
 #include <wvurl.h>
 #include <wvregex.h>
