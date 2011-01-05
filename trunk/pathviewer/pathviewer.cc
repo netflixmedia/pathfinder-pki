@@ -1,7 +1,7 @@
 /*
  * pathviewer.cc
  *
- * Copyright (C) 2007 Carillon Information Security Inc.
+ * Copyright (C) 2007-2011, Carillon Information Security Inc.
  *
  * This library is covered by the LGPL, please read LICENSE for details.
  */
@@ -164,7 +164,7 @@ static void about(GtkWidget *widget, gpointer data)
 {
     GtkAboutDialog *aboutw = GTK_ABOUT_DIALOG(gtk_about_dialog_new());
     gtk_about_dialog_set_version(aboutw, PATHVIEWER_VERSION);
-    gtk_about_dialog_set_copyright(aboutw, "Copyright (C) 2007 Carillon Information Security Inc.");
+    gtk_about_dialog_set_copyright(aboutw, "Copyright (C) 2007-2011, Carillon Information Security Inc.");
     gtk_dialog_run(GTK_DIALOG(aboutw));
 
     gtk_widget_destroy(GTK_WIDGET(aboutw));

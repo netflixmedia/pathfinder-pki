@@ -1,7 +1,7 @@
 /* -*- Mode: C++ -*-
  * X.509 certificate path management classes.
  *
- * Copyright (C) 2007-2008, Carillon Information Security Inc.
+ * Copyright (C) 2007-2011, Carillon Information Security Inc.
  * 
  * This library is covered by the LGPL v2.1 or later, please read LICENSE for 
  * details.
