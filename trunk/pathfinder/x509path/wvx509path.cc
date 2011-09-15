@@ -7,6 +7,7 @@
  * details.
  */ 
 
+#include <openssl/x509.h>
 #include <wvstrutils.h>
 #include "wvx509path.h"
 #include "wvx509policytree.h"
