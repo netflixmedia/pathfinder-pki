@@ -6,7 +6,7 @@ ADD_EXECUTABLE(all.t pathserver.t.cc sigverif.t.cc certrevoke.t.cc
   basicconstraints.t.cc crldistpoint.t.cc wvcrlcache.t.cc pathvalidator.t.cc
   revocationfinder.t.cc pathfinder.t.cc wvx509path.t.cc util.t.cc
   download.t.cc)
-TARGET_LINK_LIBRARIES(all.t pathology x509path)
+TARGET_LINK_LIBRARIES(all.t pathology x509path ${WVDBUS_LIBRARIES} ${OPENSSSL_LIBRARIES} ${LDAP_LIBS})
 
 SET_TARGET_PROPERTIES(all.t 
   PROPERTIES COMPILE_FLAGS "${WVDBUS_CFLAGS} ${WVTEST_CFLAGS} ${EXTRA_CFLAGS}"
