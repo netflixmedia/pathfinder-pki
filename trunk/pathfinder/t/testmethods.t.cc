@@ -9,6 +9,7 @@ using namespace boost;
 Tester::Tester() :
     trusted_store(new WvX509Store),
     intermediate_store(new WvX509Store),
+    fetched_store(new WvX509Store),
     log("Pathfinder Test Harness", WvLog::Debug5)
 {
     validated = false;
@@ -110,8 +111,9 @@ bool Tester::_validate(WvStringParm initial_policy_set_tcl, uint32_t flags,
     WvX509List extra_certs;
 
     WvError err;
-    validated = path.validate(trusted_store, intermediate_store, 
-                              initial_policy_set, flags, extra_certs, err);
+    validated = path.validate(trusted_store, intermediate_store,
+                              fetched_store, initial_policy_set, flags,
+                              extra_certs, err);
     log("Initial path validated, certificate is %svalid (reason: %s).\n", 
         validated ? "" : "NOT ", err.errstr());
     for (WvX509List::iterator i = extra_certs.begin(); 

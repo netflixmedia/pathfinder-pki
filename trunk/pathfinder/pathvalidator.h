@@ -23,6 +23,7 @@ class PathValidator
                   uint32_t _validation_flags,
                   boost::shared_ptr<WvX509Store> &_trusted_store,
                   boost::shared_ptr<WvX509Store> &_intermediate_store,
+                  boost::shared_ptr<WvX509Store> &_fetched_store,
                   boost::shared_ptr<WvCRLCache> &_crlcache,
                   UniConf &_cfg, 
                   ValidatedCb _cb);
@@ -44,6 +45,7 @@ class PathValidator
 
     boost::shared_ptr<WvX509Store> trusted_store;
     boost::shared_ptr<WvX509Store> intermediate_store;
+    boost::shared_ptr<WvX509Store> fetched_store;
     boost::shared_ptr<WvCRLCache> crlcache;
 
     UniConf cfg;

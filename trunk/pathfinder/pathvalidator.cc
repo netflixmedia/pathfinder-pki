@@ -20,6 +20,7 @@ PathValidator::PathValidator(shared_ptr<WvX509> &_cert,
                              uint32_t _validation_flags,
                              shared_ptr<WvX509Store> &_trusted_store,
                              shared_ptr<WvX509Store> &_intermediate_store,
+                             shared_ptr<WvX509Store> &_fetched_store,
                              shared_ptr<WvCRLCache> &_crlcache,
                              UniConf &_cfg, 
                              ValidatedCb _cb) :
@@ -27,6 +28,7 @@ PathValidator::PathValidator(shared_ptr<WvX509> &_cert,
     validation_flags(_validation_flags),
     trusted_store(_trusted_store),
     intermediate_store(_intermediate_store),
+    fetched_store(_fetched_store),
     crlcache(_crlcache),
     cfg(_cfg),
     validated_cb(_cb),
@@ -47,6 +49,7 @@ void PathValidator::validate(bool check_ocsp)
     shared_ptr<PathFinder> pathfinder(new PathFinder(cert,
                                                      trusted_store,
                                                      intermediate_store,
+                                                     fetched_store,
                                                      crlcache,
                                                      validation_flags,
                                                      check_ocsp,
@@ -71,8 +74,8 @@ void PathValidator::path_found_cb(shared_ptr<WvX509Path> &path, WvError err,
 
     WvX509List extra_certs;
     bool valid = path->validate(trusted_store, intermediate_store, 
-                                initial_policy_set, validation_flags, 
-                                extra_certs, err);
+                                fetched_store, initial_policy_set,
+                                validation_flags, extra_certs, err);
     log("Path validated for certificate %s, certificate is %svalid.\n", 
         cert->get_subject(), valid ? "" : "NOT ");
    

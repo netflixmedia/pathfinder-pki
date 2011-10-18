@@ -55,6 +55,7 @@ public:
     UniConfRoot cfg;
     shared_ptr<WvX509Store> trusted_store;
     shared_ptr<WvX509Store> intermediate_store;
+    shared_ptr<WvX509Store> fetched_store;
     shared_ptr<WvCRLCache> crlcache;
     PathServer pathserver;
 
@@ -62,8 +63,10 @@ public:
         cfg("temp:"),
         trusted_store(new WvX509Store),
         intermediate_store(new WvX509Store),
+        fetched_store(new WvX509Store),
         crlcache(new WvCRLCache("/tmp/crlcache")),
-        pathserver(trusted_store, intermediate_store, crlcache, cfg)
+        pathserver(trusted_store, intermediate_store, fetched_store,
+                   crlcache, cfg)
     {
     }
 

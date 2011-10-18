@@ -43,6 +43,7 @@ WVTEST_MAIN("ocsp checking")
     UniConfRoot cfg("temp:");
     shared_ptr<WvX509Store> trusted_store(new WvX509Store);
     shared_ptr<WvX509Store> intermediate_store(new WvX509Store);
+    shared_ptr<WvX509Store> fetched_store(new WvX509Store);
     shared_ptr<WvCRLCache> crlcache(new WvCRLCache("/tmp/does-not-exist-no"));
 
     shared_ptr<WvX509> cert(new WvX509);
@@ -55,7 +56,7 @@ WVTEST_MAIN("ocsp checking")
 
     int found_count = 0;
     PathFinder p(cert, trusted_store, 
-                 intermediate_store, crlcache, 0, true, cfg, 
+                 intermediate_store, fetched_store, crlcache, 0, true, cfg, 
                  wv::bind(&path_found_cb_ocsp, _1, _2,
                           wv::ref(cert),
                           wv::ref(found_count)));

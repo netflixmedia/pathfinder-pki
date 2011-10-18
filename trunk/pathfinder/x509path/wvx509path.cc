@@ -80,6 +80,7 @@ void WvX509Path::validate_failed(WvStringParm errstring, WvError &err)
 
 bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store, 
                           shared_ptr<WvX509Store> &intermediate_store,
+                          shared_ptr<WvX509Store> &fetched_store,
                           WvStringList &initial_policy_set, 
                           uint32_t flags, 
                           WvX509List &extra_certs_to_be_validated,
@@ -321,6 +322,11 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                 if (!crl_signer)
                 {
                     crl_signer = intermediate_store->get(crl_aki);
+                    crl_signer_untrusted = true;
+                }
+                if (!crl_signer)
+                {
+                    crl_signer = fetched_store->get(crl_aki);
                     crl_signer_untrusted = true;
                 }
 

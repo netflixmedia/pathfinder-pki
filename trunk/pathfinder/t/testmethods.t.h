@@ -37,6 +37,7 @@ public:
 
     boost::shared_ptr<WvX509Store> trusted_store; 
     boost::shared_ptr<WvX509Store> intermediate_store; 
+    boost::shared_ptr<WvX509Store> fetched_store; 
     WvX509Path path;
 
     // copy-pasted from wvx509path

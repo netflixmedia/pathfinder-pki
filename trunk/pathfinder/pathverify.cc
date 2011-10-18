@@ -107,6 +107,10 @@ int main(int argc, char *argv[])
         for (i.rewind(); i.next();)
             intermediate_store->add_pkcs7(i->getme());
     }
+    shared_ptr<WvX509Store> fetched_store(new WvX509Store);
+    {
+        // FIXME: load the fetched_store here.
+    }
 
     shared_ptr<WvCRLCache> crlcache = shared_ptr<WvCRLCache>(
         new WvCRLCache(cfg["general"].xget("crl cache location", 
@@ -141,8 +145,8 @@ int main(int argc, char *argv[])
 
     PathValidator p(x509, initial_policy_set_tcl, 
                     crl_check ? 0 : WVX509_SKIP_REVOCATION_CHECK, 
-                    trusted_store, intermediate_store, crlcache, 
-                    cfg, path_validated_cb);
+                    trusted_store, intermediate_store, fetched_store,
+                    crlcache, cfg, path_validated_cb);
 
     switch (cfg["Verification Options"].xgetint("Use OCSP", 1))
     {

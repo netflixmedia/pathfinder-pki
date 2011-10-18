@@ -30,6 +30,7 @@ WVTEST_MAIN("lookup in crlcache")
     UniConfRoot cfg("temp:");
     shared_ptr<WvX509Store> trusted_store(new WvX509Store);
     shared_ptr<WvX509Store> intermediate_store(new WvX509Store);
+    shared_ptr<WvX509Store> fetched_store(new WvX509Store);
     shared_ptr<WvCRLCache> crlcache(new WvCRLCache(CRLSTORE_DIRNAME));
 
     WvX509Mgr ca("CN=test.foo.com,DC=foo,DC=com", DEFAULT_KEYLEN, true);
@@ -58,7 +59,7 @@ WVTEST_MAIN("lookup in crlcache")
     bool validated_ok = false;
 
     PathValidator p(cert, ANY_POLICY_OID, 0, trusted_store, 
-                    intermediate_store, crlcache, cfg, 
+                    intermediate_store, fetched_store, crlcache, cfg, 
                     wv::bind(&validated_cb, _1, _2, _3, 
                              wv::ref(validated_count),
                              wv::ref(validated_ok)));
