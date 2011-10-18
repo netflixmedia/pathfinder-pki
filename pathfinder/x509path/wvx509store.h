@@ -24,9 +24,11 @@ typedef std::list< boost::shared_ptr<WvX509> > WvX509List;
 
 class WvX509Store : public WvErrorBase
 {
-  public:
+public:
     WvX509Store();
     virtual ~WvX509Store();
+
+    void set_storedir(WvStringParm _dir);
 
     /// Returns true if a certificate matches a certificate in the store (by
     // checking for matching SKI's (or subjects, if no SKI) and 
@@ -50,8 +52,10 @@ class WvX509Store : public WvErrorBase
     void add_cert(boost::shared_ptr<WvX509> &_cert);
     void add_pkcs7(WvStringParm _fname);
     int count();
+    void remove(WvStringParm key);
     
-  private:
+private:
+    WvString storedir;
     typedef std::multimap< std::string, boost::shared_ptr<WvX509> > CertMap;
     typedef std::pair< std::string, boost::shared_ptr<WvX509> > CertPair;
     CertMap certmap;

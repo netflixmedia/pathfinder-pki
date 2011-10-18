@@ -197,9 +197,9 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
 WvString PathFinder::storename() const
 {
     if (check_bridges)
-        return "trusted or intermediate store";
+        return "trusted, fetched, or intermediate store";
     else
-        return "trusted store";
+        return "trusted or fetched store";
 }
 
 

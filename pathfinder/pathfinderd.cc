@@ -23,6 +23,7 @@ using namespace boost;
 #define DEFAULT_CONFIG_MONIKER "ini:/etc/pathfinderd.conf"
 #define DEFAULT_DBUS_MONIKER "dbus:system"
 #define DEFAULT_CRLSTORE_LOCATION "/var/cache/pathfinder/crls/"
+#define DEFAULT_FETCHEDSTORE_LOCATION "/var/cache/pathfinder/fetched/"
 
 
 class PathFinderDaemon : public WvStreamsDaemon
@@ -99,7 +100,9 @@ public:
         }
 
         {
-            // FIXME: load the fetched_store here.
+            WvString loc(cfg["general"].xget("fetched store location",
+                                             DEFAULT_FETCHEDSTORE_LOCATION));
+            fetched_store->set_storedir(loc);
         }
         
         crlcache = shared_ptr<WvCRLCache>(
