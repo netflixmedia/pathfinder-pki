@@ -21,6 +21,7 @@ using namespace boost;
 
 #define DEFAULT_CONFIG_MONIKER "ini:/etc/pathfinderd.ini"
 #define DEFAULT_CRLSTORE_LOCATION "/var/cache/pathfinder/crls/"
+#define DEFAULT_FETCHEDSTORE_LOCATION "/var/cache/pathfinder/fetched/"
 
 
 static WvLog::LogLevel log_level = WvLog::Info;
@@ -109,7 +110,9 @@ int main(int argc, char *argv[])
     }
     shared_ptr<WvX509Store> fetched_store(new WvX509Store);
     {
-        // FIXME: load the fetched_store here.
+        WvString loc(cfg["general"].xget("fetched store location",
+                                         DEFAULT_FETCHEDSTORE_LOCATION));
+        fetched_store->set_storedir(loc);
     }
 
     shared_ptr<WvCRLCache> crlcache = shared_ptr<WvCRLCache>(

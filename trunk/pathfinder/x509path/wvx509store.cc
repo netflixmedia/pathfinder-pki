@@ -12,6 +12,8 @@
 #include <openssl/pkcs7.h>
 #include <openssl/x509v3.h>
 #include <wvdiriter.h>
+#include <wvfile.h>
+#include <wvstrutils.h>
 
 using namespace std;
 using namespace boost;
@@ -20,6 +22,14 @@ using namespace boost;
 WvX509Store::WvX509Store() :
     log("WvX509Store", WvLog::Debug5)
 {
+}
+
+
+void WvX509Store::set_storedir(WvStringParm _dir)
+{
+    storedir = _dir;
+    if (!!storedir)
+        load(storedir);
 }
 
 
@@ -46,6 +56,17 @@ void WvX509Store::add_cert(shared_ptr<WvX509> &x)
         certmap.insert(CertPair(x->get_ski().cstr(), x));
     
     certmap.insert(CertPair(x->get_subject().cstr(), x));
+
+    if (!!storedir)
+    {
+        WvString fname("%s/%s-%s", storedir, x->get_serial(true),
+                                   url_encode(x->get_subject()));
+
+        log("Writing %s to fetched_store.\n", fname);
+        ::unlink(fname);
+        WvFile f(fname, O_CREAT|O_WRONLY);
+        f.write(x->encode(WvX509::CertPEM));
+    }
 }
 
 
@@ -107,7 +128,7 @@ void WvX509Store::add_pkcs7(WvStringParm _fname)
 	for (int i = 0; i<numcerts; i++)
 	{
             shared_ptr<WvX509> x(new WvX509(X509_dup(sk_X509_value(certs, i))));
-            certmap.insert(CertPair(x->get_ski().cstr(), x));
+            add_cert(x);
         }
     }
     else 
@@ -122,7 +143,7 @@ shared_ptr<WvX509> WvX509Store::get(WvStringParm key)
     if (!!key)
     {        
         pair<CertMap::iterator, CertMap::iterator> iterpair = 
-        certmap.equal_range(key.cstr());
+            certmap.equal_range(key.cstr());
         
         for (CertMap::iterator i = iterpair.first; i != iterpair.second; i++)
             return((*i).second);
@@ -200,4 +221,24 @@ void WvX509Store::get_cross_certs(shared_ptr<WvX509> &cert,
 int WvX509Store::count()
 {
     return certmap.size();
+}
+
+void WvX509Store::remove(WvStringParm key)
+{
+    if (!!key)
+    {        
+        pair<CertMap::iterator, CertMap::iterator> iterpair = 
+            certmap.equal_range(key.cstr());
+        
+        CertMap::iterator i = iterpair.first;
+        shared_ptr<WvX509> x = ((*i).second);
+
+        if (x)
+        {
+            WvString fname("%s/%s-%s", storedir, x->get_serial(true),
+                                       url_encode(x->get_subject()));
+            ::unlink(fname);
+            certmap.erase(key.cstr());
+        }
+    }
 }
