@@ -18,6 +18,7 @@ using namespace std;
 PathFinder::PathFinder(shared_ptr<WvX509> &_cert, 
                        shared_ptr<WvX509Store> &_trusted_store, 
                        shared_ptr<WvX509Store> &_intermediate_store,
+                       shared_ptr<WvX509Store> &_fetched_store,
                        shared_ptr<WvCRLCache> &_crlcache,
                        uint32_t _validation_flags,
                        bool _check_ocsp,
@@ -26,6 +27,7 @@ PathFinder::PathFinder(shared_ptr<WvX509> &_cert,
     cert_to_be_validated(_cert),
     trusted_store(_trusted_store),
     intermediate_store(_intermediate_store),
+    fetched_store(_fetched_store),
     crlcache(_crlcache),
     validation_flags(_validation_flags),
     path(new WvX509Path),
@@ -228,10 +230,12 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
         return;
     }
 
-    // next, check to see if the certificate is in the trusted store, and
-    // (if we're checking for bridges) the intermediate store.
+    // next, check to see if the certificate is in the trusted store, or in
+    // the store of certs we've previously fetched, or (if we're checking
+    // for bridges) the intermediate store.
     WvX509List certlist;
     trusted_store->get(cert->get_aki(), certlist);
+    fetched_store->get(cert->get_aki(), certlist);
     if (check_bridges)
         intermediate_store->get(cert->get_aki(), certlist);
     if (!certlist.empty())
@@ -300,21 +304,26 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
             storename());
     }
 
-    WvStringList ca_urls;
-    cert->get_ca_urls(ca_urls);
-
-    DownloadFinishedCb cb = wv::bind(&PathFinder::signer_download_finished_cb, 
-                                     this, cert, _1, _2, _3, _4);
-
-    if (cfg["General"].xgetint("Prefer LDAP"))
+    // Only go downloading if there's nothing in our fetched_store.
+    if (!fetched_store->exists(cert->get_aki()))
     {
-        log(WvLog::Info, "Using LDAP URLs first!\n");
-        sort_urls(ca_urls, true);
+        WvStringList ca_urls;
+        cert->get_ca_urls(ca_urls);
+
+        DownloadFinishedCb cb = wv::bind(
+                                    &PathFinder::signer_download_finished_cb, 
+                                    this, cert, _1, _2, _3, _4);
+
+        if (cfg["General"].xgetint("Prefer LDAP"))
+        {
+            log(WvLog::Info, "Using LDAP URLs first!\n");
+            sort_urls(ca_urls, true);
+        }
+        else
+            sort_urls(ca_urls, false);
+        
+        retrieve_object(ca_urls, cb);
     }
-    else
-        sort_urls(ca_urls, false);
-    
-    retrieve_object(ca_urls, cb);
 }
 
 
@@ -421,7 +430,11 @@ void PathFinder::signer_download_finished_cb(shared_ptr<WvX509> &cert,
                     x->get_subject().cstr());
                 examine_signer(x, cert);
                 if (got_cert_path)
+                {
+                    // this cert was good!  add it to the fetched_store.
+                    fetched_store->add_cert(x);
                     return; // done!
+                }
 	    }
 	}
 
@@ -434,6 +447,10 @@ void PathFinder::signer_download_finished_cb(shared_ptr<WvX509> &cert,
     else
         cert2->decode(WvX509::CertDER, buf); 
 
+    if (cert2->isok())
+    {
+        fetched_store->add_cert(cert2);
+    }
     check_cert(cert2);
 }
 

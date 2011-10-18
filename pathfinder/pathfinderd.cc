@@ -38,6 +38,7 @@ public:
     {
         trusted_store = shared_ptr<WvX509Store>(new WvX509Store);
         intermediate_store = shared_ptr<WvX509Store>(new WvX509Store);
+        fetched_store = shared_ptr<WvX509Store>(new WvX509Store);
         args.add_option(0, "pid-file",
                         "Specify the .pid file to use (only applies with --daemonize)", "filename",
                         pid_file);
@@ -96,6 +97,10 @@ public:
             for (i.rewind(); i.next();)
                 intermediate_store->add_pkcs7(i->getme());
         }
+
+        {
+            // FIXME: load the fetched_store here.
+        }
         
         crlcache = shared_ptr<WvCRLCache>(
             new WvCRLCache(cfg["general"].xget("crl cache location", 
@@ -114,7 +119,7 @@ public:
         
         // Initialize pathfinder "server" object
         pathserver = new PathServer(trusted_store, intermediate_store,
-                                    crlcache, cfg);
+                                    fetched_store, crlcache, cfg);
         dbusconn->add_callback(WvDBusConn::PriNormal, 
                                wv::bind(&PathServer::incoming, pathserver, 
                                         dbusconn, _1), this);
@@ -122,6 +127,7 @@ public:
     
     shared_ptr<WvX509Store> trusted_store;
     shared_ptr<WvX509Store> intermediate_store;
+    shared_ptr<WvX509Store> fetched_store;
     shared_ptr<WvCRLCache> crlcache;
     WvDBusConn *dbusconn;
     PathServer *pathserver;

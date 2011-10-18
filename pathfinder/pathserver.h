@@ -20,6 +20,7 @@ class PathServer
   public:
     PathServer(boost::shared_ptr<WvX509Store> _trusted_store,
                boost::shared_ptr<WvX509Store> _intermediate_store,
+               boost::shared_ptr<WvX509Store> _fetched_store,
                boost::shared_ptr<WvCRLCache> _crlcache,
                UniConf &cfg);
     bool incoming(WvDBusConn *conn, WvDBusMsg &msg);
@@ -33,6 +34,7 @@ class PathServer
 
     boost::shared_ptr<WvX509Store> trusted_store;
     boost::shared_ptr<WvX509Store> intermediate_store;
+    boost::shared_ptr<WvX509Store> fetched_store;
     boost::shared_ptr<WvCRLCache> crlcache;
     UniConf cfg;
 

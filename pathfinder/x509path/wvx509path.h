@@ -32,6 +32,7 @@ class WvX509Path
     virtual ~WvX509Path();
     bool validate(boost::shared_ptr<WvX509Store> &trusted_store, 
                   boost::shared_ptr<WvX509Store> &intermediate_store,
+                  boost::shared_ptr<WvX509Store> &fetched_store,
                   WvStringList &initial_policy_set, 
                   uint32_t flags,
                   WvX509List &extra_certs_to_be_validated,

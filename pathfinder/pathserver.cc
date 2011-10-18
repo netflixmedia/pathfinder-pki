@@ -16,6 +16,7 @@ using namespace std;
 
 PathServer::PathServer(shared_ptr<WvX509Store> _trusted_store,
                        shared_ptr<WvX509Store> _intermediate_store,
+                       shared_ptr<WvX509Store> _fetched_store,
                        shared_ptr<WvCRLCache> _crlcache,
                        UniConf &_cfg) :
     log("PathFinder"),
@@ -23,6 +24,7 @@ PathServer::PathServer(shared_ptr<WvX509Store> _trusted_store,
 {
     trusted_store = _trusted_store;
     intermediate_store = _intermediate_store;
+    fetched_store = _fetched_store;
     crlcache = _crlcache;
 }
 
@@ -110,7 +112,8 @@ bool PathServer::incoming(WvDBusConn *conn, WvDBusMsg &msg)
         &PathServer::path_validated_cb, this, _1, _2, _3, conn, reply);
     PathValidator *pv = new PathValidator(cert, initial_policy_set_tcl, 
                                           flags, trusted_store, 
-                                          intermediate_store, crlcache, cfg, 
+                                          intermediate_store,
+                                          fetched_store, crlcache, cfg, 
                                           cb);
     shared_ptr<PathValidator> validator(pv);
     validatormap.insert(
