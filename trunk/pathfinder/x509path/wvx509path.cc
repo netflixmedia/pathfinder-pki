@@ -194,6 +194,8 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                                              cur->get_subject(), 
                                              WvOCSPResp::status_str(status)),
                                     err);
+                    fetched_store->remove(cur->get_serial(true),
+                                          cur->get_subject());
                     return false;
                 }
                 
@@ -368,6 +370,8 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                 {
                     log(WvLog::Error, "Certificate %s is revoked according to "
                         "CRL.\n", cur->get_subject());
+                    fetched_store->remove(cur->get_serial(true),
+                                          cur->get_subject());
                     return false;
                 }
             }
