@@ -52,7 +52,7 @@ public:
     void add_cert(boost::shared_ptr<WvX509> &_cert);
     void add_pkcs7(WvStringParm _fname);
     int count();
-    void remove(WvStringParm key);
+    void remove(WvStringParm serial, WvStringParm subject);
     
 private:
     WvString storedir;
