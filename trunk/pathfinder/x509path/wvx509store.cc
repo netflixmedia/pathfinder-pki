@@ -66,6 +66,9 @@ void WvX509Store::add_cert(shared_ptr<WvX509> &x)
         ::unlink(fname);
         WvFile f(fname, O_CREAT|O_WRONLY);
         f.write(x->encode(WvX509::CertPEM));
+
+        if (x->validate() == false)
+            remove(x->get_serial(true), x->get_subject());
     }
 }
 
@@ -146,7 +149,14 @@ shared_ptr<WvX509> WvX509Store::get(WvStringParm key)
             certmap.equal_range(key.cstr());
         
         for (CertMap::iterator i = iterpair.first; i != iterpair.second; i++)
-            return((*i).second);
+        {
+            // don't return any that are expired; in fact remove them
+            shared_ptr<WvX509> x = (*i).second;
+            if (x->validate() == false)
+                remove(x->get_serial(true), x->get_subject());
+            else
+                return(x);
+        }
     }
 
     return shared_ptr<WvX509>();
@@ -223,22 +233,21 @@ int WvX509Store::count()
     return certmap.size();
 }
 
-void WvX509Store::remove(WvStringParm key)
+void WvX509Store::remove(WvStringParm serial, WvStringParm subject)
 {
-    if (!!key)
+    if (!!serial && !!subject)
     {        
-        pair<CertMap::iterator, CertMap::iterator> iterpair = 
-            certmap.equal_range(key.cstr());
-        
-        CertMap::iterator i = iterpair.first;
-        shared_ptr<WvX509> x = ((*i).second);
-
-        if (x)
+        CertMap::iterator i;
+        for (i=certmap.begin(); i!=certmap.end(); i++)
         {
-            WvString fname("%s/%s-%s", storedir, x->get_serial(true),
-                                       url_encode(x->get_subject()));
-            ::unlink(fname);
-            certmap.erase(key.cstr());
+            shared_ptr<WvX509> x = ((*i).second);
+            if (x->get_serial(true) == serial && x->get_subject() == subject)
+            {
+                WvString fname("%s/%s-%s", storedir, x->get_serial(true),
+                                           url_encode(x->get_subject()));
+                ::unlink(fname);
+                certmap.erase(i);
+            }
         }
     }
 }
