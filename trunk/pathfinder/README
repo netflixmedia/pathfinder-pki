@@ -116,6 +116,9 @@ of pathfinder.
 - CRL Cache Location: This specifies where CRLs previously downloaded from
  the internet will be stored for later retrieval. 
  - Example: CRL Cache Location = /var/cache/pathfinder/crls/
+- Fetched Store Location: This specifies where CA certificates previously
+  downloaded from URLs in AIA extensions during path discovery will be
+  stored for later retrieval.
 - LDAP Proxy: This specifies a host that you wish to have all LDAP Queries
   re-directed to, instead of trying to reach the actual host.
 - HTTP Proxy: This specifies a host that you wish to have all HTTP Queries

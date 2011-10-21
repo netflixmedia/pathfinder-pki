@@ -7,7 +7,7 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 PROJECT(PATHFINDER)
-SET(PACKAGE_VERSION 1.1.3)
+SET(PACKAGE_VERSION 1.1.4)
 
 pkg_check_modules(UNICONF libuniconf)
 pkg_check_modules(NSS nss)
