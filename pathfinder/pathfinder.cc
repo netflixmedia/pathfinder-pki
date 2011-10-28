@@ -117,6 +117,17 @@ void PathFinder::check_cert(shared_ptr<WvX509> &cert)
         wouldfail("Certificate signed using a disallowed Hash algorithm.");
         return;
     }
+
+    size_t keysize = get_keysize(cert);
+    if (keysize)
+    {
+        log("Checking whether key size (%s) is OK.\n", keysize);
+        if (cfg["General"].xgetint("Minimum RSA Size", 2048) > keysize)
+        {
+            wouldfail("Certificate has a weak key.");
+            return;
+        }
+    }
     
     // complain if self-signed certs don't have SKI
     if (cert->get_issuer() == cert->get_subject())

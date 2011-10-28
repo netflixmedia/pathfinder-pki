@@ -53,6 +53,16 @@ bool is_md(shared_ptr<WvX509> &x509)
     return false;
 }
 
+size_t get_keysize(shared_ptr<WvX509> &x509)
+{
+    EVP_PKEY *p = X509_get_pubkey(x509->get_cert());
+
+    // FIXME: this only supports RSA for now.
+    if (p && p->type == EVP_PKEY_RSA)
+        return BN_num_bits(p->pkey.rsa->n);
+    return 0;
+}
+
 #if 0
 bool is_valid_host(WvStringParm hostname_or_ip)
 {

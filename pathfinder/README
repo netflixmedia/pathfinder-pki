@@ -126,8 +126,10 @@ of pathfinder.
 - Prefer LDAP: This informs Pathfinder that it is preferable to attempt to
   use LDAP URLs for CRL and AIA lookups, regardless of the order found in
   the certificate.
-- Allow MD5: This informs Pathfinde that it is OK to allow certificates that
+- Allow MD5: This informs Pathfinder that it is OK to allow certificates that
   use older, broken hash algorithms. Set this to True at your peril.
+- Minimum RSA Size: This informs Pathfinder what is the minimum number of
+  bits in an RSA key that it will accept.  The default is 2048.
 
 [Trusted directories]: This section is used to specify directories containing
 trusted certificates, in format "identifier" = "value"
