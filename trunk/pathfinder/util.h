@@ -21,6 +21,7 @@ WvX509::DumpMode guess_encoding(WvBuf &buf);
 WvX509::DumpMode guess_encoding(WvStringParm fname);
 
 bool is_md(boost::shared_ptr<WvX509> &x509);
+size_t get_keysize(boost::shared_ptr<WvX509> &x509);
 
 // bool is_valid_host(WvStringParm hostname_or_ip);
 
