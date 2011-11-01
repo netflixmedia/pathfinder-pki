@@ -64,15 +64,15 @@ public:
 #ifdef OPENSSL_FIPS        
         if (fips_mode)
         {
-          // do something here that enables fips.
-          if (!FIPS_mode_set(1))
-          {
-            log(WvLog::Error, "FIPS mode requested, but not enabled!\n");
-          }
-          else
-          {
-            log(WvLog::Info, "FIPS mode is enabled.\n");
-          }
+            // do something here that enables fips.
+            if (!FIPS_mode_set(1))
+            {
+                log(WvLog::Error, "FIPS mode requested, but not enabled!\n");
+            }
+            else
+            {
+                log(WvLog::Info, "FIPS mode is enabled.\n");
+            }
         }
 #endif
         // Mount config moniker
