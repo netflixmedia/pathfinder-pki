@@ -316,7 +316,8 @@ void PathFinder::get_signer(shared_ptr<WvX509> &cert)
     }
 
     // Only go downloading if there's nothing in our fetched_store.
-    if (!fetched_store->exists(cert->get_aki()))
+    if (!fetched_store->exists(cert->get_aki())
+            && cfg["General"].xgetint("Download AIA Links", 1))
     {
         WvStringList ca_urls;
         cert->get_ca_urls(ca_urls);

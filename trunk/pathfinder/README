@@ -130,6 +130,9 @@ of pathfinder.
   use older, broken hash algorithms. Set this to True at your peril.
 - Minimum RSA Size: This informs Pathfinder what is the minimum number of
   bits in an RSA key that it will accept.  The default is 2048.
+- Download AIA Links: This informs Pathfinder that it should download from
+  URLs defined in AIA to try to find signer certificates.  This is enabled
+  by default, but may be disabled by setting it to 0.
 
 [Trusted directories]: This section is used to specify directories containing
 trusted certificates, in format "identifier" = "value"

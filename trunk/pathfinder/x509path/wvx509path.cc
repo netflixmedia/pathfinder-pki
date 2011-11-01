@@ -368,8 +368,9 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
 
                 if (crl->isrevoked(*(cur.get())))
                 {
-                    log(WvLog::Error, "Certificate %s is revoked according to "
-                        "CRL.\n", cur->get_subject());
+                    validate_failed(WvString("Certificate %s is revoked "
+                                             "according to CRL.",
+                                             cur->get_subject()), err);
                     fetched_store->remove(cur->get_serial(true),
                                           cur->get_subject());
                     return false;
