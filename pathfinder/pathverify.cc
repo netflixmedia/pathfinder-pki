@@ -66,7 +66,6 @@ int main(int argc, char *argv[])
     WvString certtype;
     WvString cfgmoniker(DEFAULT_CONFIG_MONIKER);
     WvString initial_policy_set_tcl(ANY_POLICY_OID);
-    bool crl_check = true;
 
     WvArgs args;
     args.add_required_arg("CERTIFICATE");
@@ -139,15 +138,20 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    uint32_t flags = 0;
     if (cfg["verification options"].xgetint("skip revocation check", 0))
     {
         wvcon->print("Skipping revocation checking as specified in "
                      "configuration.\n");
-        crl_check = false;
+        flags |= WVX509_SKIP_REVOCATION_CHECK;
+    }
+    if (cfg["verification options"].xgetint("allow missing crls", 0))
+    {
+        wvcon->print("Allowing missing CRLs as specified in configuration.\n");
+        flags |= WVX509_IGNORE_MISSING_CRLS;
     }
 
-    PathValidator p(x509, initial_policy_set_tcl, 
-                    crl_check ? 0 : WVX509_SKIP_REVOCATION_CHECK, 
+    PathValidator p(x509, initial_policy_set_tcl, flags,
                     trusted_store, intermediate_store, fetched_store,
                     crlcache, cfg, path_validated_cb);
 

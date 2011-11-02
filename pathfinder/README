@@ -31,7 +31,7 @@ For example, running cmake as follows would build and install everything into
 cmake -D CMAKE_INSTALL_PREFIX:PATH=/home/wlach/tmp .
 make install
 
-Pathfinder only has three dependancies: D-Bus (to provide interprocess 
+Pathfinder only has three dependencies: D-Bus (to provide interprocess 
 communication), WvStreams (to provide for downloading of certificates over
 HTTP), and OpenSSL (to provide the relevant X509 and cryptographic functions
 for path validation). However, in order to run the self tests (see below),
@@ -56,6 +56,90 @@ cat Testing/Temporary/LastTest.log
 Please report any failures to:
 
 http://code.google.com/p/pathfinder-pki/issues/list
+
+
+=== Configuring Pathfinder ===
+
+The pathfinder configuration file is in ini-style format with the following
+sections and keys.
+
+[General]: This section contains keys that pertain to the general operation
+of pathfinder.
+- CRL Cache Location: This specifies where CRLs previously downloaded from
+ the internet will be stored for later retrieval. 
+ - Example: CRL Cache Location = /var/cache/pathfinder/crls/
+- Fetched Store Location: This specifies where CA certificates previously
+  downloaded from URLs in AIA extensions during path discovery will be
+  stored for later retrieval.
+- LDAP Proxy: This specifies a host that you wish to have all LDAP Queries
+  re-directed to, instead of trying to reach the actual host.
+- HTTP Proxy: This specifies a host that you wish to have all HTTP Queries
+  re-directed to, instead of trying to read the actual host.
+- Prefer LDAP: This informs Pathfinder that it is preferable to attempt to
+  use LDAP URLs for CRL and AIA lookups, regardless of the order found in
+  the certificate.
+- Allow MD5: This informs Pathfinder that it is OK to allow certificates that
+  use older, broken hash algorithms. Set this to True at your peril.
+- Minimum RSA Size: This informs Pathfinder what is the minimum number of
+  bits in an RSA key that it will accept.  The default is 2048.
+- Download AIA Links: This informs Pathfinder that it should download from
+  URLs defined in AIA to try to find signer certificates.  This is enabled
+  by default, but may be disabled by setting it to 0.
+
+[Trusted directories]: This section is used to specify directories containing
+trusted certificates, in format "identifier" = "value"
+ - Example: Trusted certs = /tmp/trusted
+
+[Policy]: This section is used to specify policies to use for application
+names sent to the pathfinder daemon in a validate request (see below).
+ - Example: apache = 1.2.3.4
+
+[Verification Options]: This section is used to specify options for altering
+the way that pathfinder verifies certificates. This is intended primarily
+for debugging and troubleshooting purposes, and in general users shouldn't
+try to modify it.
+ - Skip Revocation Check: If not set to 0 (or blank), disable revocation 
+                          checking for the pathfinder daemon.
+  - Example: Skip Revocation Check = 0
+ - Use OCSP: If set to 0, NEVER use OCSP. If set to 1, use OCSP and
+             then fall back to CRL, if set to 2, then ONLY use OCSP. 1 is
+             the default if not set.
+  - Example: Use OCSP = 1
+ - Allow Missing CRLs: The default is 0, meaning pathfinder will reject any
+                       certificate that doesn't provide revocation-checking
+                       information such as a CRL Distribution Point.  If
+                       set to 1, pathfinder will allow revocation-checking
+                       information to be missing.
+
+[Bridges]: Specifies bundles that can be used to bridge trust between PKIs
+(from an untrusted PKI, across the bridge, to a trusted anchor). Typically
+such a bundle is published by a bridge, and contains 2 cross-certificates
+for each bridged PKI: one issued by the bridge and one issued *to* the
+bridge.  Specify one bundle per line.
+ - Example: My bridge = /var/pathfinder/bridges/mybridge.p7c
+
+[Intermediate CAs]: Specifies the AKIs of intermediate CA that may be
+preferable when constructing a path or examining a bridge bundle. 
+This is *not* essential for bridging to work, but it can improve
+performance by choosing "your" CA certificate first when evaluating a
+bridge bundle instead of iterating through other untrusted ones first.
+For this section, the AKI is the key, the value should simply be 1.
+ - Example: E0:26:A2:10:00:7D:D5:96:95:14:0C:F2:2E:54:63:F1:65:66:D9:0E = 1
+
+[CRL Location]: Specifies a location on disk which should be used to find
+a CRL associated with a particular CA. For client certificates of this CA,
+this CRL will simply be loaded off of disk, instead of going over the network
+for download. Note that the keys for the specified CA names should have slashes
+escaped as %2f, and = signs escaped as %3d.  Names should be specified with
+fields delimited by a (escaped) slash.
+ - Example: %2FC%3DCA%2FO%3DSigning CA%2FCN%3DSubscriber Cert Signing Authority = /var/pathfinder/crls/mycrl.crl
+
+[CA Location]: Specifies a location on disk which should be used to find
+a specific CA (instead of looking in the AIA extension of the client 
+certicate). Note that the keys for the specified CA names should have slashes
+escaped as %2f, and = signs escaped as %3d.  Names should be specified with
+fields delimited by a (escaped) slash.
+ - Example: %2FC%3DCA%2FO%3DRoot CA%2FCN%3DCA Cert Signing Authority = /var/pathfinder/cas/myca.ca
 
 === Using Pathfinder ===
 
@@ -105,84 +189,6 @@ pathfinder daemon via D-Bus and attempt to validate the client certificate:
 
 If everything is set up correctly, you should receive a message stating the
 certificate is valid.
-
-=== Configuring Pathfinder ===
-
-The pathfinder configuration file is in ini-style format with the following
-sections and keys.
-
-[General]: This section contains keys that pertain to the general operation
-of pathfinder.
-- CRL Cache Location: This specifies where CRLs previously downloaded from
- the internet will be stored for later retrieval. 
- - Example: CRL Cache Location = /var/cache/pathfinder/crls/
-- Fetched Store Location: This specifies where CA certificates previously
-  downloaded from URLs in AIA extensions during path discovery will be
-  stored for later retrieval.
-- LDAP Proxy: This specifies a host that you wish to have all LDAP Queries
-  re-directed to, instead of trying to reach the actual host.
-- HTTP Proxy: This specifies a host that you wish to have all HTTP Queries
-  re-directed to, instead of trying to read the actual host.
-- Prefer LDAP: This informs Pathfinder that it is preferable to attempt to
-  use LDAP URLs for CRL and AIA lookups, regardless of the order found in
-  the certificate.
-- Allow MD5: This informs Pathfinder that it is OK to allow certificates that
-  use older, broken hash algorithms. Set this to True at your peril.
-- Minimum RSA Size: This informs Pathfinder what is the minimum number of
-  bits in an RSA key that it will accept.  The default is 2048.
-- Download AIA Links: This informs Pathfinder that it should download from
-  URLs defined in AIA to try to find signer certificates.  This is enabled
-  by default, but may be disabled by setting it to 0.
-
-[Trusted directories]: This section is used to specify directories containing
-trusted certificates, in format "identifier" = "value"
- - Example: Trusted certs = /tmp/trusted
-
-[Policy]: This section is used to specify policies to use for application
-names sent to the pathfinder daemon in a validate request (see below).
- - Example: apache = 1.2.3.4
-
-[Verification Options]: This section is used to specify options for altering
-the way that pathfinder verifies certificates. This is intended primarily
-for debugging and troubleshooting purposes, and in general users shouldn't
-try to modify it.
- - Skip Revocation Check: If not set to 0 (or blank), disable revocation 
-                          checking for the pathfinder daemon.
-  - Example: Skip Revocation Check = 0
- - Use OCSP: If set to 0, NEVER use OCSP. If set to 1, use OCSP and
-             then fall back to CRL, if set to 2, then ONLY use OCSP. 1 is
-             the default if not set.
-  - Example: Use OCSP = 1
-
-[Bridges]: Specifies bundles that can be used to bridge trust between PKIs
-(from an untrusted PKI, across the bridge, to a trusted anchor). Typically
-such a bundle is published by a bridge, and contains 2 cross-certificates
-for each bridged PKI: one issued by the bridge and one issued *to* the
-bridge.  Specify one bundle per line.
- - Example: My bridge = /var/pathfinder/bridges/mybridge.p7c
-
-[Intermediate CAs]: Specifies the AKIs of intermediate CA that may be
-preferable when constructing a path or examining a bridge bundle. 
-This is *not* essential for bridging to work, but it can improve
-performance by choosing "your" CA certificate first when evaluating a
-bridge bundle instead of iterating through other untrusted ones first.
-For this section, the AKI is the key, the value should simply be 1.
- - Example: E0:26:A2:10:00:7D:D5:96:95:14:0C:F2:2E:54:63:F1:65:66:D9:0E = 1
-
-[CRL Location]: Specifies a location on disk which should be used to find
-a CRL associated with a particular CA. For client certificates of this CA,
-this CRL will simply be loaded off of disk, instead of going over the network
-for download. Note that the keys for the specified CA names should have slashes
-escaped as %2f, and = signs escaped as %3d.  Names should be specified with
-fields delimited by a (escaped) slash.
- - Example: %2FC%3DCA%2FO%3DSigning CA%2FCN%3DSubscriber Cert Signing Authority = /var/pathfinder/crls/mycrl.crl
-
-[CA Location]: Specifies a location on disk which should be used to find
-a specific CA (instead of looking in the AIA extension of the client 
-certicate). Note that the keys for the specified CA names should have slashes
-escaped as %2f, and = signs escaped as %3d.  Names should be specified with
-fields delimited by a (escaped) slash.
- - Example: %2FC%3DCA%2FO%3DRoot CA%2FCN%3DCA Cert Signing Authority = /var/pathfinder/cas/myca.ca
 
 === Adding support for Pathfinder to your program ===
 
