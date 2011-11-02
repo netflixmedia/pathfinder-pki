@@ -79,6 +79,11 @@ bool PathServer::incoming(WvDBusConn *conn, WvDBusMsg &msg)
         flags |= WVX509_INITIAL_EXPLICIT_POLICY;
     if (initial_policy_mapping_inhibit)
         flags |= WVX509_INITIAL_POLICY_MAPPING_INHIBIT;
+    if (cfg["verification options"].xgetint("allow missing crls", 0))
+    {
+        log("Allowing missing CRLs as specified in configuration.\n");
+        flags |= WVX509_IGNORE_MISSING_CRLS;
+    }
 
     // check policy input: if it's anyPolicy, we want to use the default
     // policy for the "app" (falling back again to ANY_POLICY if there
@@ -142,7 +147,6 @@ void PathServer::path_validated_cb(shared_ptr<WvX509> &cert, bool valid,
                                    WvError err, WvDBusConn *conn, 
                                    WvDBusMsg *reply)
 {
-    uint32_t flags = 0;
     log("Path validated for certificate %s. Result: %svalid\n", 
         cert->get_subject(), valid ? "" : "NOT ");
     validatormap.erase(reply);
