@@ -308,13 +308,15 @@ bool WvX509Path::validate(shared_ptr<WvX509Store> &trusted_store,
                 strlwr(crl_issuer.edit());
                 WvString cert_issuer = strreplace(cur->get_issuer(), " ", "");
                 strlwr(cert_issuer.edit());
+                WvString prev_issuer = strreplace(prev->get_issuer(), " ", "");
+                strlwr(prev_issuer.edit());
                 WvString crl_aki = crl->get_aki();
                 bool crl_signer_untrusted = false;
 
                 shared_ptr<WvX509> crl_signer;
                 if (prev->get_ski() == crl_aki)
                     crl_signer = prev;
-                if (!crl_signer && prev->get_subject() == crl_issuer)
+                if (!crl_signer && prev_issuer == crl_issuer)
                     crl_signer = prev;
                 if (!crl_signer)                
                     crl_signer = trusted_store->get(crl_aki);                
