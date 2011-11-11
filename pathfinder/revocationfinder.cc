@@ -79,7 +79,21 @@ void RevocationFinder::find()
     // try to grab both crl and OCSP info (the latter only if we're checking 
     // ocsp, and the former only if CRL check is not excluded)
     if (check_ocsp)
+    {
         cert->get_ocsp(ocsp_urls);
+
+        // does our config force us to use a particular OCSP responder
+        // instead of what's specified (if anything was specified)?
+        if (ocsp_urls.count())
+        {
+            WvString f = cfg["verification options"].xget("force ocsp url");
+            if (!!f)
+            {
+                ocsp_urls.zap();
+                ocsp_urls.append(f);
+            }
+        }
+    }
     
     if (only_ocsp != 2)
         cert->get_crl_urls(crl_urls);

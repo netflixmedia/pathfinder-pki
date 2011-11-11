@@ -105,6 +105,9 @@ try to modify it.
              then fall back to CRL, if set to 2, then ONLY use OCSP. 1 is
              the default if not set.
   - Example: Use OCSP = 1
+ - Force OCSP URL: If set, causes pathfinder to always use the given URL
+                   for OCSP queries, rather than the URL specified in a
+                   given certificate, iff there were any.
  - Allow Missing CRLs: The default is 0, meaning pathfinder will reject any
                        certificate that doesn't provide revocation-checking
                        information such as a CRL Distribution Point.  If
