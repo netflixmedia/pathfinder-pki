@@ -1,7 +1,7 @@
 /*
  * nsstest.cc
  *
- * Copyright (C) 2007 Carillon Information Security Inc.
+ * Copyright (C) 2007-2012 Carillon Information Security Inc.
  * Portions copyright (C) The Mozilla Foundation
  *
  * This program and accompanying library is covered by the LGPL v2.1 or later, 
