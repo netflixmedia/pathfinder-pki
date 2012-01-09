@@ -40,6 +40,7 @@ int pathfinder_app_dbus_verify(const char *appname,
     if (!conn || dbus_error_is_set(&err))
     {
         dbus_error_free(&err);
+        dbus_connection_unref(conn);
         *errmsg = strdup("Can't get connection to bus");
         return 0;
     }
@@ -52,7 +53,10 @@ int pathfinder_app_dbus_verify(const char *appname,
                                        "ca.carillon.pathfinder",
                                        "validate");
     if (!msg)
+    {
+        dbus_connection_unref(conn);
         return 0;
+    }
 
     if (appname && appname[0])
     {
@@ -63,7 +67,11 @@ int pathfinder_app_dbus_verify(const char *appname,
                     DBUS_TYPE_BOOLEAN, &initial_policy_mapping_inhibit,
                     DBUS_TYPE_STRING, &appname,
                     DBUS_TYPE_INVALID))
+        {
+            dbus_message_unref(msg);
+            dbus_connection_unref(conn);
             return 0;
+        }
     }
     else
     {
@@ -73,13 +81,21 @@ int pathfinder_app_dbus_verify(const char *appname,
                     DBUS_TYPE_BOOLEAN, &initial_explicit_policy,
                     DBUS_TYPE_BOOLEAN, &initial_policy_mapping_inhibit,
                     DBUS_TYPE_INVALID))
+        {
+            dbus_message_unref(msg);
+            dbus_connection_unref(conn);
             return 0;
+        }
     }
 
 
     if (!dbus_connection_send_with_reply(conn, msg, &pending, -1) || 
         !pending)
+    {
+        dbus_message_unref(msg);
+        dbus_connection_unref(conn);
         return 0;
+    }
 
     dbus_connection_flush(conn);
     dbus_message_unref(msg);
@@ -89,11 +105,16 @@ int pathfinder_app_dbus_verify(const char *appname,
     dbus_pending_call_unref(pending);
 
     if (!msg)
+    {
+        dbus_connection_unref(conn);
         return 0;
+    }
 
     if (dbus_message_get_type(msg) == DBUS_MESSAGE_TYPE_ERROR)
     {
         *errmsg = strdup("Could not contact Pathfinder daemon");
+        dbus_message_unref(msg);
+        dbus_connection_unref(conn);
         return 0;
     }
 
@@ -101,12 +122,16 @@ int pathfinder_app_dbus_verify(const char *appname,
     dbus_bool_t validated = 0;
     if (!dbus_message_iter_init(msg, &args))
     {
+        dbus_message_unref(msg);
+        dbus_connection_unref(conn);
         return 0;
     }
 
     if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_BOOLEAN)
     {
         *errmsg = strdup("Invalid argument in Pathfinder reply");
+        dbus_message_unref(msg);
+        dbus_connection_unref(conn);
         return 0;
     }
 
@@ -120,6 +145,8 @@ int pathfinder_app_dbus_verify(const char *appname,
         if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_STRING)
         {
             *errmsg = strdup("Invalid argument in Pathfinder reply");
+            dbus_message_unref(msg);
+            dbus_connection_unref(conn);
             return 0;
         }
 
@@ -127,6 +154,7 @@ int pathfinder_app_dbus_verify(const char *appname,
         *errmsg = strdup(s);
     }    
 
+    dbus_message_unref(msg);
     dbus_connection_unref(conn);
 
     return validated;
