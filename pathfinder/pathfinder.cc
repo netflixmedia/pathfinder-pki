@@ -396,7 +396,8 @@ void PathFinder::signer_download_finished_cb(shared_ptr<WvX509> &cert,
             log("PKCS7 file appears to be in PEM format, but is probably "
                 "not supposed to be.  Decoding anyway.\n");
             BIO *membuf = BIO_new(BIO_s_mem());
-            BIO_write(membuf, buf.get(buf.used()), buf.used());
+            size_t len = buf.used();
+            BIO_write(membuf, buf.get(len), len);
             pkcs7 = PEM_read_bio_PKCS7(membuf, NULL, NULL, NULL);
             BIO_free_all(membuf);
         }
