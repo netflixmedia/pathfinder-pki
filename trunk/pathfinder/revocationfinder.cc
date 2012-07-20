@@ -171,7 +171,8 @@ void RevocationFinder::try_download_next()
             &RevocationFinder::ocsp_download_finished_cb, 
             this, _1, _2, _3, _4, req);
         if (retrieve_object_http(ocsp_urls.popstr(), cb, "POST", 
-                            "Content-Type: application/ocsp-request\r\n",
+                            "Content-Type: application/ocsp-request\r\n"
+                            "User-Agent: Carillon Pathfinder LGPL\r\n",
                             input_stream))
             return;
     }
