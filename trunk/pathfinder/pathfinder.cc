@@ -382,7 +382,8 @@ void PathFinder::signer_download_finished_cb(shared_ptr<WvX509> &cert,
     log("Got certificate with mimetype %s.\n", mimetype);
 
     // eugh, big hack to handle certificates bundled inside a pkcs7
-    if (strstr(urlstr, ".p7c") || strstr(urlstr, ".p7b"))
+    if (strstr(urlstr, ".p7c") || strstr(urlstr, ".p7b")
+                               || strstr(mimetype, "pkcs7"))
     {
         log("Certificate from url %s is encoded in pkcs7. Decoding.\n", 
             urlstr);
