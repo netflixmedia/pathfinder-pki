@@ -124,7 +124,7 @@ void WvX509PolicyTree::intersection(WvStringList &initial_policy_set,
     WvX509PolicyNode::List valid_policy_node_set;
     get_valid_policy_node_set(root, valid_policy_node_set);
     // (2) remove any nodes in the valid_policy_node_set which are not
-    // in the expected policy set and are not anyPolicy
+    // in the initial policy set and are not anyPolicy
     WvX509PolicyNode::List::iterator end = valid_policy_node_set.end();
     WvX509PolicyNode::List::iterator i = valid_policy_node_set.begin(); 
     while (i != end)
@@ -344,6 +344,11 @@ void WvX509PolicyTree::append_mapping_internal(WvX509::PolicyMapList &list,
         {
             if (node->valid_policy == i().issuer_domain)
             {
+                // FIXME:  this doesn't seem right -- we're setting the
+                // expected policy set to ALL subject domain OIDs?  It
+                // should be only subject domain OIDs that are mapped to
+                // the given issuer domain OID.
+
                 // ok, we have at least one mapping here
                 // we replace the expected policy set with the mappings 
                 // (6.1.4 b in RFC3280)                
