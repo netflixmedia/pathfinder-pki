@@ -433,6 +433,18 @@ void PathFinder::signer_download_finished_cb(shared_ptr<WvX509> &cert,
 	
 	if (certs != NULL && sk_X509_num(certs) > 0)
 	{
+            // First, add everything from the bundle to the fetched_store.
+	    for (j = 0; j < sk_X509_num(certs); j++)
+            {
+		shared_ptr<WvX509> x;
+		X509 *_x = sk_X509_value(certs, j);
+		x = shared_ptr<WvX509>(new WvX509(X509_dup(_x)));
+		log("Caching cert for %s from bundle.\n",
+                    x->get_subject().cstr());
+                fetched_store->add_cert(x);
+            }
+
+            // Now, loop through them and try to build a path.
 	    for (j = 0; j < sk_X509_num(certs); j++)
 	    {
 		shared_ptr<WvX509> x;
@@ -440,15 +452,11 @@ void PathFinder::signer_download_finished_cb(shared_ptr<WvX509> &cert,
 		x = shared_ptr<WvX509>(new WvX509(X509_dup(_x)));
                 //log("Taking a look (3) at %s issued by %s\n",
                 //    x->get_subject(), x->get_issuer());
-		log("Extracting cert for %s from bundle.\n",
+		log("Examining cert for %s from bundle.\n",
                     x->get_subject().cstr());
                 examine_signer(x, cert);
                 if (got_cert_path)
-                {
-                    // this cert was good!  add it to the fetched_store.
-                    fetched_store->add_cert(x);
                     return; // done!
-                }
 	    }
 	}
 
